@@ -1,4 +1,4 @@
-﻿using eTouristAgencyAPI.Models.ResponseModel;
+﻿using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +30,7 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<TResponseModel>> GetById([FromQuery] Guid id)
+        public async Task<ActionResult<TResponseModel>> GetById(Guid id)
         {
             try
             {

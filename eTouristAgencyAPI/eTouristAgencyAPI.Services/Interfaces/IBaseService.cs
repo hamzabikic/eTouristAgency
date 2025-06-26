@@ -1,4 +1,4 @@
-﻿using eTouristAgencyAPI.Models.ResponseModel;
+﻿using eTouristAgencyAPI.Models.ResponseModels;
 
 namespace eTouristAgencyAPI.Services.Interfaces
 {

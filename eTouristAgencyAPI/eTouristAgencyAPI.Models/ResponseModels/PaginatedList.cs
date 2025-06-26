@@ -1,4 +1,4 @@
-﻿namespace eTouristAgencyAPI.Models.ResponseModel
+﻿namespace eTouristAgencyAPI.Models.ResponseModels
 {
     public class PaginatedList<TResponseModel>
     {

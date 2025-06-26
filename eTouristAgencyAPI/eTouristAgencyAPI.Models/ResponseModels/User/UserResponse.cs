@@ -1,6 +1,7 @@
 ﻿using System.Data;
+using eTouristAgencyAPI.Models.ResponseModels.Role;
 
-namespace eTouristAgencyAPI.Models.ResponseModel
+namespace eTouristAgencyAPI.Models.ResponseModels.User
 {
     public class UserResponse
     {

@@ -10,6 +10,7 @@ namespace eTouristAgencyAPI.Services.IoC
         {
             //Service registration
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IRoleService, RoleService>();
 
             //Mapster registration
             services.AddMapster();

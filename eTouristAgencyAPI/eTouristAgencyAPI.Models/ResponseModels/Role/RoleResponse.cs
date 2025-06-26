@@ -1,4 +1,4 @@
-﻿namespace eTouristAgencyAPI.Models.ResponseModel
+﻿namespace eTouristAgencyAPI.Models.ResponseModels.Role
 {
     public class RoleResponse
     {

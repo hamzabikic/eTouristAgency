@@ -1,4 +1,4 @@
-﻿using eTouristAgencyAPI.Models.ResponseModel;
+﻿using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.SearchModels;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Interfaces;
@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace eTouristAgencyAPI.Services
 {
     public abstract class BaseService<TDbModel, TResponseModel, TSearchModel> : IBaseService<TDbModel, TResponseModel, TSearchModel>
-                 where TDbModel : class where TResponseModel : class where TSearchModel : BaseSearchModel
+                 where TDbModel : class where TResponseModel : class where TSearchModel : PaginationModel
     {
         protected readonly eTouristAgencyDbContext _dbContext;
         protected readonly IMapper _mapper;
@@ -22,7 +22,7 @@ namespace eTouristAgencyAPI.Services
         public async Task<PaginatedList<TResponseModel>> GetAllAsync(TSearchModel searchModel)
         {
             var query = _dbContext.Set<TDbModel>().AsQueryable();
-            query = BeforeFetchAllData(query);
+            query = await BeforeFetchAllDataAsync(query, searchModel);
 
             var countOfAllRecords = await query.CountAsync();
 
@@ -50,19 +50,19 @@ namespace eTouristAgencyAPI.Services
         public async Task<TResponseModel> GetByIdAsync(Guid id)
         {
             var query = _dbContext.Set<TDbModel>().AsQueryable();
-            query = BeforeFetchRecord(query);
+            query = await BeforeFetchRecordAsync(query);
 
             var record = await query.FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
 
             return _mapper.Map<TResponseModel>(record);
         }
 
-        protected virtual IQueryable<TDbModel> BeforeFetchAllData(IQueryable<TDbModel> queryable)
+        protected virtual async Task<IQueryable<TDbModel>> BeforeFetchAllDataAsync(IQueryable<TDbModel> queryable, TSearchModel searchModel)
         {
             return queryable;
         }
 
-        protected virtual IQueryable<TDbModel> BeforeFetchRecord(IQueryable<TDbModel> queryable)
+        protected virtual async Task<IQueryable<TDbModel>> BeforeFetchRecordAsync(IQueryable<TDbModel> queryable)
         {
             return queryable;
         }
