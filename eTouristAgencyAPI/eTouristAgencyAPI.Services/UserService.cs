@@ -1,8 +1,7 @@
-﻿using System.Reflection.Metadata;
-using System.Threading.Tasks;
-using eTouristAgencyAPI.Models.RequestModels.User;
+﻿using eTouristAgencyAPI.Models.RequestModels.User;
 using eTouristAgencyAPI.Models.ResponseModels.User;
 using eTouristAgencyAPI.Models.SearchModels;
+using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
@@ -14,8 +13,32 @@ namespace eTouristAgencyAPI.Services
 {
     public class UserService : CRUDService<User, UserResponse, UserSearchModel, AddUserRequest, UpdateUserRequest>, IUserService
     {
-        public UserService(eTouristAgencyDbContext dbContext, IMapper mapper) : base(dbContext, mapper)
-        { }
+        private readonly IUserContextService _userContextService;
+
+        public UserService(eTouristAgencyDbContext dbContext, IMapper mapper, IUserContextService userContextService) : base(dbContext, mapper)
+        {
+            _userContextService = userContextService;
+        }
+
+        public override Task<UserResponse> GetByIdAsync(Guid id)
+        {
+            if (!_userContextService.UserHasRole(Roles.Admin))
+            {
+                if (_userContextService.GetUserId() != id) throw new UnauthorizedAccessException();
+            }
+
+            return base.GetByIdAsync(id);
+        }
+
+        public override Task<UserResponse> UpdateAsync(Guid id, UpdateUserRequest updateModel)
+        {
+            if (!_userContextService.UserHasRole(Roles.Admin))
+            {
+                if (_userContextService.GetUserId() != id) throw new UnauthorizedAccessException();
+            }
+
+            return base.UpdateAsync(id, updateModel);
+        }
 
         protected override async Task BeforeInsertAsync(AddUserRequest insertModel, User dbModel)
         {
@@ -24,11 +47,24 @@ namespace eTouristAgencyAPI.Services
             if (await _dbContext.Users.AnyAsync(x => x.Email == insertModel.Email)) throw new Exception("Entered email is already in usage.");
 
             dbModel.Id = Guid.NewGuid();
+            dbModel.IsActive = true;
 
             var passwordHasher = new PasswordHasher<User>();
             dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, insertModel.Password);
 
-            dbModel.IsActive = true;
+            if (!_userContextService.UserHasRole(Roles.Admin))
+            {
+                var role = await _dbContext.Roles.FindAsync(AppConstants.FixedRoleClientId);
+                dbModel.IsVerified = false;
+                dbModel.Roles.Add(role);
+
+                return;
+            }
+
+            if (!insertModel.RoleIds.Any())
+            {
+                throw new Exception("Role list is not provided.");
+            }
 
             foreach (var roleId in insertModel.RoleIds)
             {
@@ -36,6 +72,8 @@ namespace eTouristAgencyAPI.Services
 
                 if (role == null)
                     throw new Exception($"Provided role id {roleId} is not valid.");
+
+                if (role.Id == AppConstants.FixedRoleAdminId) dbModel.IsVerified = true;
 
                 dbModel.Roles.Add(role);
             }

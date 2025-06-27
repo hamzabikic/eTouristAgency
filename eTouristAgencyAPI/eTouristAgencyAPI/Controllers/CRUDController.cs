@@ -13,7 +13,7 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<TResponseModel>> Add([FromBody] TInsertModel insertModel)
+        public virtual async Task<ActionResult<TResponseModel>> Add([FromBody] TInsertModel insertModel)
         {
             try
             {
@@ -27,7 +27,7 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<TResponseModel>> Update(Guid id, [FromBody] TUpdateModel updateModel)
+        public virtual async Task<ActionResult<TResponseModel>> Update(Guid id, [FromBody] TUpdateModel updateModel)
         {
             try
             {

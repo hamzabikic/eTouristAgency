@@ -16,7 +16,7 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PaginatedList<TResponseModel>>> GetAll([FromQuery] TSearchModel searchModel)
+        public virtual async Task<ActionResult<PaginatedList<TResponseModel>>> GetAll([FromQuery] TSearchModel searchModel)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<TResponseModel>> GetById(Guid id)
+        public virtual async Task<ActionResult<TResponseModel>> GetById(Guid id)
         {
             try
             {
