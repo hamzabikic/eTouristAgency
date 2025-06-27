@@ -19,7 +19,7 @@ namespace eTouristAgencyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<PaginatedList<TResponseModel>> GetAllAsync(TSearchModel searchModel)
+        public virtual async Task<PaginatedList<TResponseModel>> GetAllAsync(TSearchModel searchModel)
         {
             var query = _dbContext.Set<TDbModel>().AsQueryable();
             query = await BeforeFetchAllDataAsync(query, searchModel);
@@ -47,7 +47,7 @@ namespace eTouristAgencyAPI.Services
             };
         }
 
-        public async Task<TResponseModel> GetByIdAsync(Guid id)
+        public virtual async Task<TResponseModel> GetByIdAsync(Guid id)
         {
             var query = _dbContext.Set<TDbModel>().AsQueryable();
             query = await BeforeFetchRecordAsync(query);

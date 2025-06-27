@@ -14,7 +14,7 @@ namespace eTouristAgencyAPI.Services
         {
         }
 
-        public async Task<TResponseModel> AddAsync(TInsertModel insertModel)
+        public virtual async Task<TResponseModel> AddAsync(TInsertModel insertModel)
         {
             var dbModel = _mapper.Map<TInsertModel, TDbModel>(insertModel);
 
@@ -26,7 +26,7 @@ namespace eTouristAgencyAPI.Services
             return _mapper.Map<TDbModel, TResponseModel>(dbModel);
         }
 
-        public async Task<TResponseModel> UpdateAsync(Guid id, TUpdateModel updateModel)
+        public virtual async Task<TResponseModel> UpdateAsync(Guid id, TUpdateModel updateModel)
         {
             var queryable = _dbContext.Set<TDbModel>().AsQueryable();
             queryable = await BeforeFetchRecordAsync(queryable);
