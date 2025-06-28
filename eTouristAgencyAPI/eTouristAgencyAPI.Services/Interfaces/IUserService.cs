@@ -7,5 +7,6 @@ namespace eTouristAgencyAPI.Services.Interfaces
 {
     public interface IUserService : ICRUDService<User, UserResponse, UserSearchModel, AddUserRequest, UpdateUserRequest>
     {
+        Task<bool> ExistsAsync(string username, string password);
     }
 }

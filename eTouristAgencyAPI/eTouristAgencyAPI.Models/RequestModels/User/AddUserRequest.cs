@@ -16,6 +16,6 @@
 
         public string PhoneNumber { get; set; }
 
-        public List<Guid> RoleIds { get; set; } = new List<Guid>();
+        public List<Guid> RoleIds { get; set; } = new List<Guid> { };
     }
 }

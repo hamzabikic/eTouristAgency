@@ -8,7 +8,7 @@ namespace eTouristAgencyAPI.Controllers
     [ApiController]
     public abstract class BaseController<TDbModel, TResponseModel, TSearchModel> : ControllerBase
     {
-        protected readonly IBaseService<TDbModel, TResponseModel, TSearchModel> _service;
+        private readonly IBaseService<TDbModel, TResponseModel, TSearchModel> _service;
 
         public BaseController(IBaseService<TDbModel, TResponseModel, TSearchModel> baseService)
         {

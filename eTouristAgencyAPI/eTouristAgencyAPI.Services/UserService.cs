@@ -13,38 +13,61 @@ namespace eTouristAgencyAPI.Services
 {
     public class UserService : CRUDService<User, UserResponse, UserSearchModel, AddUserRequest, UpdateUserRequest>, IUserService
     {
-        private readonly IUserContextService _userContextService;
+        private readonly bool _isAdmin;
+        private readonly Guid? _userId;
 
         public UserService(eTouristAgencyDbContext dbContext, IMapper mapper, IUserContextService userContextService) : base(dbContext, mapper)
         {
-            _userContextService = userContextService;
+            _isAdmin = userContextService.UserHasRole(Roles.Admin);
+            _userId = userContextService.GetUserId();
         }
 
         public override Task<UserResponse> GetByIdAsync(Guid id)
         {
-            if (!_userContextService.UserHasRole(Roles.Admin))
-            {
-                if (_userContextService.GetUserId() != id) throw new UnauthorizedAccessException();
-            }
+            if (!_isAdmin && _userId != id) throw new UnauthorizedAccessException();
 
             return base.GetByIdAsync(id);
         }
 
         public override Task<UserResponse> UpdateAsync(Guid id, UpdateUserRequest updateModel)
         {
-            if (!_userContextService.UserHasRole(Roles.Admin))
-            {
-                if (_userContextService.GetUserId() != id) throw new UnauthorizedAccessException();
-            }
+            if (!_isAdmin && _userId != id) throw new UnauthorizedAccessException();
 
             return base.UpdateAsync(id, updateModel);
         }
 
+        public async Task<bool> ExistsAsync(string username, string password)
+        {
+            if (string.IsNullOrEmpty(username) && string.IsNullOrEmpty(password)) throw new Exception("You did not provide any parameter.");
+
+            if (!string.IsNullOrEmpty(username) && await UsernameExistsAsync(username)) return true;
+            if (!string.IsNullOrEmpty(password) && await EmailExistsAsync(password)) return true;
+
+            return false;
+        }
+
+        private async Task<bool> UsernameExistsAsync(string username)
+        {
+            return await _dbContext.Users.AnyAsync(x => x.Username == username);
+        }
+
+        private async Task<bool> EmailExistsAsync(string email)
+        {
+            return await _dbContext.Users.AnyAsync(x => x.Email == email);
+        }
+
         protected override async Task BeforeInsertAsync(AddUserRequest insertModel, User dbModel)
         {
+            #region Request validation
             if (insertModel.Password != insertModel.ConfirmPassword) throw new Exception("Entered passwords are not equal.");
-            if (await _dbContext.Users.AnyAsync(x => x.Username == insertModel.Username)) throw new Exception("Entered username is already in usage.");
-            if (await _dbContext.Users.AnyAsync(x => x.Email == insertModel.Email)) throw new Exception("Entered email is already in usage.");
+            if (await UsernameExistsAsync(insertModel.Username)) throw new Exception("Entered username is already in usage.");
+            if (await EmailExistsAsync(insertModel.Email)) throw new Exception("Entered email is already in usage.");
+
+            if (_isAdmin && !insertModel.RoleIds.Any())
+            {
+                throw new Exception("Role list is not provided.");
+            }
+            #endregion
 
             dbModel.Id = Guid.NewGuid();
             dbModel.IsActive = true;
@@ -52,7 +75,7 @@ namespace eTouristAgencyAPI.Services
             var passwordHasher = new PasswordHasher<User>();
             dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, insertModel.Password);
 
-            if (!_userContextService.UserHasRole(Roles.Admin))
+            if (!_isAdmin)
             {
                 var role = await _dbContext.Roles.FindAsync(AppConstants.FixedRoleClientId);
                 dbModel.IsVerified = false;
@@ -61,19 +84,12 @@ namespace eTouristAgencyAPI.Services
                 return;
             }
 
-            if (!insertModel.RoleIds.Any())
-            {
-                throw new Exception("Role list is not provided.");
-            }
-
             foreach (var roleId in insertModel.RoleIds)
             {
-                var role = _dbContext.Roles.Find(roleId);
+                var role = await _dbContext.Roles.FindAsync(roleId);
 
                 if (role == null)
                     throw new Exception($"Provided role id {roleId} is not valid.");
-
-                if (role.Id == AppConstants.FixedRoleAdminId) dbModel.IsVerified = true;
 
                 dbModel.Roles.Add(role);
             }
@@ -96,6 +112,8 @@ namespace eTouristAgencyAPI.Services
         protected override async Task BeforeUpdateAsync(UpdateUserRequest updateModel, User dbModel)
         {
             if (updateModel.Password != updateModel.ConfirmPassword) throw new Exception("Entered passwords are not equal.");
+            if (await UsernameExistsAsync(updateModel.Username)) throw new Exception("Entered username is already in usage.");
+            if (await EmailExistsAsync(updateModel.Email)) throw new Exception("Entered email is already in usage.");
 
             var passwordHasher = new PasswordHasher<User>();
             dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, updateModel.Password);
