@@ -7,7 +7,7 @@ class AuthConfig {
   static String? password;
   static User? user;
 
-  static String getAuthorizationHeader(){
+  static String getAuthorizationHeader() {
     return "Basic ${base64Encode(utf8.encode("${username}:${password}"))}";
   }
 
@@ -17,7 +17,7 @@ class AuthConfig {
     user = null;
   }
 
-  static bool isAuthenticated(){
-    return user !=null;
+  static bool isAuthenticated() {
+    return user != null;
   }
 }

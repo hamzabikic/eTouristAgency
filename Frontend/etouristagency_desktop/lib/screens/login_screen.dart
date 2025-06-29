@@ -15,78 +15,112 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-String? operationErrorMessage;
-final formBuilderKey = GlobalKey<FormBuilderState>();
-late final UserProvider userProvider;
+  String? operationErrorMessage;
+  final formBuilderKey = GlobalKey<FormBuilderState>();
+  late final UserProvider userProvider;
 
-@override
+  @override
   void initState() {
     userProvider = UserProvider();
 
     super.initState();
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:Colors.white,
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(height:300, color: Color.fromRGBO(0,120,215,1), child: Center(
-           child: Image.asset("lib/assets/images/logo.png")
-          ),),
-           SizedBox(height:40),
-           Padding(
-             padding: const EdgeInsets.all(16.0),
-             child: Container(
-              decoration: BoxDecoration(borderRadius: BorderRadiusGeometry.all(Radius.circular(20)), color:Color.fromRGBO(0,120,215,0.1)),
-              width:500,
-               child: Padding(
-                 padding: const EdgeInsets.all(16.0),
-                 child: FormBuilder(key: formBuilderKey,
-                    child:Column(children: [
-                      operationErrorMessage != null ? Text(operationErrorMessage!,style: TextStyle(color: Color(0xFF8B0000)) ) : SizedBox(),
-                      FormBuilderTextField (decoration:InputDecoration(labelText: "Korisničko ime"), name: "username", validator:FormBuilderValidators.compose([
-                        FormBuilderValidators.required(errorText: "Ovo polje je obavezno")])),
-                        SizedBox(height:10),
-                        FormBuilderTextField (decoration:InputDecoration(labelText: "Lozinka"), name: "password", validator:FormBuilderValidators.compose([
-                        FormBuilderValidators.required(errorText: "Ovo polje je obavezno")])),
-                        SizedBox(height:20),
-                        ElevatedButton(onPressed: _authorize, child: Text("Prijavi se"))
-                    ],)
-                   ),
-               ),
-             ),
-           ),
-           SizedBox(height:40)
+            Container(
+              height: 300,
+              color: Color.fromRGBO(0, 120, 215, 1),
+              child: Center(child: Image.asset("lib/assets/images/logo.png")),
+            ),
+            SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadiusGeometry.all(Radius.circular(20)),
+                  color: Color.fromRGBO(0, 120, 215, 0.1),
+                ),
+                width: 500,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: FormBuilder(
+                    key: formBuilderKey,
+                    child: Column(
+                      children: [
+                        operationErrorMessage != null
+                            ? Text(
+                                operationErrorMessage!,
+                                style: TextStyle(color: Color(0xFF8B0000)),
+                              )
+                            : SizedBox(),
+                        FormBuilderTextField(
+                          decoration: InputDecoration(
+                            labelText: "Korisničko ime",
+                          ),
+                          name: "username",
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(
+                              errorText: "Ovo polje je obavezno",
+                            ),
+                          ]),
+                        ),
+                        SizedBox(height: 10),
+                        FormBuilderTextField(
+                          decoration: InputDecoration(labelText: "Lozinka"),
+                          name: "password",
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(
+                              errorText: "Ovo polje je obavezno",
+                            ),
+                          ]),
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _authorize,
+                          child: Text("Prijavi se"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  Future _authorize() async{
+  Future _authorize() async {
     var validation = formBuilderKey.currentState!.validate();
-    
-    if(!validation) return;
-    
+
+    if (!validation) return;
+
     formBuilderKey.currentState!.save();
     var formObject = formBuilderKey.currentState!.value;
 
     AuthConfig.username = formObject["username"];
     AuthConfig.password = formObject["password"];
 
-    try{
+    try {
       var userJson = await userProvider.getMe();
       AuthConfig.user = User.fromJson(userJson);
-      if(!AuthConfig.user!.roles!.any((x)=> x.name == Roles.admin)){
-          AuthConfig.clearData();
-          throw Exception("Uneseno korisničko ime ili lozinka su netačni.");
+      if (!AuthConfig.user!.roles!.any((x) => x.name == Roles.admin)) {
+        AuthConfig.clearData();
+        throw Exception("Uneseno korisničko ime ili lozinka su netačni.");
       }
 
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => MasterScreen(Placeholder())));
-    } on Exception catch (e){
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => MasterScreen(Placeholder())),
+      );
+    } on Exception catch (e) {
       operationErrorMessage = e.toString();
 
       setState(() {
