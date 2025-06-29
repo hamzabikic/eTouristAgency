@@ -1,4 +1,5 @@
 import 'package:etouristagency_mobile/config/auth_config.dart';
+import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/consts/roles.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
@@ -33,20 +34,20 @@ late final UserProvider userProvider;
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(height:300, color: Color.fromRGBO(0,120,215,1), child: Center(
+            Container(height:300, color: AppColors.primary, child: Center(
            child: Image.asset("lib/assets/images/logo.png")
           ),),
            SizedBox(height:40),
            Padding(
              padding: const EdgeInsets.all(16.0),
              child: Container(
-              decoration: BoxDecoration(borderRadius: BorderRadiusGeometry.all(Radius.circular(20)), color:Color.fromRGBO(0,120,215,0.1)),
+              decoration: BoxDecoration(borderRadius: BorderRadiusGeometry.all(Radius.circular(20)), color:AppColors.primaryTransparent),
               width:500,
                child: Padding(
                  padding: const EdgeInsets.all(16.0),
                  child: FormBuilder(key: formBuilderKey,
                     child:Column(children: [
-                      operationErrorMessage != null ? Text(operationErrorMessage!,style: TextStyle(color: Color(0xFF8B0000)) ) : SizedBox(),
+                      operationErrorMessage != null ? Text(operationErrorMessage!,style: TextStyle(color: AppColors.darkRed) ) : SizedBox(),
                       FormBuilderTextField (decoration:InputDecoration(labelText: "Korisničko ime"), name: "username", validator:FormBuilderValidators.compose([
                         FormBuilderValidators.required(errorText: "Ovo polje je obavezno")])),
                         SizedBox(height:10),
@@ -59,7 +60,7 @@ late final UserProvider userProvider;
                ),
              ),
            ),
-           InkWell(child: Text("Nemate korisnički nalog?", style: TextStyle(color: Color.fromRGBO(0,120,215,1), decoration: TextDecoration.underline)),
+           InkWell(child: Text("Nemate korisnički nalog?", style: TextStyle(color: AppColors.primary, decoration: TextDecoration.underline)),
            onTap: () {
             Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => RegistrationScreen()));
            }),

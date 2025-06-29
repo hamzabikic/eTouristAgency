@@ -36,12 +36,12 @@ namespace eTouristAgencyAPI.Services
             return base.UpdateAsync(id, updateModel);
         }
 
-        public async Task<bool> ExistsAsync(string username, string password)
+        public async Task<bool> ExistsAsync(string username, string email)
         {
-            if (string.IsNullOrEmpty(username) && string.IsNullOrEmpty(password)) throw new Exception("You did not provide any parameter.");
+            if (string.IsNullOrEmpty(username) && string.IsNullOrEmpty(email)) throw new Exception("You did not provide any parameter.");
 
             if (!string.IsNullOrEmpty(username) && await UsernameExistsAsync(username)) return true;
-            if (!string.IsNullOrEmpty(password) && await EmailExistsAsync(password)) return true;
+            if (!string.IsNullOrEmpty(email) && await EmailExistsAsync(email)) return true;
 
             return false;
         }

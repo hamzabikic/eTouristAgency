@@ -20,4 +20,15 @@ abstract class BaseProvider{
 
       return jsonDecode(response.body);
   }
+
+  Future<Map<String,dynamic>> add(Map<String, dynamic> insertModel) async {
+    Uri url = Uri.parse(controllerUrl);
+
+    var response = await http.post(url, body: jsonEncode(insertModel),headers: {"Authorization": AuthConfig.getAuthorizationHeader(),
+                                                                                "Content-Type": "application/json"});
+
+    if(response.statusCode == 200) return jsonDecode(response.body);
+
+    throw Exception ("Dogodila se greška: ${response.body}");
+  }
 }
