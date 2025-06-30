@@ -28,7 +28,7 @@ namespace eTouristAgencyAPI.Services
 
             if (countOfAllRecords == 0) return new PaginatedList<TResponseModel>()
             {
-                listOfRecords = new List<TResponseModel>(),
+                ListOfRecords = new List<TResponseModel>(),
                 TotalPages = 0
             };
 
@@ -42,7 +42,7 @@ namespace eTouristAgencyAPI.Services
 
             return new PaginatedList<TResponseModel>
             {
-                listOfRecords = listOfResponseModel,
+                ListOfRecords = listOfResponseModel,
                 TotalPages = totalPages
             };
         }

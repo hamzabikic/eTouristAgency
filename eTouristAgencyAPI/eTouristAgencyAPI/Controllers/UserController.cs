@@ -30,9 +30,9 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        public override Task<ActionResult<PaginatedList<UserResponse>>> GetAll([FromQuery] UserSearchModel searchModel)
+        public override async Task<ActionResult<PaginatedList<UserResponse>>> GetAll([FromQuery] UserSearchModel searchModel)
         {
-            return base.GetAll(searchModel);
+            return await base.GetAll(searchModel);
         }
 
         [AllowAnonymous]

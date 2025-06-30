@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:etouristagency_desktop/config/auth_config.dart';
+import 'package:etouristagency_desktop/models/paginated_list.dart';
+import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:etouristagency_desktop/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
 
-class UserProvider extends BaseProvider {
+class UserProvider extends BaseProvider<User> {
   UserProvider() : super("User");
 
   Future<Map<String, dynamic>> getMe() async {
@@ -22,5 +24,11 @@ class UserProvider extends BaseProvider {
     if (response.statusCode != 200) throw Exception(response.body);
 
     return jsonDecode(response.body);
+  }
+
+  @override
+  PaginatedList<User> fromJson(json) {
+    var listOfRecords = (json["listOfRecords"] as List).map((x)=> User.fromJson(x)).toList();
+    return PaginatedList(listOfRecords, json["totalPages"]);
   }
 }

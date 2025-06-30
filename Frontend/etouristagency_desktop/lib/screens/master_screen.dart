@@ -1,6 +1,7 @@
 import 'package:etouristagency_desktop/config/auth_config.dart';
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/screens/login_screen.dart';
+import 'package:etouristagency_desktop/screens/user/user_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class MasterScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class _MasterScreenState extends State<MasterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             color: AppColors.primary,
@@ -31,6 +34,17 @@ class _MasterScreenState extends State<MasterScreen> {
                       Icons.airplane_ticket_outlined,
                       "Ponude",
                     ),
+                  ),
+                  SizedBox(width: 20),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => UserListScreen(),
+                        ),
+                      );
+                    },
+                    child: generateNavbarItem(Icons.groups, "Korisnici"),
                   ),
                   SizedBox(width: 20),
                   getProfileDropdown(),
