@@ -1,3 +1,4 @@
+import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Color.fromRGBO(0,120,215,1)),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
       ),
       home: LoginScreen(),
     );

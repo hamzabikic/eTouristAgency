@@ -3,6 +3,8 @@ import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/consts/roles.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
+import 'package:etouristagency_mobile/screens/account_screen.dart';
+import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/screens/registration_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -90,7 +92,7 @@ late final UserProvider userProvider;
           throw Exception("Uneseno korisničko ime ili lozinka su netačni.");
       }
 
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Placeholder()));
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => AccountScreen()));
     } on Exception catch (e){
       operationErrorMessage = e.toString();
 

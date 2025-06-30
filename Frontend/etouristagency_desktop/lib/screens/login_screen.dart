@@ -1,4 +1,5 @@
 import 'package:etouristagency_desktop/config/auth_config.dart';
+import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/roles.dart';
 import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:etouristagency_desktop/providers/user_provider.dart';
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Container(
               height: 300,
-              color: Color.fromRGBO(0, 120, 215, 1),
+              color: AppColors.primary,
               child: Center(child: Image.asset("lib/assets/images/logo.png")),
             ),
             SizedBox(height: 40),
@@ -44,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadiusGeometry.all(Radius.circular(20)),
-                  color: Color.fromRGBO(0, 120, 215, 0.1),
+                  color: AppColors.primaryTransparent,
                 ),
                 width: 500,
                 child: Padding(
@@ -56,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         operationErrorMessage != null
                             ? Text(
                                 operationErrorMessage!,
-                                style: TextStyle(color: Color(0xFF8B0000)),
+                                style: TextStyle(color: AppColors.darkRed),
                               )
                             : SizedBox(),
                         FormBuilderTextField(

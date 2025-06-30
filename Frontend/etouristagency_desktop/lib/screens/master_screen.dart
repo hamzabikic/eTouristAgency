@@ -1,4 +1,5 @@
 import 'package:etouristagency_desktop/config/auth_config.dart';
+import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -17,7 +18,7 @@ class _MasterScreenState extends State<MasterScreen> {
       body: Column(
         children: [
           Container(
-            color: Color.fromRGBO(0, 120, 215, 1),
+            color: AppColors.primary,
             width: MediaQuery.of(context).size.width,
             height: 70,
             child: Center(
