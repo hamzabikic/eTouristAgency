@@ -5,7 +5,7 @@ namespace eTouristAgencyAPI.Controllers
 {
     public abstract class CRUDController<TDbModel, TResponseModel, TSearchModel, TInsertModel, TUpdateModel> : BaseController<TDbModel, TResponseModel, TSearchModel>
     {
-        protected new readonly ICRUDService<TDbModel, TResponseModel, TSearchModel, TInsertModel, TUpdateModel> _service;
+        private readonly ICRUDService<TDbModel, TResponseModel, TSearchModel, TInsertModel, TUpdateModel> _service;
 
         public CRUDController(ICRUDService<TDbModel, TResponseModel, TSearchModel, TInsertModel, TUpdateModel> crudService) : base(crudService)
         {
