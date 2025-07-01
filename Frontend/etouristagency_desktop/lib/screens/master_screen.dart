@@ -52,7 +52,7 @@ class _MasterScreenState extends State<MasterScreen> {
               ),
             ),
           ),
-          Expanded(child: SingleChildScrollView(child: widget.body)),
+          Expanded(child:widget.body),
         ],
       ),
     );

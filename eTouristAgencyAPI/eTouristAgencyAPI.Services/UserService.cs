@@ -106,6 +106,16 @@ namespace eTouristAgencyAPI.Services
                                                  (x.FirstName + "" + x.LastName).ToLower().Contains(searchModel.SearchText.ToLower()));
             }
 
+            if (searchModel.RoleId != null)
+            {
+                queryable = queryable.Where(x => x.Roles.Any(y => y.Id == searchModel.RoleId));
+            }
+
+            if (searchModel.IsActive != null)
+            {
+                queryable = queryable.Where(x => x.IsActive == searchModel.IsActive);
+            }
+
             return queryable;
         }
 
