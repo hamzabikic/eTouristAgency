@@ -26,9 +26,25 @@ class UserProvider extends BaseProvider<User> {
     return jsonDecode(response.body);
   }
 
+  Future<bool> exists(String email, String username) async {
+    var url = Uri.parse(
+      "${super.controllerUrl}/Exists?email=${email}&username=${username}",
+    );
+    var response = await http.get(
+      url,
+      headers: {
+        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "accept": "text/plain",
+      },
+    );
+
+    if (response.statusCode != 200) throw Exception(response.body);
+
+    return bool.parse(response.body);
+  }
+
   @override
-  PaginatedList<User> fromJson(json) {
-    var listOfRecords = (json["listOfRecords"] as List).map((x)=> User.fromJson(x)).toList();
-    return PaginatedList(listOfRecords, json["totalPages"]);
+  User jsonToModel(json) {
+    return User.fromJson(json);
   }
 }

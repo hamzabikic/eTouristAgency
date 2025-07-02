@@ -61,6 +61,7 @@ class _MasterScreenState extends State<MasterScreen> {
   Widget getProfileDropdown() {
     return PopupMenuButton(
       offset: Offset(0, 65),
+      tooltip: "",
       onSelected: (value) {
         if (value == "logout") {
           Navigator.of(context).pushReplacement(

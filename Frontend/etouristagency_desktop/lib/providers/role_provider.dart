@@ -6,9 +6,7 @@ class RoleProvider extends BaseProvider<Role> {
   RoleProvider() : super("Role");
 
   @override
-  PaginatedList<Role> fromJson(json) {
-    var roleList = (json["listOfRecords"] as List).map((x)=> Role.fromJson(x)).toList();
-    
-    return PaginatedList(roleList, json["totalPages"]);
+  Role jsonToModel(json) {
+    return Role.fromJson(json);
   }
 }

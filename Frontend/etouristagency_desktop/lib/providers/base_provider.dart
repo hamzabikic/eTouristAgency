@@ -31,28 +31,61 @@ abstract class BaseProvider<TResponseModel> {
     return jsonDecode(response.body);
   }
 
-  Future<PaginatedList<TResponseModel>> getAll(Map<String, dynamic> filters) async{
+  Future<TResponseModel> add(Map<String, dynamic> insertModel) async {
+    var url = Uri.parse(controllerUrl);
+    var response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": AuthConfig.getAuthorizationHeader(),
+      },
+      body: jsonEncode(insertModel),
+    );
+
+    if (response.statusCode != 200)
+      throw Exception("Dogodila se greska: ${response.body}");
+
+    return jsonToModel(jsonDecode(response.body));
+  }
+
+  Future<PaginatedList<TResponseModel>> getAll(
+    Map<String, dynamic> filters,
+  ) async {
     var queryStrings = getQueryStrings(filters);
     Uri url = Uri.parse("${controllerUrl}${queryStrings}");
 
-    var response = await http.get(url, headers: {"Content-Type": "application/json", "Authorization" : AuthConfig.getAuthorizationHeader()});
+    var response = await http.get(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": AuthConfig.getAuthorizationHeader(),
+      },
+    );
 
-    if(response.statusCode !=200) throw Exception ("Nije uspjelo dohvatanje podataka: ${response.body}");
+    if (response.statusCode != 200)
+      throw Exception("Nije uspjelo dohvatanje podataka: ${response.body}");
 
-    return fromJson(jsonDecode(response.body));
+    return jsonToPaginatedList(jsonDecode(response.body));
   }
 
-  String getQueryStrings(Map<String, dynamic> filters){
+  String getQueryStrings(Map<String, dynamic> filters) {
     String queryStrings = "?";
 
-    for(var key in filters.keys){
-         queryStrings+="${key}=${filters[key]}&";
+    for (var key in filters.keys) {
+      queryStrings += "${key}=${filters[key]}&";
     }
 
     return queryStrings;
   }
 
-  PaginatedList<TResponseModel> fromJson(dynamic json){
-      throw Exception("Method is not implemented.");
+  PaginatedList<TResponseModel> jsonToPaginatedList(dynamic json) {
+    return PaginatedList<TResponseModel>(
+      (json["listOfRecords"] as List).map((e) => jsonToModel(e)).toList(),
+      json["totalPages"],
+    );
+  }
+
+  TResponseModel jsonToModel(dynamic json) {
+    throw Exception("Method is not implemented.");
   }
 }
