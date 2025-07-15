@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:core';
 
 import 'package:etouristagency_desktop/config/auth_config.dart';
 import 'package:etouristagency_desktop/models/paginated_list.dart';
@@ -40,6 +41,26 @@ abstract class BaseProvider<TResponseModel> {
         "Authorization": AuthConfig.getAuthorizationHeader(),
       },
       body: jsonEncode(insertModel),
+    );
+
+    if (response.statusCode != 200)
+      throw Exception("Dogodila se greska: ${response.body}");
+
+    return jsonToModel(jsonDecode(response.body));
+  }
+
+  Future<TResponseModel> update(
+    String id,
+    Map<String, dynamic> updateModel,
+  ) async {
+    var url = Uri.parse("${controllerUrl}/${id}");
+    var response = await http.put(
+      url,
+      headers: {
+        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode(updateModel),
     );
 
     if (response.statusCode != 200)

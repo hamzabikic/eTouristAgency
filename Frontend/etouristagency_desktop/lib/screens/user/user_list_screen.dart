@@ -1,12 +1,15 @@
+import 'package:etouristagency_desktop/config/auth_config.dart';
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/roles.dart';
+import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/models/paginated_list.dart';
 import 'package:etouristagency_desktop/models/role/role.dart';
 import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:etouristagency_desktop/providers/role_provider.dart';
 import 'package:etouristagency_desktop/providers/user_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
-import 'package:etouristagency_desktop/screens/user/add_user_dialog.dart';
+import 'package:etouristagency_desktop/screens/user/add_update_user_dialog.dart';
+import 'package:etouristagency_desktop/screens/user/update_client_user.dialog.dart';
 import 'package:flutter/material.dart';
 
 class UserListScreen extends StatefulWidget {
@@ -26,7 +29,7 @@ class _UserListScreenState extends State<UserListScreen> {
     "page": 1,
     "roleId": "",
     "isActive": "",
-    "searchText": ""
+    "searchText": "",
   };
 
   @override
@@ -49,7 +52,11 @@ class _UserListScreenState extends State<UserListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 16.0, right:16.0, top:16.0),
+                    padding: const EdgeInsets.only(
+                      left: 16.0,
+                      right: 16.0,
+                      top: 16.0,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -68,17 +75,23 @@ class _UserListScreenState extends State<UserListScreen> {
                                     labelText: "Pretraga",
                                     helperText:
                                         "Ime i prezime | Korisničko ime | Email",
-                                    suffixIcon: Icon(Icons.search, color: AppColors.primary)
+                                    suffixIcon: Icon(
+                                      Icons.search,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                 ),
                               ),
                               SizedBox(
                                 width: 250,
                                 child: DropdownButtonFormField(
-                                  icon: Icon(Icons.person, color: AppColors.primary),
+                                  icon: Icon(
+                                    Icons.person,
+                                    color: AppColors.primary,
+                                  ),
                                   value: "",
                                   items: getDropdownItemList(),
-                                  onChanged: (value) async{
+                                  onChanged: (value) async {
                                     queryStrings["roleId"] = value;
                                     await fetchUserData();
                                   },
@@ -87,7 +100,10 @@ class _UserListScreenState extends State<UserListScreen> {
                               SizedBox(
                                 width: 250,
                                 child: DropdownButtonFormField(
-                                  icon: Icon(Icons.check_circle, color: AppColors.primary),
+                                  icon: Icon(
+                                    Icons.check_circle,
+                                    color: AppColors.primary,
+                                  ),
                                   value: "",
                                   items: [
                                     DropdownMenuItem(
@@ -112,9 +128,15 @@ class _UserListScreenState extends State<UserListScreen> {
                             ],
                           ),
                         ),
-                        ElevatedButton(onPressed: (){
-                          showDialog(context: context, builder: (context) => AddUserDialog());
-                        }, child: Text("Dodaj"))
+                        ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AddUpdateUserDialog(),
+                            );
+                          },
+                          child: Text("Dodaj"),
+                        ),
                       ],
                     ),
                   ),
@@ -141,7 +163,7 @@ class _UserListScreenState extends State<UserListScreen> {
                               DataColumn(label: Text("Uloga")),
                               DataColumn(label: Text("Aktivan")),
                               DataColumn(label: Text("Verifikovan")),
-                              DataColumn(label: SizedBox())
+                              DataColumn(label: SizedBox()),
                             ],
                             rows: paginatedList!.listOfRecords!
                                 .map(
@@ -152,7 +174,9 @@ class _UserListScreenState extends State<UserListScreen> {
                                       DataCell(Text(x.username ?? "")),
                                       DataCell(Text(x.email ?? "")),
                                       DataCell(Text(x.phoneNumber ?? "")),
-                                      DataCell(Text(x.roles?.firstOrNull?.name ?? "")),
+                                      DataCell(
+                                        Text(x.roles?.firstOrNull?.name ?? ""),
+                                      ),
                                       DataCell(
                                         Text(
                                           (x.isActive != null
@@ -167,9 +191,47 @@ class _UserListScreenState extends State<UserListScreen> {
                                               : ""),
                                         ),
                                       ),
-                                      x.roles!.any((x) => x.name == Roles.admin) ? 
-                                      DataCell(ElevatedButton(onPressed: (){}, child: Text("Uredi"))) :
-                                      DataCell(ElevatedButton(onPressed: (){}, child: Text("Promijeni lozinku")))
+                                      DataCell(
+                                        x.id != AuthConfig.user?.id
+                                            ? ElevatedButton(
+                                                onPressed: () {
+                                                  if (x.roles != null &&
+                                                      x.roles!.any(
+                                                        (x) =>
+                                                            x.name ==
+                                                            Roles.admin,
+                                                      )) {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (context) =>
+                                                          AddUpdateUserDialog(
+                                                            user: x,
+                                                          ),
+                                                    );
+                                                  }
+
+                                                  if (x.roles != null &&
+                                                      x.roles!.any(
+                                                        (x) =>
+                                                            x.name ==
+                                                            Roles.client,
+                                                      )) {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (context) =>
+                                                          UpdateClientUserDialog(
+                                                            x,
+                                                          ),
+                                                    ).then(
+                                                      (value) async =>
+                                                          await fetchUserData(),
+                                                    );
+                                                  }
+                                                },
+                                                child: Text("Uredi"),
+                                              )
+                                            : SizedBox(),
+                                      ),
                                     ],
                                   ),
                                 )
@@ -180,21 +242,10 @@ class _UserListScreenState extends State<UserListScreen> {
                     ),
                   ),
                   buildPaginationButtons(),
+                  SizedBox(height:20)
                 ],
               )
-            : SizedBox(
-                height: MediaQuery.of(context).size.height - 70,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 10),
-                      Text("Dohvatam korisnike..."),
-                    ],
-                  ),
-                ),
-              ),
+            : DialogHelper.openSpinner(context, "Dohvatam korisnike..."),
       ),
     );
   }
@@ -231,33 +282,29 @@ class _UserListScreenState extends State<UserListScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           queryStrings["page"] > 1
-              ? IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: AppColors.primary,
-                    size: 30,
-                  ),
-                  tooltip: "Prethodna",
+              ? ElevatedButton(
+                  child: Text("Prethodna"),
                   onPressed: () async {
                     queryStrings["page"] -= 1;
                     await fetchUserData();
                   },
                 )
-              : SizedBox(),
+              : SizedBox(width:110),
+          SizedBox(width: 10),
+          Text(
+            "${queryStrings["page"]} / ${paginatedList!.totalPages!}",
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          ),
+          SizedBox(width: 10),
           queryStrings["page"] < paginatedList!.totalPages!
-              ? IconButton(
-                  icon: Icon(
-                    Icons.arrow_forward,
-                    color: AppColors.primary,
-                    size: 30,
-                  ),
-                  tooltip: "Sljedeća",
+              ? ElevatedButton(
+                  child: Text("Sljedeća"),
                   onPressed: () async {
                     queryStrings["page"] += 1;
                     await fetchUserData();
                   },
                 )
-              : SizedBox(),
+              : SizedBox(width:180),
         ],
       ),
     );

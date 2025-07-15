@@ -1,6 +1,7 @@
 import 'package:etouristagency_desktop/config/auth_config.dart';
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/screens/login_screen.dart';
+import 'package:etouristagency_desktop/screens/user/account_screen.dart';
 import 'package:etouristagency_desktop/screens/user/user_list_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -52,7 +53,7 @@ class _MasterScreenState extends State<MasterScreen> {
               ),
             ),
           ),
-          Expanded(child:widget.body),
+          Expanded(child: widget.body),
         ],
       ),
     );
@@ -66,6 +67,12 @@ class _MasterScreenState extends State<MasterScreen> {
         if (value == "logout") {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
+        }
+
+        if (value == "profil") {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => AccountScreen()),
           );
         }
       },

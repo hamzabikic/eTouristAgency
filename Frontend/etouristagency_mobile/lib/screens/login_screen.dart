@@ -4,6 +4,7 @@ import 'package:etouristagency_mobile/consts/roles.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/account_screen.dart';
+import 'package:etouristagency_mobile/screens/forgot_password_screen.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/screens/registration_screen.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,6 @@ late final UserProvider userProvider;
 @override
   void initState() {
     userProvider = UserProvider();
-
     super.initState();
   }
 
@@ -53,7 +53,7 @@ late final UserProvider userProvider;
                       FormBuilderTextField (decoration:InputDecoration(labelText: "Korisničko ime"), name: "username", validator:FormBuilderValidators.compose([
                         FormBuilderValidators.required(errorText: "Ovo polje je obavezno")])),
                         SizedBox(height:10),
-                        FormBuilderTextField (decoration:InputDecoration(labelText: "Lozinka"), name: "password", validator:FormBuilderValidators.compose([
+                        FormBuilderTextField (obscureText:true, decoration:InputDecoration(labelText: "Lozinka"), name: "password", validator:FormBuilderValidators.compose([
                         FormBuilderValidators.required(errorText: "Ovo polje je obavezno")])),
                         SizedBox(height:20),
                         ElevatedButton(onPressed: _authorize, child: Text("Prijavi se"))
@@ -65,6 +65,10 @@ late final UserProvider userProvider;
            InkWell(child: Text("Nemate korisnički nalog?", style: TextStyle(color: AppColors.primary, decoration: TextDecoration.underline)),
            onTap: () {
             Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => RegistrationScreen()));
+           }),
+           InkWell(child: Text("Zaboravili ste lozinku?", style: TextStyle(color: AppColors.primary, decoration: TextDecoration.underline)),
+           onTap: () {
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => ForgotPasswordScreen()));
            }),
            SizedBox(height:40)
           ],

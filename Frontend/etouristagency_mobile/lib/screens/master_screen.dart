@@ -17,12 +17,12 @@ class _MasterScreenState extends State<MasterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           buildScreenTitle(),
-          SizedBox(
-            height: MediaQuery.of(context).size.height - 140,
-            child: SingleChildScrollView(child: widget._widget),
-          ),
+          Expanded(child: widget._widget),
           buildMobileNavbar(),
         ],
       ),
@@ -82,10 +82,20 @@ class _MasterScreenState extends State<MasterScreen> {
               child: Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [Padding(
-                    padding: const EdgeInsets.only(top:10),
-                    child: Text(widget._screenTitle, style: TextStyle(color:Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-                  ), SizedBox(width: 70)],
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        widget._screenTitle,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 70),
+                  ],
                 ),
               ),
             ),
