@@ -4,6 +4,8 @@ using eTouristAgencyAPI.Models.SearchModels;
 using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
+using eTouristAgencyAPI.Services.Enums;
+using eTouristAgencyAPI.Services.Helpers;
 using eTouristAgencyAPI.Services.Interfaces;
 using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
@@ -13,11 +15,18 @@ namespace eTouristAgencyAPI.Services
 {
     public class UserService : CRUDService<User, UserResponse, UserSearchModel, AddUserRequest, UpdateUserRequest>, IUserService
     {
+        private readonly IVerificationCodeService _verificationCodeService;
+
         private readonly bool _isAdmin;
         private readonly Guid? _userId;
 
-        public UserService(eTouristAgencyDbContext dbContext, IMapper mapper, IUserContextService userContextService) : base(dbContext, mapper)
+        public UserService(eTouristAgencyDbContext dbContext,
+                           IMapper mapper,
+                           IUserContextService userContextService,
+                           IVerificationCodeService verificationCodeService) : base(dbContext, mapper)
         {
+            _verificationCodeService = verificationCodeService;
+
             _isAdmin = userContextService.UserHasRole(Roles.Admin);
             _userId = userContextService.GetUserId();
         }
@@ -44,6 +53,65 @@ namespace eTouristAgencyAPI.Services
             if (!string.IsNullOrEmpty(email) && await EmailExistsAsync(email)) return true;
 
             return false;
+        }
+
+        public async Task ResetPasswordAsync(Guid userId)
+        {
+            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null) throw new Exception("User with provided id is not found.");
+            if (!user.Roles.Any(x => x.Id == AppConstants.FixedRoleClientId)) throw new Exception("Reset password is only allowed for client users.");
+
+            var passwordHasher = new PasswordHasher<User>();
+            user.PasswordHash = passwordHasher.HashPassword(user, PasswordGenerator.GeneratePassword());
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task ResetPasswordAsync(ResetPasswordRequest request)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email && x.IsActive);
+
+            if (user == null) throw new Exception("User with provided email is not found.");
+
+            await _verificationCodeService.DeactivateVerificationCodeAsync(request.VerificationKey, user.Id, EmailVerificationType.ResetPassword);
+
+            var passwordHasher = new PasswordHasher<User>();
+            user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task VerifyAsync(Guid userId)
+        {
+            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null) throw new Exception("User with provided id is not found.");
+            if (!user.Roles.Any(x => x.Id == AppConstants.FixedRoleClientId)) throw new Exception("Verification is only allowed for client users.");
+
+            user.IsVerified = true;
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task VerifyAsync(string verificationKey)
+        {
+            await _verificationCodeService.DeactivateVerificationCodeAsync(verificationKey, _userId ?? Guid.Empty, EmailVerificationType.EmailVerification);
+
+            var user = await _dbContext.Users.FindAsync(_userId);
+            user.IsVerified = true;
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task DeactivateAsync(Guid userId)
+        {
+            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null) throw new Exception("User with provided id is not found.");
+            if (_isAdmin && !user.Roles.Any(x => x.Id == AppConstants.FixedRoleAdminId)) throw new Exception("Deactivation is only allowed for admin users.");
+            if (!_isAdmin && userId != _userId) throw new Exception("This method is only allowed for your account.");
+
+            user.IsActive = false;
+            await _dbContext.SaveChangesAsync();
         }
 
         private async Task<bool> UsernameExistsAsync(string username)
@@ -93,11 +161,18 @@ namespace eTouristAgencyAPI.Services
 
                 dbModel.Roles.Add(role);
             }
+
+            if (dbModel.Roles.Any(x => x.Name == Roles.Admin))
+            {
+                dbModel.IsVerified = true;
+            }
         }
 
         protected override async Task<IQueryable<User>> BeforeFetchAllDataAsync(IQueryable<User> queryable, UserSearchModel searchModel)
         {
             queryable = queryable.Include(x => x.Roles);
+
+            queryable = queryable.Where(x => x.IsActive);
 
             if (!string.IsNullOrEmpty(searchModel.SearchText))
             {
@@ -106,14 +181,32 @@ namespace eTouristAgencyAPI.Services
                                                  (x.FirstName + "" + x.LastName).ToLower().Contains(searchModel.SearchText.ToLower()));
             }
 
+            if (searchModel.RoleId != null)
+            {
+                queryable = queryable.Where(x => x.Roles.Any(y => y.Id == searchModel.RoleId));
+            }
+
+            if (searchModel.IsActive != null)
+            {
+                queryable = queryable.Where(x => x.IsActive == searchModel.IsActive); ;
+            }
+
+            queryable = queryable.OrderByDescending(x => x.CreatedOn);
+
             return queryable;
         }
 
         protected override async Task BeforeUpdateAsync(UpdateUserRequest updateModel, User dbModel)
         {
+            if (_userId != dbModel.Id && !dbModel.Roles.Any(x => x.Id == AppConstants.FixedRoleAdminId)) throw new Exception("Only users with the Admin role can be updated.");
             if (updateModel.Password != updateModel.ConfirmPassword) throw new Exception("Entered passwords are not equal.");
-            if (await UsernameExistsAsync(updateModel.Username)) throw new Exception("Entered username is already in usage.");
-            if (await EmailExistsAsync(updateModel.Email)) throw new Exception("Entered email is already in usage.");
+            if (updateModel.Username != dbModel.Username && await UsernameExistsAsync(updateModel.Username)) throw new Exception("Entered username is already in usage.");
+            if (updateModel.Email != dbModel.Email)
+            {
+                if (await EmailExistsAsync(updateModel.Email)) throw new Exception("Entered email is already in usage.");
+
+                if (dbModel.Roles.Any(x => x.Name == Roles.Client)) dbModel.IsVerified = false;
+            }
 
             var passwordHasher = new PasswordHasher<User>();
             dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, updateModel.Password);

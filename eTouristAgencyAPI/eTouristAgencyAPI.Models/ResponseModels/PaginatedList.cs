@@ -2,7 +2,7 @@
 {
     public class PaginatedList<TResponseModel>
     {
-        public List<TResponseModel> listOfRecords { get; set; }
+        public List<TResponseModel> ListOfRecords { get; set; }
 
         public int TotalPages { get; set; }
     }

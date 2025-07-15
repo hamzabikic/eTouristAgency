@@ -43,4 +43,20 @@ class User {
       roles,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "username": username,
+      "firstName": firstName,
+      "lastName": lastName,
+      "email": email,
+      "phoneNumber": phoneNumber,
+      "createdOn": createdOn,
+      "modifiedOn": modifiedOn,
+      "isActive": isActive,
+      "isVerified": isVerified,
+      "roles": roles,
+    };
+  }
 }

@@ -14,6 +14,7 @@ builder.Services.AddDbContext<eTouristAgencyDbContext>(x => x.UseSqlServer(build
 builder.Services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", options => { });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMapster();
+builder.Services.AddConfiguration(builder.Configuration);
 builder.Services.AddServices();
 
 builder.Services.AddControllers(options =>
