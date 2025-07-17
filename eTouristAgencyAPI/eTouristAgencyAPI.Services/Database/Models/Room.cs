@@ -19,13 +19,19 @@ public partial class Room
 
     public Guid ModifiedBy { get; set; }
 
+    public decimal PricePerPerson { get; set; }
+
+    public decimal ChildDiscount { get; set; }
+
+    public int Quantity { get; set; }
+
     public virtual User CreatedByNavigation { get; set; } = null!;
 
     public virtual User ModifiedByNavigation { get; set; } = null!;
 
     public virtual Offer Offer { get; set; } = null!;
 
-    public virtual ICollection<RoomOffer> RoomOffers { get; set; } = new List<RoomOffer>();
+    public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 
     public virtual RoomType RoomType { get; set; } = null!;
 }

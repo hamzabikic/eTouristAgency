@@ -18,6 +18,9 @@ namespace eTouristAgencyAPI.Services.IoC
             services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<ICityService, CityService>();
             services.AddTransient<IHotelService, HotelService>();
+            services.AddTransient<IOfferDiscountService, OfferDiscountService>();
+            services.AddTransient<IRoomService, RoomService>();
+            services.AddTransient<IOfferService, OfferService>();
 
             return services;
         }

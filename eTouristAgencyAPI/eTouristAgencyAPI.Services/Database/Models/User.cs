@@ -83,10 +83,6 @@ public partial class User
 
     public virtual ICollection<Room> RoomModifiedByNavigations { get; set; } = new List<Room>();
 
-    public virtual ICollection<RoomOffer> RoomOfferCreatedByNavigations { get; set; } = new List<RoomOffer>();
-
-    public virtual ICollection<RoomOffer> RoomOfferModifiedByNavigations { get; set; } = new List<RoomOffer>();
-
     public virtual ICollection<RoomType> RoomTypeCreatedByNavigations { get; set; } = new List<RoomType>();
 
     public virtual ICollection<RoomType> RoomTypeModifiedByNavigations { get; set; } = new List<RoomType>();

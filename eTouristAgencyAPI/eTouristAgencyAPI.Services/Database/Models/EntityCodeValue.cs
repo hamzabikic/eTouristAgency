@@ -27,7 +27,11 @@ public partial class EntityCodeValue
 
     public virtual User? ModifiedByNavigation { get; set; }
 
-    public virtual ICollection<Offer> Offers { get; set; } = new List<Offer>();
+    public virtual ICollection<Offer> OfferBoardTypes { get; set; } = new List<Offer>();
+
+    public virtual ICollection<OfferDiscount> OfferDiscounts { get; set; } = new List<OfferDiscount>();
+
+    public virtual ICollection<Offer> OfferOfferStatuses { get; set; } = new List<Offer>();
 
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 }

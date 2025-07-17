@@ -27,11 +27,11 @@ public partial class Reservation
 
     public Guid ReservationStatusId { get; set; }
 
-    public Guid RoomOfferId { get; set; }
-
     public Guid ModifiedBy { get; set; }
 
     public Guid CreatedBy { get; set; }
+
+    public Guid RoomId { get; set; }
 
     public virtual User CreatedByNavigation { get; set; } = null!;
 
@@ -45,7 +45,7 @@ public partial class Reservation
 
     public virtual EntityCodeValue ReservationStatus { get; set; } = null!;
 
-    public virtual RoomOffer RoomOffer { get; set; } = null!;
+    public virtual Room Room { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;
 }

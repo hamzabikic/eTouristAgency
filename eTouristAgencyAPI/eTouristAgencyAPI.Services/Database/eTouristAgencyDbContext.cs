@@ -48,8 +48,6 @@ public partial class eTouristAgencyDbContext : DbContext
 
     public virtual DbSet<Room> Rooms { get; set; }
 
-    public virtual DbSet<RoomOffer> RoomOffers { get; set; }
-
     public virtual DbSet<RoomType> RoomTypes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -225,6 +223,10 @@ public partial class eTouristAgencyDbContext : DbContext
             entity.Property(e => e.DeparturePlace).HasMaxLength(255);
             entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
 
+            entity.HasOne(d => d.BoardType).WithMany(p => p.OfferBoardTypes)
+                .HasForeignKey(d => d.BoardTypeId)
+                .HasConstraintName("FK__Offer__BoardType__4D5F7D71");
+
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.OfferCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -240,7 +242,7 @@ public partial class eTouristAgencyDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKOffer644415");
 
-            entity.HasOne(d => d.OfferStatus).WithMany(p => p.Offers)
+            entity.HasOne(d => d.OfferStatus).WithMany(p => p.OfferOfferStatuses)
                 .HasForeignKey(d => d.OfferStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKOffer728835");
@@ -261,6 +263,11 @@ public partial class eTouristAgencyDbContext : DbContext
                 .HasForeignKey(d => d.CreatedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKOfferDisco532645");
+
+            entity.HasOne(d => d.DiscountType).WithMany(p => p.OfferDiscounts)
+                .HasForeignKey(d => d.DiscountTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FKOfferDisco780000");
 
             entity.HasOne(d => d.ModifiedByNavigation).WithMany(p => p.OfferDiscountModifiedByNavigations)
                 .HasForeignKey(d => d.ModifiedBy)
@@ -359,10 +366,10 @@ public partial class eTouristAgencyDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKReservatio127771");
 
-            entity.HasOne(d => d.RoomOffer).WithMany(p => p.Reservations)
-                .HasForeignKey(d => d.RoomOfferId)
+            entity.HasOne(d => d.Room).WithMany(p => p.Reservations)
+                .HasForeignKey(d => d.RoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FKReservatio505422");
+                .HasConstraintName("FK__Reservati__RoomI__3B40CD36");
 
             entity.HasOne(d => d.User).WithMany(p => p.ReservationUsers)
                 .HasForeignKey(d => d.UserId)
@@ -441,8 +448,10 @@ public partial class eTouristAgencyDbContext : DbContext
             entity.ToTable("Room");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.ChildDiscount).HasColumnType("decimal(15, 2)");
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.PricePerPerson).HasColumnType("decimal(15, 2)");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.RoomCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
@@ -463,34 +472,6 @@ public partial class eTouristAgencyDbContext : DbContext
                 .HasForeignKey(d => d.RoomTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKRoom188940");
-        });
-
-        modelBuilder.Entity<RoomOffer>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__RoomOffe__3214EC0750842904");
-
-            entity.ToTable("RoomOffer");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.ChildDiscount).HasColumnType("decimal(15, 2)");
-            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.PricePerPerson).HasColumnType("decimal(15, 2)");
-
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.RoomOfferCreatedByNavigations)
-                .HasForeignKey(d => d.CreatedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FKRoomOffer602746");
-
-            entity.HasOne(d => d.ModifiedByNavigation).WithMany(p => p.RoomOfferModifiedByNavigations)
-                .HasForeignKey(d => d.ModifiedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FKRoomOffer364365");
-
-            entity.HasOne(d => d.OfferRoom).WithMany(p => p.RoomOffers)
-                .HasForeignKey(d => d.OfferRoomId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FKRoomOffer670665");
         });
 
         modelBuilder.Entity<RoomType>(entity =>

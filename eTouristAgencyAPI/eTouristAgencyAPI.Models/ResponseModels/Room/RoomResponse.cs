@@ -1,0 +1,29 @@
+﻿using eTouristAgencyAPI.Models.ResponseModels.RoomType;
+
+namespace eTouristAgencyAPI.Models.ResponseModels.Room
+{
+    public class RoomResponse
+    {
+        public Guid Id { get; set; }
+
+        public DateTime CreatedOn { get; set; }
+
+        public DateTime ModifiedOn { get; set; }
+
+        public Guid RoomTypeId { get; set; }
+
+        public Guid OfferId { get; set; }
+
+        public Guid CreatedBy { get; set; }
+
+        public Guid ModifiedBy { get; set; }
+
+        public decimal PricePerPerson { get; set; }
+
+        public decimal ChildDiscount { get; set; }
+
+        public int Quantity { get; set; }
+
+        public RoomTypeResponse RoomType { get; set; }
+    }
+}

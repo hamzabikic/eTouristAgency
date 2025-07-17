@@ -27,6 +27,8 @@ public partial class OfferDiscount
 
     public virtual User CreatedByNavigation { get; set; } = null!;
 
+    public virtual EntityCodeValue DiscountType { get; set; } = null!;
+
     public virtual User ModifiedByNavigation { get; set; } = null!;
 
     public virtual Offer Offer { get; set; } = null!;

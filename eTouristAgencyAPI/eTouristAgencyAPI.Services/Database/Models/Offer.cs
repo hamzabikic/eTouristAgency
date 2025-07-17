@@ -37,6 +37,10 @@ public partial class Offer
 
     public Guid ModifiedBy { get; set; }
 
+    public Guid? BoardTypeId { get; set; }
+
+    public virtual EntityCodeValue? BoardType { get; set; }
+
     public virtual User CreatedByNavigation { get; set; } = null!;
 
     public virtual Hotel Hotel { get; set; } = null!;
