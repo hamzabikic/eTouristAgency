@@ -29,8 +29,8 @@ namespace eTouristAgencyAPI.Models.RequestModels.Offer
 
         public byte[]? OfferDocumentBytes { get; set; }
 
-        public List<AddRoomRequest> Rooms { get; set; }
+        public List<AddRoomRequest> RoomList { get; set; }
 
-        public List<AddOfferDiscountRequest>? OfferDiscounts { get; set; }
+        public List<AddOfferDiscountRequest>? DiscountList { get; set; }
     }
 }

@@ -215,13 +215,14 @@ public partial class eTouristAgencyDbContext : DbContext
 
             entity.ToTable("Offer");
 
-            entity.HasIndex(e => e.OfferNo, "UQ__Offer__8EBC0FBB66409E29").IsUnique();
+            entity.HasIndex(e => e.OfferNo, "UQ__Offer__8EBC0FBBA8F908E0").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Carriers).HasMaxLength(255);
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.DeparturePlace).HasMaxLength(255);
             entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.OfferNo).ValueGeneratedOnAdd();
 
             entity.HasOne(d => d.BoardType).WithMany(p => p.OfferBoardTypes)
                 .HasForeignKey(d => d.BoardTypeId)
@@ -452,6 +453,7 @@ public partial class eTouristAgencyDbContext : DbContext
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.PricePerPerson).HasColumnType("decimal(15, 2)");
+            entity.Property(e => e.ShortDescription).HasMaxLength(255);
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.RoomCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
@@ -483,6 +485,7 @@ public partial class eTouristAgencyDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Name).HasMaxLength(100);
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.RoomTypeCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)

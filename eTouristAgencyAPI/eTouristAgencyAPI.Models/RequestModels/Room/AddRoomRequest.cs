@@ -7,5 +7,9 @@
         public decimal PricePerPerson { get; set; }
 
         public decimal ChildDiscount { get; set; }
+
+        public string? ShortDescription { get; set; }
+
+        public int Quantity { get; set; }
     }
 }

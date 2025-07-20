@@ -17,6 +17,8 @@ public partial class RoomType
 
     public Guid? ModifiedBy { get; set; }
 
+    public string Name { get; set; } = null!;
+
     public virtual User? CreatedByNavigation { get; set; }
 
     public virtual User? ModifiedByNavigation { get; set; }

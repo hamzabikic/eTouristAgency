@@ -25,8 +25,6 @@ public partial class Offer
 
     public DateTime ModifiedOn { get; set; }
 
-    public long OfferNo { get; set; }
-
     public string DeparturePlace { get; set; } = null!;
 
     public Guid HotelId { get; set; }
@@ -38,6 +36,8 @@ public partial class Offer
     public Guid ModifiedBy { get; set; }
 
     public Guid? BoardTypeId { get; set; }
+
+    public long OfferNo { get; set; }
 
     public virtual EntityCodeValue? BoardType { get; set; }
 

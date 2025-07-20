@@ -23,10 +23,6 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Offer
 
         public DateTime LastPaymentDeadline { get; set; }
 
-        public DateTime CreatedOn { get; set; }
-
-        public DateTime ModifiedOn { get; set; }
-
         public long OfferNo { get; set; }
 
         public string DeparturePlace { get; set; }
@@ -34,10 +30,6 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Offer
         public Guid HotelId { get; set; }
 
         public Guid OfferStatusId { get; set; }
-
-        public Guid CreatedBy { get; set; }
-
-        public Guid ModifiedBy { get; set; }
 
         public Guid? BoardTypeId { get; set; }
 

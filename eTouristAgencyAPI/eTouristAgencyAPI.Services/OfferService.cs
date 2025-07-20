@@ -1,7 +1,6 @@
 ﻿using eTouristAgencyAPI.Models.RequestModels.Offer;
 using eTouristAgencyAPI.Models.ResponseModels.Offer;
 using eTouristAgencyAPI.Models.SearchModels;
-using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
@@ -12,65 +11,103 @@ namespace eTouristAgencyAPI.Services
 {
     public class OfferService : CRUDService<Offer, OfferResponse, OfferSearchModel, AddOfferRequest, UpdateOfferRequest>, IOfferService
     {
-        private readonly IRoomService _roomService;
-        private readonly IOfferDiscountService _offerDiscountService;
-        private readonly Guid? _userId;
+        private readonly BaseOfferStatusService _baseOfferStatusService;
 
-        public OfferService(eTouristAgencyDbContext dbContext,
-                            IMapper mapper,
-                            IUserContextService userContextService,
-                            IRoomService roomService,
-                            IOfferDiscountService offerDiscountService) : base(dbContext, mapper)
+        public OfferService(eTouristAgencyDbContext dbContext, IMapper mapper, BaseOfferStatusService baseOfferStatusService) : base(dbContext, mapper)
         {
-            _roomService = roomService;
-            _offerDiscountService = offerDiscountService;
-            _userId = userContextService.GetUserId();
+            _baseOfferStatusService = baseOfferStatusService;
         }
 
         public override async Task<OfferResponse> AddAsync(AddOfferRequest insertModel)
         {
-            var offerResponse = await base.AddAsync(insertModel);
+            var service = await _baseOfferStatusService.GetServiceAsync();
 
-            offerResponse.Rooms = await _roomService.AddByOfferIdAsync(offerResponse.Id, insertModel.Rooms);
-
-            if (insertModel.OfferDiscounts != null && insertModel.OfferDiscounts.Any())
-            {
-                offerResponse.OfferDiscounts = await _offerDiscountService.AddByOfferIdAsync(offerResponse.Id, insertModel.OfferDiscounts);
-            }
-
-            return offerResponse;
-        }
-
-        protected override async Task BeforeInsertAsync(AddOfferRequest insertModel, Offer dbModel)
-        {
-            dbModel.Id = Guid.NewGuid();
-            dbModel.CreatedBy = _userId ?? Guid.Empty;
-            dbModel.ModifiedBy = _userId ?? Guid.Empty;
-            dbModel.OfferStatusId = AppConstants.FixedOfferStatusDraft;
+            return await service.AddAsync(insertModel);
         }
 
         public override async Task<OfferResponse> UpdateAsync(Guid id, UpdateOfferRequest updateModel)
         {
-            var offerResponse = await base.UpdateAsync(id, updateModel);
+            var offer = await _dbContext.Offers.FindAsync(id);
 
-            if (offerResponse.OfferStatusId == AppConstants.FixedOfferStatusDraft)
-            {
-                offerResponse.Rooms = await _roomService.UpdateAsync(updateModel.Rooms);
-                offerResponse.OfferDiscounts = await _offerDiscountService.UpdateAsync(updateModel.OfferDiscounts);
-            }
+            if (offer == null) throw new Exception("Offer with provided id is not found.");
 
-            return offerResponse;
+            var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
+
+            return await service.UpdateAsync(id, updateModel);
         }
 
-        protected override async Task BeforeUpdateAsync(UpdateOfferRequest updateModel, Offer dbModel)
+        public async Task ActivateAsync(Guid id)
         {
-            dbModel.ModifiedOn = DateTime.Now;
-            dbModel.ModifiedBy = _userId ?? Guid.Empty;
+            var offer = await _dbContext.Offers.FindAsync(id);
+
+            if (offer == null) throw new Exception("Offer with provided id is not found.");
+
+            var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
+
+            await service.ActivateAsync(id);
+        }
+
+        public async Task DeactivateAsync(Guid id)
+        {
+            var offer = await _dbContext.Offers.FindAsync(id);
+
+            if (offer == null) throw new Exception("Offer with provided id is not found.");
+
+            var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
+
+            await service.DeactivateAsync(id);
         }
 
         protected override async Task<IQueryable<Offer>> BeforeFetchRecordAsync(IQueryable<Offer> queryable)
         {
             queryable = queryable.Include(x => x.Rooms).Include(x => x.OfferDiscounts);
+
+            return queryable;
+        }
+
+        protected override async Task<IQueryable<Offer>> BeforeFetchAllDataAsync(IQueryable<Offer> queryable, OfferSearchModel searchModel)
+        {
+            queryable = queryable.Include(x => x.Hotel.City.Country).Include(x => x.Rooms).ThenInclude(x => x.RoomType).Include(x => x.BoardType).Include(x => x.OfferStatus);
+
+            if (searchModel.OfferNo != null)
+            {
+                queryable = queryable.Where(x => x.OfferNo.ToString() == searchModel.OfferNo);
+            }
+
+            if (searchModel.BoardTypeId != null)
+            {
+                queryable = queryable.Where(x => x.BoardTypeId == searchModel.BoardTypeId);
+            }
+
+            if (searchModel.CountryId != null)
+            {
+                queryable = queryable.Where(x => x.Hotel.City.CountryId == searchModel.CountryId);
+            }
+
+            if (searchModel.OfferPriceFrom != null)
+            {
+                queryable = queryable.Where(x => x.Rooms.Min(x => x.PricePerPerson) >= searchModel.OfferPriceFrom);
+            }
+
+            if (searchModel.OfferPriceTo != null)
+            {
+                queryable = queryable.Where(x => x.Rooms.Min(x => x.PricePerPerson) <= searchModel.OfferPriceTo);
+            }
+
+            if (searchModel.OfferDateFrom != null)
+            {
+                queryable = queryable.Where(x => x.TripStartDate >= searchModel.OfferDateFrom);
+            }
+
+            if (searchModel.OfferDateTo != null)
+            {
+                queryable = queryable.Where(x => x.TripEndDate <= searchModel.OfferDateTo);
+            }
+
+            if (searchModel.OfferStatusId != null)
+            {
+                queryable = queryable.Where(x => x.OfferStatusId == searchModel.OfferStatusId);
+            }
 
             return queryable;
         }

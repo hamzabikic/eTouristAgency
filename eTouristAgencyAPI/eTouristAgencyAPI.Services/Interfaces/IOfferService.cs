@@ -7,5 +7,7 @@ namespace eTouristAgencyAPI.Services.Interfaces
 {
     public interface IOfferService : ICRUDService<Offer, OfferResponse, OfferSearchModel, AddOfferRequest, UpdateOfferRequest>
     {
+        Task ActivateAsync(Guid id);
+        Task DeactivateAsync(Guid id);
     }
 }

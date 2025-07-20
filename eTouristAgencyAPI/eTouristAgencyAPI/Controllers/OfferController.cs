@@ -11,8 +11,11 @@ namespace eTouristAgencyAPI.Controllers
 {
     public class OfferController : CRUDController<Offer, OfferResponse, OfferSearchModel, AddOfferRequest, UpdateOfferRequest>
     {
+        private readonly IOfferService _offerService;
+
         public OfferController(IOfferService offerService) : base(offerService)
         {
+            _offerService = offerService;
         }
 
         [Authorize(Roles = Roles.Admin)]
@@ -25,6 +28,36 @@ namespace eTouristAgencyAPI.Controllers
         public override Task<ActionResult<OfferResponse>> Update(Guid id, [FromBody] UpdateOfferRequest updateModel)
         {
             return base.Update(id, updateModel);
+        }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPatch("{id}/activate")]
+        public async Task<ActionResult> Activate(Guid id)
+        {
+            try
+            {
+                await _offerService.ActivateAsync(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPatch("{id}/deactivate")]
+        public async Task<ActionResult> Deactivate(Guid id)
+        {
+            try
+            {
+                await _offerService.DeactivateAsync(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

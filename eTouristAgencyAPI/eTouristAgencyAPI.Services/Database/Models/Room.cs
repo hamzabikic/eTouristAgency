@@ -25,6 +25,8 @@ public partial class Room
 
     public int Quantity { get; set; }
 
+    public string? ShortDescription { get; set; }
+
     public virtual User CreatedByNavigation { get; set; } = null!;
 
     public virtual User ModifiedByNavigation { get; set; } = null!;

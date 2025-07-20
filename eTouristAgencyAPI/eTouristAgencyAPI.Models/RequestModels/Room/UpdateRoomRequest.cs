@@ -11,5 +11,7 @@
         public decimal ChildDiscount { get; set; }
         
         public int Quantity { get; set; }
+
+        public string? ShortDescription { get; set; }
     }
 }
