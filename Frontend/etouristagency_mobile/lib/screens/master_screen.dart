@@ -1,5 +1,7 @@
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/screens/account_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/last_minute_offer_list_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class MasterScreen extends StatefulWidget {
@@ -34,22 +36,35 @@ class _MasterScreenState extends State<MasterScreen> {
       height: 70,
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(color: AppColors.primary),
-      child: Center(
-        child: SizedBox(
-          width: 70,
-          child: Row(
-            children: [
-              InkWell(
-                child: buildNavbarItem(Icons.person, "Moj nalog"),
-                onTap: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => AccountScreen()),
-                  );
-                },
-              ),
-            ],
+      child: Row(
+        spacing: 20,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          InkWell(
+            child: buildNavbarItem(Icons.hourglass_bottom, "Last Minute"),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => LastMinuteOfferListScreen()),
+              );
+            },
           ),
-        ),
+          InkWell(
+            child: buildNavbarItem(Icons.airplanemode_active, "Ponude"),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => OfferListScreen()),
+              );
+            },
+          ),
+          InkWell(
+            child: buildNavbarItem(Icons.person, "Moj nalog"),
+            onTap: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => AccountScreen()),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

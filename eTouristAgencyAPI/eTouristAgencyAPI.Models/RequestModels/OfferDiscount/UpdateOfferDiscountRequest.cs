@@ -2,7 +2,9 @@
 {
     public class UpdateOfferDiscountRequest
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
+
+        public Guid DiscountTypeId { get; set; }
 
         public decimal Discount { get; set; }
 

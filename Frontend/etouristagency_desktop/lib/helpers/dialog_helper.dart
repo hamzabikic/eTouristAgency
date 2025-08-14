@@ -2,17 +2,29 @@ import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class DialogHelper {
-  static void openSuccessDialog(
+  static void openDialog(
     BuildContext context,
     String text,
-    VoidCallback onPressedMethod,
-  ) {
+    VoidCallback onPressedMethod, {
+    DialogType type = DialogType.success,
+  }) {
+    Icon dialogIcon;
+
+    switch (type) {
+      case DialogType.success:
+        dialogIcon = Icon(Icons.check_circle, color: AppColors.primary);
+        break;
+      case DialogType.error:
+        dialogIcon = Icon(Icons.error, color: AppColors.darkRed);
+        break;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: Text(text, style: TextStyle(fontSize: 18)),
-        icon: Icon(Icons.check_circle, color: AppColors.primary),
+        icon: dialogIcon,
         actions: [
           Center(
             child: ElevatedButton(
@@ -25,24 +37,36 @@ class DialogHelper {
     );
   }
 
-  static void openConfirmationDialog(BuildContext builderContext,
+  static void openConfirmationDialog(
+    BuildContext builderContext,
     String title,
     String text,
-    VoidCallback onPressedMethod){
-      showDialog(context: builderContext, builder: (context)=> AlertDialog(title : Text(title),
-      content: IntrinsicHeight(child: Center(child: Text(text))),
-      icon: Icon(Icons.warning),
-      actions: [Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-        ElevatedButton(onPressed: onPressedMethod, child: Text("DA")),
-        SizedBox(width:20),
-        ElevatedButton(onPressed: (){
-          Navigator.of(context).pop();
-        }, child: Text("NE"))
-      ],)],
-      ));
-    }
+    VoidCallback onPressedMethod,
+  ) {
+    showDialog(
+      context: builderContext,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: IntrinsicHeight(child: Center(child: Text(text))),
+        icon: Icon(Icons.warning),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(onPressed: onPressedMethod, child: Text("DA")),
+              SizedBox(width: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("NE"),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   static Widget openSpinner(BuildContext context, String text) {
     return SizedBox(
@@ -60,3 +84,5 @@ class DialogHelper {
     );
   }
 }
+
+enum DialogType { success, error }

@@ -2,7 +2,7 @@
 {
     public class UpdateRoomRequest
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         public Guid RoomTypeId { get; set; }
 

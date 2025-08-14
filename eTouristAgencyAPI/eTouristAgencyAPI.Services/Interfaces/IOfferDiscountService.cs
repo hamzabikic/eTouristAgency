@@ -8,6 +8,6 @@ namespace eTouristAgencyAPI.Services.Interfaces
     public interface IOfferDiscountService
     {
         Task<List<OfferDiscountResponse>> AddByOfferIdAsync(Guid offerId, List<AddOfferDiscountRequest> offerDiscountList);
-        Task<List<OfferDiscountResponse>> UpdateAsync(List<UpdateOfferDiscountRequest> offerDiscountList);
+        Task<List<OfferDiscountResponse>> UpdateAsync(Guid offerId, List<UpdateOfferDiscountRequest> offerDiscountList);
     }
 }

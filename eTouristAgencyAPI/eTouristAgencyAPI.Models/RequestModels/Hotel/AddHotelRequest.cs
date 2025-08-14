@@ -5,5 +5,6 @@
         public string Name { get; set; }
         public Guid CityId { get; set; }
         public int StarRating { get; set; }
+        public List<byte[]>? Images { get; set; }
     }
 }

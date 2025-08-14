@@ -30,5 +30,15 @@ namespace eTouristAgencyAPI.Services
             dbModel.ModifiedBy = _userId;
             dbModel.ModifiedOn = DateTime.Now;
         }
+
+        protected override async Task<IQueryable<Country>> BeforeFetchAllDataAsync(IQueryable<Country> queryable, CountrySearchModel searchModel)
+        {
+            if (!string.IsNullOrWhiteSpace(searchModel.SearchText))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(searchModel.SearchText.ToLower()));
+            }
+
+            return queryable;
+        }
     }
 }

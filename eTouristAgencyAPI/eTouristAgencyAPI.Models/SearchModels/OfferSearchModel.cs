@@ -10,5 +10,7 @@
         public Guid? BoardTypeId { get; set; }
         public DateTime? OfferDateFrom { get; set; }
         public DateTime? OfferDateTo { get; set; }
+        public bool IsBookableNow { get; set; } = false;
+        public bool IsLastMinuteDiscountActive { get; set; } = false;
     }
 }

@@ -34,7 +34,7 @@ namespace eTouristAgencyAPI.Controllers
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPost("board-type")]
-        public async Task<ActionResult<EntityCodeValueResponse>> AddBoardType(AddEntityCodeValueRequest request)
+        public async Task<ActionResult<EntityCodeValueResponse>> AddBoardType(AddUpdateEntityCodeValueRequest request)
         {
             try
             {
@@ -54,6 +54,37 @@ namespace eTouristAgencyAPI.Controllers
             try
             {
                 var response = await _entityCodeValueService.GetAllByEntityCodeIdAsync(EntityCodes.DiscountType);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpGet("offer-status")]
+        public async Task<ActionResult<EntityCodeValueResponse>> GetOfferStatusList()
+        {
+            try
+            {
+                var response = await _entityCodeValueService.GetAllByEntityCodeIdAsync(EntityCodes.OfferStatus);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+
+            }
+        }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPut("{id}")]
+        public async Task<ActionResult<EntityCodeValueResponse>> Update(Guid id, [FromBody] AddUpdateEntityCodeValueRequest updateModel)
+        {
+            try
+            {
+                var response = await _entityCodeValueService.UpdateAsync(id, updateModel);
                 return Ok(response);
             }
             catch (Exception ex)

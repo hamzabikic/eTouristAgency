@@ -27,7 +27,11 @@ namespace eTouristAgencyAPI.Models.RequestModels.Offer
 
         public byte[]? OfferImageBytes { get; set; }
 
+        public string? OfferImageName { get; set; }
+
         public byte[]? OfferDocumentBytes { get; set; }
+
+        public string? OfferDocumentName { get; set; }
 
         public List<UpdateRoomRequest> RoomList { get; set; } = new List<UpdateRoomRequest>();
 

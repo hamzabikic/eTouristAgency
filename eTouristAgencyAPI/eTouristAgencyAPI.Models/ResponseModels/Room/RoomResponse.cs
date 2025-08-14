@@ -16,6 +16,8 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Room
 
         public int Quantity { get; set; }
 
+        public string ShortDescription { get; set; }
+
         public RoomTypeResponse RoomType { get; set; }
     }
 }

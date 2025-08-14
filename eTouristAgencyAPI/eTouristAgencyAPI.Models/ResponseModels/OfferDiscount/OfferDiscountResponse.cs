@@ -1,4 +1,6 @@
-﻿namespace eTouristAgencyAPI.Models.ResponseModels.OfferDiscount
+﻿using eTouristAgencyAPI.Models.ResponseModels.EntityCodeValue;
+
+namespace eTouristAgencyAPI.Models.ResponseModels.OfferDiscount
 {
     public class OfferDiscountResponse
     {
@@ -11,5 +13,7 @@
         public DateTime ValidFrom { get; set; }
 
         public DateTime ValidTo { get; set; }
+
+        public EntityCodeValueResponse DiscountType { get; set; }
     }
 }

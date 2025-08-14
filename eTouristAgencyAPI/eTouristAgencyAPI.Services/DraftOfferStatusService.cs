@@ -29,11 +29,11 @@ namespace eTouristAgencyAPI.Services
         {
             var offerResponse = await _offerWriteService.UpdateAsync(id, updateModel);
 
-            offerResponse.Rooms = await _roomService.UpdateAsync(updateModel.RoomList);
+            offerResponse.Rooms = await _roomService.UpdateAsync(id, updateModel.RoomList);
 
-            if (updateModel.DiscountList != null && updateModel.DiscountList.Any())
+            if (updateModel.DiscountList != null)
             {
-                offerResponse.OfferDiscounts = await _offerDiscountService.UpdateAsync(updateModel.DiscountList);
+                offerResponse.OfferDiscounts = await _offerDiscountService.UpdateAsync(id, updateModel.DiscountList);
             }
 
             return offerResponse;

@@ -1,9 +1,10 @@
-import 'package:etouristagency_desktop/config/auth_config.dart';
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/roles.dart';
 import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:etouristagency_desktop/providers/user_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
+import 'package:etouristagency_desktop/screens/offer/offer_list_screen.dart';
+import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -19,11 +20,24 @@ class _LoginScreenState extends State<LoginScreen> {
   String? operationErrorMessage;
   final formBuilderKey = GlobalKey<FormBuilderState>();
   late final UserProvider userProvider;
+  late final AuthService authService;
 
   @override
   void initState() {
-    userProvider = UserProvider();
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+      bool isLoggedIn = await authService.isLoged();
 
+      if (!mounted) return;
+
+      if (isLoggedIn) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (builder) => OfferListScreen()),
+        );
+      }
+    });
+    
+    userProvider = UserProvider();
+    authService = AuthService();
     super.initState();
   }
 
@@ -73,6 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         SizedBox(height: 10),
                         FormBuilderTextField(
+                          obscureText: true,
                           decoration: InputDecoration(labelText: "Lozinka"),
                           name: "password",
                           validator: FormBuilderValidators.compose([
@@ -107,14 +122,16 @@ class _LoginScreenState extends State<LoginScreen> {
     formBuilderKey.currentState!.save();
     var formObject = formBuilderKey.currentState!.value;
 
-    AuthConfig.username = formObject["username"];
-    AuthConfig.password = formObject["password"];
+    await authService.storeCredentials(
+      formObject["username"],
+      formObject["password"],
+    );
 
     try {
       var userJson = await userProvider.getMe();
-      AuthConfig.user = User.fromJson(userJson);
-      if (!AuthConfig.user!.roles!.any((x) => x.name == Roles.admin)) {
-        AuthConfig.clearData();
+      var user = User.fromJson(userJson);
+      if (!user.roles!.any((x) => x.name == Roles.admin)) {
+        await authService.clearCredentials();
         throw Exception("Uneseno korisničko ime ili lozinka su netačni.");
       }
 
@@ -124,9 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } on Exception catch (e) {
       operationErrorMessage = e.toString();
 
-      setState(() {
-        AuthConfig.clearData();
-      });
+      await authService.clearCredentials();
+      setState(() {});
     }
   }
 }

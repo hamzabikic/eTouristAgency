@@ -9,5 +9,6 @@ namespace eTouristAgencyAPI.Services.Interfaces
     {
         Task ActivateAsync(Guid id);
         Task DeactivateAsync(Guid id);
+        Task<byte[]> GetImageAsync(Guid id);
     }
 }

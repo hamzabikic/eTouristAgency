@@ -32,9 +32,9 @@ namespace eTouristAgencyAPI.Services
             return entityCodeValueList;
         }
 
-        public async Task<EntityCodeValueResponse> AddAsync(Guid entityCodeId, AddEntityCodeValueRequest insertModel)
+        public async Task<EntityCodeValueResponse> AddAsync(Guid entityCodeId, AddUpdateEntityCodeValueRequest insertModel)
         {
-            var entityCodeValue = _mapper.Map<AddEntityCodeValueRequest, EntityCodeValue>(insertModel);
+            var entityCodeValue = _mapper.Map<AddUpdateEntityCodeValueRequest, EntityCodeValue>(insertModel);
 
             entityCodeValue.Id = Guid.NewGuid();
             entityCodeValue.EntityCodeId = entityCodeId;
@@ -45,6 +45,21 @@ namespace eTouristAgencyAPI.Services
             await _dbContext.SaveChangesAsync();
 
             return _mapper.Map<EntityCodeValue, EntityCodeValueResponse>(entityCodeValue);
+        }
+
+        public async Task<EntityCodeValueResponse> UpdateAsync(Guid entityCodeValueId, AddUpdateEntityCodeValueRequest updateModel)
+        {
+            var entityCodeValue = await _dbContext.EntityCodeValues.FindAsync(entityCodeValueId);
+
+            if (entityCodeValue == null) throw new Exception("The entity with provided id is not found");
+
+            _mapper.Map(updateModel, entityCodeValue);
+            entityCodeValue.ModifiedBy = _userId;
+            entityCodeValue.ModifiedOn = DateTime.Now;
+
+            await _dbContext.SaveChangesAsync();
+
+            return _mapper.Map<EntityCodeValueResponse> (entityCodeValue);
         }
     }
 }

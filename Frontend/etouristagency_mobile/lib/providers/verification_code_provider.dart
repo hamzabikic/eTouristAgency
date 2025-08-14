@@ -1,8 +1,9 @@
-import 'package:etouristagency_mobile/config/auth_config.dart';
+import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 
 class VerificationCodeProvider {
   late final String _controllerUrl;
+  late final AuthService authService;
 
   VerificationCodeProvider(){
     var baseUrl = String.fromEnvironment(
@@ -11,13 +12,14 @@ class VerificationCodeProvider {
     );
 
      _controllerUrl = "${baseUrl}/api/VerificationCode";
+     authService = AuthService();
   }
 
   Future addEmailVerification () async {
     var url = await Uri.parse("${_controllerUrl}/email-verification");
 
     var response = await http.post(url, headers: {
-      "Authorization" : AuthConfig.getAuthorizationHeader(),
+      "Authorization" : (await authService.getBasicKey())!,
       "Content-Type" : "application/json"
     });
 

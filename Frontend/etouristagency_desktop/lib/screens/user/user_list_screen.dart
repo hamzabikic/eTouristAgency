@@ -1,4 +1,3 @@
-import 'package:etouristagency_desktop/config/auth_config.dart';
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/roles.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
@@ -10,6 +9,7 @@ import 'package:etouristagency_desktop/providers/user_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/user/add_update_user_dialog.dart';
 import 'package:etouristagency_desktop/screens/user/update_client_user.dialog.dart';
+import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class UserListScreen extends StatefulWidget {
@@ -24,7 +24,9 @@ class _UserListScreenState extends State<UserListScreen> {
   List<Role>? roleList;
   late final UserProvider userProvider;
   late final RoleProvider roleProvider;
+  late final AuthService authService;
   late ScrollController horizontalScrollController;
+  String? username;
   Map<String, dynamic> queryStrings = {
     "page": 1,
     "roleId": "",
@@ -36,8 +38,10 @@ class _UserListScreenState extends State<UserListScreen> {
   void initState() {
     userProvider = UserProvider();
     roleProvider = RoleProvider();
+    authService = AuthService();
     fetchRoleData();
     fetchUserData();
+    setUsername();
     horizontalScrollController = ScrollController();
     super.initState();
   }
@@ -46,7 +50,7 @@ class _UserListScreenState extends State<UserListScreen> {
   Widget build(BuildContext context) {
     return MasterScreen(
       SingleChildScrollView(
-        child: paginatedList != null
+        child: paginatedList != null && username !=null
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,7 +196,7 @@ class _UserListScreenState extends State<UserListScreen> {
                                         ),
                                       ),
                                       DataCell(
-                                        x.id != AuthConfig.user?.id
+                                        x.username != username
                                             ? ElevatedButton(
                                                 onPressed: () {
                                                   if (x.roles != null &&
@@ -254,6 +258,10 @@ class _UserListScreenState extends State<UserListScreen> {
     paginatedList = await userProvider.getAll(queryStrings);
 
     setState(() {});
+  }
+
+  Future setUsername() async {
+    username = await authService.getUsername();
   }
 
   Future fetchRoleData() async {

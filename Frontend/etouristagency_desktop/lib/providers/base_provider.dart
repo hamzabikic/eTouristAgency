@@ -1,35 +1,36 @@
 import 'dart:convert';
 import 'dart:core';
-
-import 'package:etouristagency_desktop/config/auth_config.dart';
 import 'package:etouristagency_desktop/models/paginated_list.dart';
+import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 
 abstract class BaseProvider<TResponseModel> {
   late final String controllerUrl;
+  late final AuthService authService;
 
   BaseProvider(String controller) {
-    var baseUrl = String.fromEnvironment(
+    const baseUrl = String.fromEnvironment(
       "baseUrl",
       defaultValue: "https://localhost:5000",
     );
     controllerUrl = "${baseUrl}/api/${controller}";
+    authService = AuthService();
   }
 
-  Future<Map<String, dynamic>> getById(String id) async {
+  Future<TResponseModel> getById(String id) async {
     Uri url = Uri.parse("${controllerUrl}/$id");
 
     var response = await http.get(
       url,
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "Content-Type": "application/json",
       },
     );
 
     if (response.statusCode != 200) throw Exception(response.body);
 
-    return jsonDecode(response.body);
+    return jsonToModel(jsonDecode(response.body));
   }
 
   Future<TResponseModel> add(Map<String, dynamic> insertModel) async {
@@ -38,7 +39,7 @@ abstract class BaseProvider<TResponseModel> {
       url,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
       },
       body: jsonEncode(insertModel),
     );
@@ -57,7 +58,7 @@ abstract class BaseProvider<TResponseModel> {
     var response = await http.put(
       url,
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "Content-Type": "application/json",
       },
       body: jsonEncode(updateModel),
@@ -79,7 +80,7 @@ abstract class BaseProvider<TResponseModel> {
       url,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
       },
     );
 

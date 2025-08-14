@@ -232,7 +232,7 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
           ? await userProvider.add(insertModel)
           : await userProvider.update(widget.user!.id!, insertModel);
 
-      DialogHelper.openSuccessDialog(
+      DialogHelper.openDialog(
         context,
         widget.user == null
             ? "Uspješno dodavanje korisnika"
@@ -309,7 +309,7 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
       () async {
         await userProvider.deactivate(widget.user!.id!);
         Navigator.of(context).pop();
-        DialogHelper.openSuccessDialog(context, "Uspješno deaktiviran korisnički nalog", (){
+        DialogHelper.openDialog(context, "Uspješno deaktiviran korisnički nalog", (){
           Navigator.of(context).pop();
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> UserListScreen()));

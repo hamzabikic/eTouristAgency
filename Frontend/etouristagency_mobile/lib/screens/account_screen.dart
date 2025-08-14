@@ -1,4 +1,3 @@
-import 'package:etouristagency_mobile/config/auth_config.dart';
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
@@ -6,6 +5,7 @@ import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/providers/verification_code_provider.dart';
 import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
+import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -22,6 +22,7 @@ class _AccountScreenState extends State<AccountScreen> {
   final updateUserFormBuilder = GlobalKey<FormBuilderState>();
   late final UserProvider userProvider;
   late final VerificationCodeProvider verificationCodeProvider;
+  late final AuthService authService;
   final TextEditingController verificationCodeController =
       TextEditingController();
   String? operationErrorMessage;
@@ -33,6 +34,7 @@ class _AccountScreenState extends State<AccountScreen> {
   void initState() {
     verificationCodeProvider = VerificationCodeProvider();
     userProvider = UserProvider();
+    authService = AuthService();
     fetchUserData();
     super.initState();
   }
@@ -237,8 +239,8 @@ class _AccountScreenState extends State<AccountScreen> {
                       SizedBox(height: 10),
                       ElevatedButton(
                         child: Text("Odjavi se"),
-                        onPressed: () {
-                          AuthConfig.clearData();
+                        onPressed: () async {
+                          await authService.clearCredentials();
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (context) => LoginScreen(),
@@ -292,8 +294,8 @@ class _AccountScreenState extends State<AccountScreen> {
 
     try {
       var response = await userProvider.update(user!.id!, insertModel);
-      AuthConfig.password = insertModel["password"];
-      AuthConfig.username = insertModel["username"];
+      await authService.clearCredentials();
+      await authService.storeCredentials(insertModel["username"], insertModel["password"]);
       await fetchUserData();
 
       DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
@@ -335,7 +337,6 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future fetchUserData() async {
     user = User.fromJson(await userProvider.getMe());
-    AuthConfig.user = user;
 
     setState(() {});
   }

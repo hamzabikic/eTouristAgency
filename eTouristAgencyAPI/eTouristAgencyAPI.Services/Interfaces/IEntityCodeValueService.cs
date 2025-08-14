@@ -6,6 +6,7 @@ namespace eTouristAgencyAPI.Services.Interfaces
     public interface IEntityCodeValueService
     {
         Task<List<EntityCodeValueResponse>> GetAllByEntityCodeIdAsync(Guid entityCodeId);
-        Task<EntityCodeValueResponse> AddAsync(Guid entityCodeId, AddEntityCodeValueRequest insertModel);
+        Task<EntityCodeValueResponse> AddAsync(Guid entityCodeId, AddUpdateEntityCodeValueRequest insertModel);
+        Task<EntityCodeValueResponse> UpdateAsync(Guid entityCodeValueId, AddUpdateEntityCodeValueRequest updateModel);
     }
 }

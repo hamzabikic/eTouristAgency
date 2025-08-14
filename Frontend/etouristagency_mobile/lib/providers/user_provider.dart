@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:http/http.dart' as http;
-import 'package:etouristagency_mobile/config/auth_config.dart';
 import 'package:etouristagency_mobile/providers/base_provider.dart';
 
 class UserProvider extends BaseProvider<User> {
@@ -12,7 +11,7 @@ class UserProvider extends BaseProvider<User> {
     var response = await http.get(
       url,
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "Content-Type": "application/json",
       },
     );
@@ -31,7 +30,7 @@ class UserProvider extends BaseProvider<User> {
     var response = await http.get(
       url,
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "accept": "text/plain",
       },
     );
@@ -48,7 +47,7 @@ class UserProvider extends BaseProvider<User> {
     var response = await http.patch(
       url,
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "Content-Type": "application/json",
       },
     );
@@ -75,7 +74,7 @@ class UserProvider extends BaseProvider<User> {
     var response = await http.patch(
       url,
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "Content-Type": "application/json",
       },
     );

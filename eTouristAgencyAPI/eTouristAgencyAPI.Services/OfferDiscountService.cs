@@ -28,12 +28,6 @@ namespace eTouristAgencyAPI.Services
                 offerDiscountList.Where(x => x.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute).Count() > 1)
                 throw new Exception("You can provide only one first minute and last minute discount.");
 
-            var storagedOfferDiscounts = await _dbContext.OfferDiscounts.Where(x => x.OfferId == offerId).ToListAsync();
-
-            if (storagedOfferDiscounts.Any(x => x.DiscountTypeId == AppConstants.FixedOfferDiscountTypeFirstMinute) &&
-                storagedOfferDiscounts.Any(x => x.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute))
-                throw new Exception("You can provide only one first minute and last minute discount.");
-
             var offerDiscounts = _mapper.Map<List<AddOfferDiscountRequest>, List<OfferDiscount>>(offerDiscountList);
 
             foreach (var offerDiscount in offerDiscounts)
@@ -50,20 +44,40 @@ namespace eTouristAgencyAPI.Services
             return _mapper.Map<List<OfferDiscount>, List<OfferDiscountResponse>>(offerDiscounts);
         }
 
-        public async Task<List<OfferDiscountResponse>> UpdateAsync(List<UpdateOfferDiscountRequest> offerDiscountList)
+        public async Task<List<OfferDiscountResponse>> UpdateAsync(Guid offerId, List<UpdateOfferDiscountRequest> offerDiscountList)
         {
-            var offerDiscounts = _mapper.Map<List<UpdateOfferDiscountRequest>, List<OfferDiscount>>(offerDiscountList);
+            if (offerDiscountList.Where(x => x.DiscountTypeId == AppConstants.FixedOfferDiscountTypeFirstMinute).Count() > 1 ||
+                offerDiscountList.Where(x => x.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute).Count() > 1)
+                throw new Exception("You can provide only one first minute and last minute discount.");
 
-            foreach (var offerDiscount in offerDiscounts)
+            var existingDiscounts = await _dbContext.OfferDiscounts.Include(x => x.Offer).Where(x => x.OfferId == offerId).ToListAsync();
+            var discountForUpdate = existingDiscounts.Where(x => offerDiscountList.Select(y => y.Id).Contains(x.Id) && x.ValidFrom > DateTime.Now || x.Offer.OfferStatusId == AppConstants.FixedOfferStatusDraft).ToList();
+            var discountsForDelete = existingDiscounts.Where(x => !offerDiscountList.Select(y => y.Id).Contains(x.Id) && x.ValidFrom > DateTime.Now || x.Offer.OfferStatusId == AppConstants.FixedOfferStatusDraft).ToList();
+            var discountsForInsert = _mapper.Map<List<OfferDiscount>>(offerDiscountList.Where(x => x.Id == null && !existingDiscounts.Any(y => y.DiscountTypeId == x.DiscountTypeId)).ToList());
+
+            foreach (var item in discountsForInsert)
             {
-                offerDiscount.ModifiedBy = _userId ?? Guid.Empty;
-                offerDiscount.ModifiedOn = DateTime.Now;
+                item.Id = Guid.NewGuid();
+                item.CreatedBy = _userId ?? Guid.Empty;
+                item.ModifiedBy = _userId ?? Guid.Empty;
+                item.OfferId = offerId;
             }
 
-            _dbContext.OfferDiscounts.UpdateRange(offerDiscounts);
+            foreach (var item in discountForUpdate)
+            {
+                item.ModifiedBy = _userId ?? Guid.Empty;
+                item.ModifiedOn = DateTime.Now;
+                item.OfferId = offerId;
+
+                _mapper.Map<UpdateOfferDiscountRequest, OfferDiscount>(offerDiscountList.FirstOrDefault(x => x.Id == item.Id), item);
+            }
+
+            await _dbContext.OfferDiscounts.AddRangeAsync(discountsForInsert);
+            _dbContext.OfferDiscounts.RemoveRange(discountsForDelete);
             await _dbContext.SaveChangesAsync();
 
-            return _mapper.Map<List<OfferDiscount>, List<OfferDiscountResponse>>(offerDiscounts);
+            var currentDiscounts = await _dbContext.OfferDiscounts.Include(x => x.DiscountType).Where(x => x.OfferId == offerId).ToListAsync();
+            return _mapper.Map<List<OfferDiscount>, List<OfferDiscountResponse>>(currentDiscounts);
         }
     }
 }

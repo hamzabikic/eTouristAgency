@@ -17,6 +17,7 @@ namespace eTouristAgencyAPI.Services.IoC
             services.AddTransient<IVerificationCodeService, VerificationCodeService>();
             services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<ICityService, CityService>();
+            services.AddTransient<IHotelImageService, HotelImageService>();
             services.AddTransient<IHotelService, HotelService>();
             services.AddTransient<IOfferDiscountService, OfferDiscountService>();
             services.AddTransient<IRoomService, RoomService>();

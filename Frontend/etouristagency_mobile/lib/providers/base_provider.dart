@@ -1,9 +1,11 @@
+import 'package:etouristagency_mobile/models/paginated_list.dart';
+import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:etouristagency_mobile/config/auth_config.dart';
 
 abstract class BaseProvider<TResponseModel> {
   late final String controllerUrl;
+  late final AuthService authService;
 
   BaseProvider(String controller) {
     var baseUrl = String.fromEnvironment(
@@ -11,6 +13,33 @@ abstract class BaseProvider<TResponseModel> {
       defaultValue: "http://10.0.2.2:5001",
     );
     controllerUrl = "${baseUrl}/api/${controller}";
+    authService = AuthService();
+  }
+
+  Future<PaginatedList<TResponseModel>> getAll(
+    Map<String, dynamic> filters,
+  ) async {
+    String queryStrings = getQueryStrings(filters);
+    Uri url = Uri.parse("${controllerUrl}?${queryStrings}");
+
+    var response = await http.get(
+      url,
+      headers: {
+        "Authorization": (await authService.getBasicKey())!,
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Dogodila se greška: ${response.body}");
+    }
+
+    var json = jsonDecode(response.body);
+
+    return PaginatedList<TResponseModel>(
+      (json["listOfRecords"] as List).map((e) => jsonToModel(e)).toList(),
+      json["totalPages"],
+    );
   }
 
   Future<Map<String, dynamic>> getById(String id) async {
@@ -19,7 +48,7 @@ abstract class BaseProvider<TResponseModel> {
     var response = await http.get(
       url,
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "Content-Type": "application/json",
       },
     );
@@ -37,7 +66,7 @@ abstract class BaseProvider<TResponseModel> {
     var response = await http.put(
       url,
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "Content-Type": "application/json",
       },
       body: jsonEncode(updateModel),
@@ -57,7 +86,7 @@ abstract class BaseProvider<TResponseModel> {
       url,
       body: jsonEncode(insertModel),
       headers: {
-        "Authorization": AuthConfig.getAuthorizationHeader(),
+        "Authorization": (await authService.getBasicKey())!,
         "Content-Type": "application/json",
       },
     );
@@ -71,6 +100,16 @@ abstract class BaseProvider<TResponseModel> {
     }
 
     throw Exception("Dogodila se greška: ${response.body}");
+  }
+
+  String getQueryStrings(Map<String, dynamic> filters) {
+    String queryStrings = "";
+    
+    for (var item in filters.keys) {
+      queryStrings += "$item=${filters[item]}&";
+    }
+
+    return queryStrings;
   }
 
   TResponseModel jsonToModel(Map<String, dynamic> json) {

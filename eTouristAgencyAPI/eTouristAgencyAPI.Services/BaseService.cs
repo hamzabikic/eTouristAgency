@@ -36,6 +36,9 @@ namespace eTouristAgencyAPI.Services
             query = query.Take(searchModel.RecordsPerPage);
 
             var listOfRecords = await query.ToListAsync();
+
+            await AfterFetchAllDataAsync(listOfRecords);
+
             var listOfResponseModel = _mapper.Map<List<TDbModel>, List<TResponseModel>>(listOfRecords);
 
             int totalPages = countOfAllRecords % searchModel.RecordsPerPage == 0 ? countOfAllRecords / searchModel.RecordsPerPage : countOfAllRecords / searchModel.RecordsPerPage + 1;
@@ -66,5 +69,8 @@ namespace eTouristAgencyAPI.Services
         {
             return queryable;
         }
+
+        protected virtual async Task AfterFetchAllDataAsync(List<TDbModel> listOfRecords)
+        { }
     }
 }

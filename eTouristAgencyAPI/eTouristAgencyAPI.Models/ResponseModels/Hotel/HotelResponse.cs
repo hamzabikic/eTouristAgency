@@ -13,6 +13,8 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Hotel
 
         public int StarRating { get; set; }
 
-        public virtual CityResponse City { get; set; }
+        public CityResponse City { get; set; }
+
+        public List<HotelImageResponse> HotelImages { get; set; }
     }
 }

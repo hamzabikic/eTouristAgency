@@ -7,23 +7,18 @@ using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace eTouristAgencyAPI.Services
 {
     public class OfferWriteService : CRUDService<Offer, OfferResponse, OfferSearchModel, AddOfferRequest, UpdateOfferRequest>, IOfferWriteService
     {
-        private readonly IRoomService _roomService;
-        private readonly IOfferDiscountService _offerDiscountService;
         private readonly Guid? _userId;
 
         public OfferWriteService(eTouristAgencyDbContext dbContext,
                                 IMapper mapper,
-                                IUserContextService userContextService,
-                                IRoomService roomService,
-                                IOfferDiscountService offerDiscountService) : base(dbContext, mapper)
+                                IUserContextService userContextService) : base(dbContext, mapper)
         {
-            _roomService = roomService;
-            _offerDiscountService = offerDiscountService;
             _userId = userContextService.GetUserId();
         }
 
@@ -33,6 +28,22 @@ namespace eTouristAgencyAPI.Services
             dbModel.CreatedBy = _userId ?? Guid.Empty;
             dbModel.ModifiedBy = _userId ?? Guid.Empty;
             dbModel.OfferStatusId = AppConstants.FixedOfferStatusDraft;
+
+            if (insertModel.OfferDocumentBytes != null)
+            {
+                dbModel.OfferDocument = new OfferDocument { DocumentBytes = insertModel.OfferDocumentBytes,
+                                                            DocumentName = insertModel.OfferDocumentName,
+                                                            CreatedBy = _userId ?? Guid.Empty,
+                                                            ModifiedBy = _userId ?? Guid.Empty };
+            }
+
+            if (insertModel.OfferImageBytes != null)
+            {
+                dbModel.OfferImage = new OfferImage { ImageBytes = insertModel.OfferImageBytes,
+                                                      ImageName = insertModel.OfferImageName,
+                                                      CreatedBy = _userId ?? Guid.Empty,
+                                                      ModifiedBy = _userId ?? Guid.Empty };
+            }
         }
 
         public override Task<PaginatedList<OfferResponse>> GetAllAsync(OfferSearchModel searchModel)
@@ -49,6 +60,49 @@ namespace eTouristAgencyAPI.Services
         {
             dbModel.ModifiedOn = DateTime.Now;
             dbModel.ModifiedBy = _userId ?? Guid.Empty;
+
+            if (updateModel.OfferDocumentBytes != null)
+            {
+                if (dbModel.OfferDocument != null)
+                {
+                    dbModel.OfferDocument.DocumentBytes = updateModel.OfferDocumentBytes;
+                    dbModel.OfferDocument.DocumentName = updateModel.OfferDocumentName;
+                    dbModel.OfferDocument.ModifiedBy = _userId ?? Guid.Empty;
+                    dbModel.OfferDocument.ModifiedOn = DateTime.Now;
+                }
+                else
+                {
+                    dbModel.OfferDocument = new OfferDocument { DocumentBytes = updateModel.OfferDocumentBytes,
+                                                                DocumentName = updateModel.OfferDocumentName,
+                                                                CreatedBy = _userId ?? Guid.Empty,
+                                                                ModifiedBy = _userId ?? Guid.Empty };
+                }
+            }
+
+            if (updateModel.OfferImageBytes != null)
+            {
+                if (dbModel.OfferImage != null)
+                {
+                    dbModel.OfferImage.ImageBytes = updateModel.OfferImageBytes;
+                    dbModel.OfferImage.ImageName = updateModel.OfferImageName;
+                    dbModel.OfferImage.ModifiedBy = _userId ?? Guid.Empty;
+                    dbModel.OfferImage.ModifiedOn = DateTime.Now;
+                }
+                else
+                {
+                    dbModel.OfferImage = new OfferImage { ImageBytes = updateModel.OfferImageBytes,
+                                                          ImageName = updateModel.OfferImageName,
+                                                          CreatedBy = _userId ?? Guid.Empty,
+                                                          ModifiedBy = _userId ?? Guid.Empty };
+                }
+            }
+        }
+
+        protected override async Task<IQueryable<Offer>> BeforeFetchRecordAsync(IQueryable<Offer> queryable)
+        {
+            queryable = queryable.Include(x => x.OfferImage).Include(x => x.OfferDocument).Include(x => x.OfferStatus).Include(x => x.BoardType).Include(x => x.Hotel);
+
+            return queryable;
         }
     }
 }

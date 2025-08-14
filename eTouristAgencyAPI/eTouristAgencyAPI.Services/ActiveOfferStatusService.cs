@@ -10,18 +10,27 @@ namespace eTouristAgencyAPI.Services
     public class ActiveOfferStatusService : BaseOfferStatusService
     {
         private readonly IOfferWriteService _offerWriteService;
+        private readonly IOfferDiscountService _offerDiscountService;
 
         public ActiveOfferStatusService(IServiceProvider serviceProvider,
                                         eTouristAgencyDbContext dbContext,
                                         IMapper mapper,
-                                        IOfferWriteService offerWriteService) : base(serviceProvider, dbContext, mapper)
+                                        IOfferWriteService offerWriteService,
+                                        IOfferDiscountService offerDiscountService) : base(serviceProvider, dbContext, mapper)
         {
             _offerWriteService = offerWriteService;
+            _offerDiscountService = offerDiscountService;
         }
 
-        public override Task<OfferResponse> UpdateAsync(Guid id, UpdateOfferRequest updateModel)
+        public override async Task<OfferResponse> UpdateAsync(Guid id, UpdateOfferRequest updateModel)
         {
-            return _offerWriteService.UpdateAsync(id, updateModel);
+            var offerResponse = await _offerWriteService.UpdateAsync(id, updateModel);
+
+            if (updateModel.DiscountList != null) {
+                offerResponse.OfferDiscounts = await _offerDiscountService.UpdateAsync(id, updateModel.DiscountList);
+            }
+
+            return offerResponse;
         }
 
         public override async Task DeactivateAsync(Guid offerId)

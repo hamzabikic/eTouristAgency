@@ -1,7 +1,7 @@
 ﻿namespace eTouristAgencyAPI.Models.SearchModels
 {
-    public class HotelSearchModel : PaginationModel
+    public class HotelSearchModel : BaseSearchModel
     {
-
+        public Guid? CityId { get; set; }
     }
 }

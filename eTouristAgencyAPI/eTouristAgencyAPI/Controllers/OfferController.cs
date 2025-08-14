@@ -59,5 +59,19 @@ namespace eTouristAgencyAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("{id}/image")]
+        public async Task<ActionResult> GetImage(Guid id)
+        {
+            try
+            {
+                var offerImage = await _offerService.GetImageAsync(id);
+                return File(offerImage, "application/octet-stream");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

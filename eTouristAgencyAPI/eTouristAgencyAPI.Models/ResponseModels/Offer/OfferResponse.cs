@@ -33,6 +33,14 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Offer
 
         public Guid? BoardTypeId { get; set; }
 
+        public decimal MinimumPricePerPerson { get; set; }
+
+        public bool IsFirstMinuteDiscountActive { get; set; }
+
+        public bool IsLastMinuteDiscountActive { get; set; }
+
+        public int RemainingSpots { get; set; }
+
         public EntityCodeValueResponse BoardType { get; set; }
 
         public HotelResponse Hotel { get; set; }
@@ -42,5 +50,9 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Offer
         public EntityCodeValueResponse OfferStatus { get; set; }
 
         public List<RoomResponse> Rooms { get; set; }
+
+        public OfferDocumentResponse OfferDocument { get; set; }
+
+        public OfferImageResponse OfferImage { get; set; }
     }
 }
