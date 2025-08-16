@@ -5,6 +5,7 @@ using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
 using MapsterMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace eTouristAgencyAPI.Services
@@ -33,6 +34,16 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task<IQueryable<City>> BeforeFetchAllDataAsync(IQueryable<City> queryable, CitySearchModel searchModel)
         {
+            if (!string.IsNullOrWhiteSpace(searchModel.SearchText))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(searchModel.SearchText.ToLower()));
+            }
+
+            if (searchModel.CountryId != null)
+            {
+                queryable = queryable.Where(x => x.CountryId == searchModel.CountryId);
+            }
+
             queryable = queryable.Include(x => x.Country);
 
             return queryable;

@@ -7,8 +7,6 @@ class User {
   String? lastName;
   String? email;
   String? phoneNumber;
-  DateTime? createdOn;
-  DateTime? modifiedOn;
   bool? isActive;
   bool? isVerified;
   List<Role>? roles;
@@ -20,8 +18,6 @@ class User {
     this.lastName,
     this.email,
     this.phoneNumber,
-    this.createdOn,
-    this.modifiedOn,
     this.isActive,
     this.isVerified,
     this.roles,
@@ -36,8 +32,6 @@ class User {
       json["lastName"],
       json["email"],
       json["phoneNumber"],
-      DateTime.parse(json["createdOn"]),
-      DateTime.parse(json["modifiedOn"]),
       json["isActive"],
       json["isVerified"],
       roles,
@@ -52,8 +46,6 @@ class User {
       "lastName": lastName,
       "email": email,
       "phoneNumber": phoneNumber,
-      "createdOn": createdOn,
-      "modifiedOn": modifiedOn,
       "isActive": isActive,
       "isVerified": isVerified,
       "roles": roles,

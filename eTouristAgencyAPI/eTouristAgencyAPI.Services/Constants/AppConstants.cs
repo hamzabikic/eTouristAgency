@@ -1,5 +1,4 @@
-﻿using eTouristAgencyAPI.Services.Database.Models;
-using eTouristAgencyAPI.Services.Enums;
+﻿using eTouristAgencyAPI.Services.Enums;
 
 namespace eTouristAgencyAPI.Services.Constants
 {
@@ -15,5 +14,11 @@ namespace eTouristAgencyAPI.Services.Constants
             {EmailVerificationType.EmailVerification,FixedEmailVerificationTypeForEmailVerification},
             {EmailVerificationType.ResetPassword,FixedEmailVerificationTypeForResetPassword}
         };
+
+        public static readonly Guid FixedOfferStatusDraft = new Guid("57C12C77-C593-424D-A481-40BECB061B3A");
+        public static readonly Guid FixedOfferStatusActive = new Guid("1126543D-D3CC-4278-A919-68D82D761F95");
+        public static readonly Guid FixedOfferStatusInactive = new Guid("2785E992-531B-40BD-8311-62541AD85B88");
+        public static readonly Guid FixedOfferDiscountTypeFirstMinute = new Guid("974801DD-FD63-4AA6-AF62-7C62186F5DB1");
+        public static readonly Guid FixedOfferDiscountTypeLastMinute = new Guid("D7913839-E8D7-4B66-AA66-38E7BF1F86E1");
     }
 }

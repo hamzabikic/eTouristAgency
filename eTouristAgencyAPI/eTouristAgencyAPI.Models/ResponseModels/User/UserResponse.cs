@@ -17,10 +17,6 @@ namespace eTouristAgencyAPI.Models.ResponseModels.User
 
         public string PhoneNumber { get; set; }
 
-        public DateTime CreatedOn { get; set; }
-
-        public DateTime ModifiedOn { get; set; }
-
         public bool IsActive { get; set; }
 
         public bool IsVerified { get; set; }

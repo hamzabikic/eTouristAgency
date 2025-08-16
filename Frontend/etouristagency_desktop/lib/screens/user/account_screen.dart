@@ -1,10 +1,9 @@
-import 'package:etouristagency_desktop/config/auth_config.dart';
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:etouristagency_desktop/providers/user_provider.dart';
-import 'package:etouristagency_desktop/screens/login_screen.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
+import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -24,10 +23,12 @@ class _AccountScreenState extends State<AccountScreen> {
   User? user = null;
   bool buttonEnabled = true;
   late final UserProvider userProvider;
+  late final AuthService authService;
 
   @override
   void initState() {
     userProvider = UserProvider();
+    authService = AuthService();
     fetchUserData();
     super.initState();
   }
@@ -226,11 +227,10 @@ class _AccountScreenState extends State<AccountScreen> {
 
     try {
       var response = await userProvider.update(user!.id!, insertModel);
-      AuthConfig.password = insertModel["password"];
-      AuthConfig.username = insertModel["username"];
+      await authService.storeCredentials(insertModel["username"], insertModel["password"]);
       await fetchUserData();
 
-      DialogHelper.openSuccessDialog(context, "Uspješno sačuvane promjene", () {
+      DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
         Navigator.of(context).pop();
       });
     } on Exception catch (ex) {
@@ -269,7 +269,6 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future fetchUserData() async {
     user = User.fromJson(await userProvider.getMe());
-    AuthConfig.user = user;
 
     setState(() {});
   }

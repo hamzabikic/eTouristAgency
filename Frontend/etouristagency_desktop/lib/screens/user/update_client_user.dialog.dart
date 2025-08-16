@@ -54,7 +54,7 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
                     ElevatedButton(
                       onPressed: () async {
                         await userProvider.resetPassword(widget._user.id!);
-                        DialogHelper.openSuccessDialog(context, "Uspješno resetovanje lozinke", (){
+                        DialogHelper.openDialog(context, "Uspješno resetovanje lozinke", (){
                           Navigator.of(context).pop();
                         });
                       },
@@ -83,7 +83,7 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
                             onPressed: () async {
                               await userProvider.verify(widget._user.id!);
                               await updateUserData();
-                              DialogHelper.openSuccessDialog(
+                              DialogHelper.openDialog(
                                 context,
                                 "Uspješna verifikacija korisnika",
                                 () {
@@ -105,7 +105,7 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
   }
 
   Future updateUserData() async {
-    widget._user = User.fromJson(await userProvider.getById(widget._user.id!));
+    widget._user = await userProvider.getById(widget._user.id!);
 
     setState(() {});
   }
