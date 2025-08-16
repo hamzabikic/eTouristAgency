@@ -144,10 +144,7 @@ class _HotelListScreenState extends State<HotelListScreen> {
                                   (x) => DataRow(
                                     cells: [
                                       DataCell(
-                                        InkWell(
-                                          child: Text(x.name?.toString() ?? ""),
-                                          onTap: () async {},
-                                        ),
+                                        Text(x.name?.toString() ?? ""),
                                       ),
                                       DataCell(
                                         Text(x.starRating?.toString() ?? ""),

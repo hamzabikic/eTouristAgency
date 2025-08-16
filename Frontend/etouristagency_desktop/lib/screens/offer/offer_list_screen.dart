@@ -181,6 +181,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                               DataColumn(label: Text("Broj noći")),
                               DataColumn(label: Text("Prevoznici")),
                               DataColumn(label: SizedBox()),
+                              DataColumn(label: SizedBox()),
                             ],
                             rows: paginatedList!.listOfRecords!
                                 .map(
@@ -191,20 +192,6 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                           child: Text(
                                             x.offerNo?.toString() ?? "",
                                           ),
-                                          onTap: () async {
-                                            var offer = await offerProvider
-                                                .getById(x.id ?? "");
-                                            Navigator.of(
-                                              context,
-                                            ).pushReplacement(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    AddUpdateOfferScreen(
-                                                      offer: offer,
-                                                    ),
-                                              ),
-                                            );
-                                          },
                                         ),
                                       ),
                                       DataCell(
@@ -225,6 +212,25 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                         ),
                                       ),
                                       DataCell(Text(x.carriers ?? "")),
+                                      DataCell(
+                                        ElevatedButton(
+                                          child: Text("Uredi"),
+                                          onPressed: () async {
+                                            var offer = await offerProvider
+                                                .getById(x.id ?? "");
+                                            Navigator.of(
+                                              context,
+                                            ).pushReplacement(
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AddUpdateOfferScreen(
+                                                      offer: offer,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
                                       DataCell(
                                         ElevatedButton(
                                           child: Text("Rezervacije"),

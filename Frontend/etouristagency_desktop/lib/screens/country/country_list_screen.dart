@@ -122,10 +122,7 @@ class _CountryListScreenState extends State<CountryListScreen> {
                                   (x) => DataRow(
                                     cells: [
                                       DataCell(
-                                        InkWell(
-                                          child: Text(x.name?.toString() ?? ""),
-                                          onTap: () async {},
-                                        ),
+                                        Text(x.name?.toString() ?? ""),
                                       ),
                                       DataCell(
                                         ElevatedButton(

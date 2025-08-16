@@ -33,7 +33,7 @@ abstract class BaseProvider<TResponseModel> {
     return jsonToModel(jsonDecode(response.body));
   }
 
-  Future<TResponseModel> add(Map<String, dynamic> insertModel) async {
+  Future add(Map<String, dynamic> insertModel) async {
     var url = Uri.parse(controllerUrl);
     var response = await http.post(
       url,
@@ -46,14 +46,9 @@ abstract class BaseProvider<TResponseModel> {
 
     if (response.statusCode != 200)
       throw Exception("Dogodila se greska: ${response.body}");
-
-    return jsonToModel(jsonDecode(response.body));
   }
 
-  Future<TResponseModel> update(
-    String id,
-    Map<String, dynamic> updateModel,
-  ) async {
+  Future update(String id, Map<String, dynamic> updateModel) async {
     var url = Uri.parse("${controllerUrl}/${id}");
     var response = await http.put(
       url,
@@ -66,8 +61,6 @@ abstract class BaseProvider<TResponseModel> {
 
     if (response.statusCode != 200)
       throw Exception("Dogodila se greska: ${response.body}");
-
-    return jsonToModel(jsonDecode(response.body));
   }
 
   Future<PaginatedList<TResponseModel>> getAll(

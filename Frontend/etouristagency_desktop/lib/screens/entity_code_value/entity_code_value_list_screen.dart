@@ -85,10 +85,7 @@ class _EntityCodeValueListScreenState extends State<EntityCodeValueListScreen> {
                                   (x) => DataRow(
                                     cells: [
                                       DataCell(
-                                        InkWell(
-                                          child: Text(x.name?.toString() ?? ""),
-                                          onTap: () async {},
-                                        ),
+                                        Text(x.name?.toString() ?? ""),
                                       ),
                                       DataCell(
                                         ElevatedButton(
