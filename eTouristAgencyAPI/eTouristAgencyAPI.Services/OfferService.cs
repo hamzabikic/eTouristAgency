@@ -1,4 +1,5 @@
 ﻿using eTouristAgencyAPI.Models.RequestModels.Offer;
+using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.ResponseModels.Offer;
 using eTouristAgencyAPI.Models.SearchModels;
 using eTouristAgencyAPI.Services.Constants;

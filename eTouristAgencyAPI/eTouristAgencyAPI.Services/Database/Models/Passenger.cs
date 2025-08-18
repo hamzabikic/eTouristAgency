@@ -3,13 +3,17 @@ using System.Collections.Generic;
 
 namespace eTouristAgencyAPI.Services.Database.Models;
 
-public partial class HotelImage
+public partial class Passenger
 {
     public Guid Id { get; set; }
 
-    public byte[] ImageBytes { get; set; } = null!;
+    public string FullName { get; set; } = null!;
 
-    public Guid HotelId { get; set; }
+    public string PhoneNumber { get; set; } = null!;
+
+    public Guid ReservationId { get; set; }
+
+    public DateTime DateOfBirth { get; set; }
 
     public DateTime CreatedOn { get; set; }
 
@@ -21,7 +25,7 @@ public partial class HotelImage
 
     public virtual User CreatedByNavigation { get; set; } = null!;
 
-    public virtual Hotel Hotel { get; set; } = null!;
-
     public virtual User ModifiedByNavigation { get; set; } = null!;
+
+    public virtual Reservation Reservation { get; set; } = null!;
 }
