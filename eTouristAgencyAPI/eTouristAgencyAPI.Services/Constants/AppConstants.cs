@@ -21,5 +21,11 @@ namespace eTouristAgencyAPI.Services.Constants
         public static readonly Guid FixedOfferDiscountTypeFirstMinute = new Guid("974801DD-FD63-4AA6-AF62-7C62186F5DB1");
         public static readonly Guid FixedOfferDiscountTypeLastMinute = new Guid("D7913839-E8D7-4B66-AA66-38E7BF1F86E1");
         public static readonly Guid FixedReservationStatusNotPaid = new Guid("C55BC19B-7276-416C-8BB1-B7CD78245AC0");
+
+        public static readonly List<Guid> AllowedEntityCodesToUpdate = new List<Guid>
+        {
+            EntityCodes.BoardType,
+            EntityCodes.ReservationStatus
+        };
     }
 }

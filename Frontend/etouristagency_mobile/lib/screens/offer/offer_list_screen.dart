@@ -11,6 +11,7 @@ import 'package:etouristagency_mobile/providers/countryProvider.dart';
 import 'package:etouristagency_mobile/providers/entity_code_value_provider.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -185,6 +186,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                         fontSize: 17,
                                       ),
                                     ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: getStarIconsOnHotel(offer.hotel!.starRating!),),
                                     Text(
                                       "${offer.hotel!.city!.name}, ${offer.hotel!.city!.country!.name}",
                                       style: TextStyle(
@@ -233,7 +237,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     ElevatedButton(
                                       onPressed: offer.remainingSpots! < 1
                                           ? null
-                                          : () {},
+                                          : () {
+                                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> OfferDetailsScreen(offer.id!)));
+                                          },
                                       child: Text("Pregledaj i rezerviši"),
                                     ),
                                   ],
@@ -499,5 +505,15 @@ class _OfferListScreenState extends State<OfferListScreen> {
 
     queryStrings["page"] = 1;
     await fetchData();
+  }
+
+  List<Widget> getStarIconsOnHotel(int numberOfStars){
+    List<Widget> list = [];
+
+    for(int i =0; i<numberOfStars; i++){
+      list.add(Icon(Icons.star, color: Colors.amber));
+    }
+
+    return list;
   }
 }

@@ -98,25 +98,28 @@ class _AddUpdateEntityCodeValueDialogState
   }
 
   Future addEntityCodeValue() async {
-    if (widget.entityCode == EntityCode.boardType) {
-      try {
-        bool isValid = formBuilderKey.currentState!.validate();
+    try {
+      bool isValid = formBuilderKey.currentState!.validate();
 
-        if (!isValid) return;
+      if (!isValid) return;
 
-        formBuilderKey.currentState!.save();
-        var json = formBuilderKey.currentState!.value;
+      formBuilderKey.currentState!.save();
+      var json = formBuilderKey.currentState!.value;
+
+      if (widget.entityCode == EntityCode.boardType) {
         await entityCodeValueProvider.addBoardType(json);
-
-        DialogHelper.openDialog(context, "Uspješno dodavanje tipa usluge", () {
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-        }, type: DialogType.success);
-      } on Exception catch (ex) {
-        DialogHelper.openDialog(context, ex.toString(), () {
-          Navigator.of(context).pop();
-        }, type: DialogType.error);
+      } else if (widget.entityCode == EntityCode.reservationStatus) {
+        await entityCodeValueProvider.addReservationStatus(json);
       }
+
+      DialogHelper.openDialog(context, "Uspješno dodavanje tipa usluge", () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      }, type: DialogType.success);
+    } on Exception catch (ex) {
+      DialogHelper.openDialog(context, ex.toString(), () {
+        Navigator.of(context).pop();
+      }, type: DialogType.error);
     }
   }
 

@@ -6,9 +6,11 @@ class Room {
   String? offerId;
   double? pricePerPerson;
   double? childDiscount;
+  double? discountedPrice;
   int? quantity;
   String? shortDescription;
   RoomType? roomType;
+  bool? isAvalible;
 
   Room({
     this.id,
@@ -19,6 +21,8 @@ class Room {
     this.quantity,
     this.shortDescription,
     this.roomType,
+    this.isAvalible,
+    this.discountedPrice
   });
 
   factory Room.fromJson(Map<String, dynamic> json) {
@@ -26,23 +30,19 @@ class Room {
       id: json["id"],
       roomTypeId: json["roomTypeId"],
       offerId: json["offerId"],
-      pricePerPerson: json["pricePerPerson"],
-      childDiscount: json["childDiscount"],
+      pricePerPerson: json["pricePerPerson"] != null
+          ? (json["pricePerPerson"] as num).toDouble()
+          : null,
+      childDiscount: json["childDiscount"] != null
+          ? (json["childDiscount"] as num).toDouble()
+          : null,
       quantity: json["quantity"],
       shortDescription: json["shortDescription"],
-      roomType: json["roomType"] != null ? RoomType.fromJson(json["roomType"]) : null,
+      roomType: json["roomType"] != null
+          ? RoomType.fromJson(json["roomType"])
+          : null,
+      isAvalible: json["isAvalible"],
+      discountedPrice:  json["discountedPrice"] != null ? (json["discountedPrice"] as num).toDouble() : null
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "roomTypeId": roomTypeId,
-      "offerId": offerId,
-      "pricePerPerson": pricePerPerson?.toString(),
-      "childDiscount": childDiscount?.toString(),
-      "quantity": quantity?.toString(),
-      "shortDescription": shortDescription,
-    };
   }
 }

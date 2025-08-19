@@ -1,4 +1,5 @@
-﻿using eTouristAgencyAPI.Models.ResponseModels.RoomType;
+﻿using System.Text;
+using eTouristAgencyAPI.Models.ResponseModels.RoomType;
 
 namespace eTouristAgencyAPI.Models.ResponseModels.Room
 {
@@ -12,6 +13,8 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Room
 
         public decimal PricePerPerson { get; set; }
 
+        public decimal DiscountedPrice { get; set; }
+
         public decimal ChildDiscount { get; set; }
 
         public int Quantity { get; set; }
@@ -19,5 +22,7 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Room
         public string ShortDescription { get; set; }
 
         public RoomTypeResponse RoomType { get; set; }
+
+        public bool IsAvalible { get; set; }
     }
 }

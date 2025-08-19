@@ -57,6 +57,26 @@ class EntityCodeValueProvider {
     return offerStatusList;
   }
 
+  Future<List<EntityCodeValue>> GetReservationStatusList() async {
+    var url = Uri.parse("${controllerUrl}/reservation-status");
+    var response = await http.get(
+      url,
+      headers: {
+        "Authorization": (await authService.getBasicKey())!,
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Neuspješno učitavanje statusa rezervacije: ${response.body}");
+    }
+
+    var offerStatusList = (jsonDecode(response.body) as List)
+        .map((x) => EntityCodeValue.fromJson(x))
+        .toList();
+    return offerStatusList;
+  }
+
   Future<EntityCodeValue> addBoardType(Map<String, dynamic> json) async {
     var url = Uri.parse("${controllerUrl}/board-type");
     var response = await http.post(
@@ -74,6 +94,26 @@ class EntityCodeValueProvider {
 
     throw Exception(
       "Dogodila se greška prilikom dodavanja tipa usluge: ${response.body}",
+    );
+  }
+
+  Future<EntityCodeValue> addReservationStatus(Map<String, dynamic> json) async {
+    var url = Uri.parse("${controllerUrl}/reservation-status");
+    var response = await http.post(
+      url,
+      headers: {
+        "Authorization": (await authService.getBasicKey())!,
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode(json),
+    );
+
+    if (response.statusCode == 200) {
+      return EntityCodeValue.fromJson(jsonDecode(response.body));
+    }
+
+    throw Exception(
+      "Dogodila se greška prilikom dodavanja statusa rezervacije: ${response.body}",
     );
   }
 

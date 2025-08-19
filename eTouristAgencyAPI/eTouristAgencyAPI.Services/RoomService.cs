@@ -45,10 +45,10 @@ namespace eTouristAgencyAPI.Services
         {
             var existingRooms = await _dbContext.Rooms.Where(x => x.OfferId == offerId).ToListAsync();
             var roomsForDelete = existingRooms.Where(x => !roomList.Select(y => y.Id).Contains(x.Id)).ToList();
-            var roomsForUpdate = existingRooms.Where(x=> roomList.Select(y=> y.Id).Contains(x.Id)).ToList();
+            var roomsForUpdate = existingRooms.Where(x => roomList.Select(y => y.Id).Contains(x.Id)).ToList();
             var roomsForInsert = _mapper.Map<List<Room>>(roomList.Where(x => x.Id == null).ToList());
 
-            foreach(var item in roomsForInsert)
+            foreach (var item in roomsForInsert)
             {
                 item.Id = Guid.NewGuid();
                 item.CreatedBy = _userId;
@@ -69,16 +69,9 @@ namespace eTouristAgencyAPI.Services
             _dbContext.Rooms.RemoveRange(roomsForDelete);
             await _dbContext.SaveChangesAsync();
 
-            var currentRooms = await _dbContext.Rooms.Include(x=> x.RoomType).Where(x => x.OfferId == offerId).ToListAsync();
+            var currentRooms = await _dbContext.Rooms.Include(x => x.RoomType).Where(x => x.OfferId == offerId).ToListAsync();
 
             return _mapper.Map<List<Room>, List<RoomResponse>>(currentRooms);
-        }
-
-        public async Task<List<RoomResponse>> GetAllByOfferIdAsync(Guid offerId)
-        {
-            var rooms = await _dbContext.Rooms.Where(x => x.OfferId == offerId).ToListAsync();
-
-            return _mapper.Map<List<Room>, List<RoomResponse>>(rooms);
         }
     }
 }

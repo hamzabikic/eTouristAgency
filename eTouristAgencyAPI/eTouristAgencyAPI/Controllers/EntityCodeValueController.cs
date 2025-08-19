@@ -79,6 +79,37 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
+        [HttpGet("reservation-status")]
+        public async Task<ActionResult<EntityCodeValueResponse>> GetReservationStatusList()
+        {
+            try
+            {
+                var response = await _entityCodeValueService.GetAllByEntityCodeIdAsync(EntityCodes.ReservationStatus);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+
+            }
+        }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPost("reservation-status")]
+        public async Task<ActionResult<EntityCodeValueResponse>> AddReservationStatus(AddUpdateEntityCodeValueRequest request)
+        {
+            try
+            {
+                var response = await _entityCodeValueService.AddAsync(EntityCodes.ReservationStatus, request);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = Roles.Admin)]
         [HttpPut("{id}")]
         public async Task<ActionResult<EntityCodeValueResponse>> Update(Guid id, [FromBody] AddUpdateEntityCodeValueRequest updateModel)
         {

@@ -84,9 +84,7 @@ class _EntityCodeValueListScreenState extends State<EntityCodeValueListScreen> {
                                 .map(
                                   (x) => DataRow(
                                     cells: [
-                                      DataCell(
-                                        Text(x.name?.toString() ?? ""),
-                                      ),
+                                      DataCell(Text(x.name?.toString() ?? "")),
                                       DataCell(
                                         ElevatedButton(
                                           child: Text("Uredi"),
@@ -121,6 +119,9 @@ class _EntityCodeValueListScreenState extends State<EntityCodeValueListScreen> {
   Future fetchData() async {
     if (widget.entityCode == EntityCode.boardType) {
       entityCodeValues = await entityCodeValueProvider.GetBoardTypeList();
+    } else if (widget.entityCode == EntityCode.reservationStatus) {
+      entityCodeValues =
+          await entityCodeValueProvider.GetReservationStatusList();
     }
 
     setState(() {});

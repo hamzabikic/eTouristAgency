@@ -45,7 +45,7 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Currently it is not possible to reserve room with provided id.");
             }
 
-            if (room.Reservations.Any())
+            if (room.Reservations.Count() >= room.Quantity)
             {
                 throw new Exception("Room with provided id is already included in other reservation");
             }

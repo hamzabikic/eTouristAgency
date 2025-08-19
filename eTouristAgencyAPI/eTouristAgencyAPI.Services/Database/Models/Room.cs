@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace eTouristAgencyAPI.Services.Database.Models;
 
@@ -36,4 +37,10 @@ public partial class Room
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 
     public virtual RoomType RoomType { get; set; } = null!;
+
+    [NotMapped]
+    public bool IsAvalible { get; set; }
+
+    [NotMapped]
+    public decimal DiscountedPrice { get; set; }
 }

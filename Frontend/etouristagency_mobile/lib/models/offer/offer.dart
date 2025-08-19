@@ -66,6 +66,10 @@ class Offer {
 
   String get formattedEndDate => DateFormat('dd.MM.yyyy').format(tripEndDate!);
 
+  String get formattedStartDateTime => DateFormat('dd.MM.yyyy HH:mm').format(tripStartDate!);
+
+  String get formatedEndDateTime => DateFormat('dd.MM.yyyy HH:mm').format(tripEndDate!);
+
   factory Offer.fromJson(Map<String, dynamic> json) {
     return Offer(
       json["id"],
@@ -104,26 +108,8 @@ class Offer {
           : null,
       json["isFirstMinuteDiscountActive"],
       json["isLastMinuteDiscountActive"],
-      json["minimumPricePerPerson"],
+      json["minimumPricePerPerson"] != null ? (json["minimumPricePerPerson"] as num).toDouble() : null,
       json["remainingSpots"],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "tripStartDate": tripStartDate,
-      "tripEndDate": tripEndDate,
-      "numberOfNights": numberOfNights?.toString(),
-      "carriers": carriers,
-      "description": description,
-      "firstPaymentDeadline": firstPaymentDeadline,
-      "lastPaymentDeadline": lastPaymentDeadline,
-      "offerNo": offerNo?.toString(),
-      "departurePlace": departurePlace,
-      "hotelId": hotelId,
-      "offerStatusId": offerStatusId,
-      "boardTypeId": boardTypeId,
-    };
   }
 }

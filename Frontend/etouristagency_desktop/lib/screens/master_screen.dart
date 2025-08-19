@@ -113,6 +113,15 @@ class _MasterScreenState extends State<MasterScreen> {
           );
         }
 
+        if (value == "reservationStatus") {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) =>
+                  EntityCodeValueListScreen(EntityCode.reservationStatus),
+            ),
+          );
+        }
+
         if (value == "hotel") {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => HotelListScreen()),
@@ -137,6 +146,10 @@ class _MasterScreenState extends State<MasterScreen> {
           PopupMenuItem<String>(
             value: 'boardType',
             child: Text('Tipovi usluga'),
+          ),
+          PopupMenuItem<String>(
+            value: 'reservationStatus',
+            child: Text('Statusi rezervacije'),
           ),
           PopupMenuItem<String>(value: 'hotel', child: Text('Hoteli')),
           PopupMenuItem<String>(value: 'city', child: Text('Gradovi')),
