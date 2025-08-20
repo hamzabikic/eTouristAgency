@@ -51,5 +51,19 @@ namespace eTouristAgencyAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [Authorize(Roles = Roles.Client)]
+        [HttpGet("me")]
+        public async Task<ActionResult<PaginatedList<MyReservationResponse>>> GetAllForCurrentUser([FromQuery] MyReservationSearchModel searchModel)
+        {
+            try
+            {
+                return Ok(await _reservationService.GetAllForCurrentUserAsync(searchModel));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

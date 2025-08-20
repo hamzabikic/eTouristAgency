@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:accordion/accordion.dart';
 import 'package:etouristagency_mobile/consts/app_colors.dart';
+import 'package:etouristagency_mobile/consts/app_constants.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/helpers/format_helper.dart';
 import 'package:etouristagency_mobile/models/offer/offer.dart';
+import 'package:etouristagency_mobile/models/reservation/reservation.dart';
 import 'package:etouristagency_mobile/models/room/room.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/providers/reservation_provider.dart';
@@ -40,6 +42,7 @@ class _AddUpdateReservationScreenState
   final List<GlobalKey<FormBuilderState>> formBuilderKeys = [];
   final TextEditingController noteEditingController = TextEditingController();
   late final ReservationProvider reservationProvider;
+  Reservation? reservation;
 
   @override
   void initState() {
@@ -47,13 +50,16 @@ class _AddUpdateReservationScreenState
     offerProvider = OfferProvider();
     reservationProvider = ReservationProvider();
     fetchOfferData();
+    fetchReservationData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
-      "Kreiranje rezervacije",
+      widget.reservationId == null
+          ? "Kreiranje rezervacije"
+          : "Pregled rezervacije",
       offer != null
           ? SingleChildScrollView(
               child: Padding(
@@ -154,9 +160,77 @@ class _AddUpdateReservationScreenState
                                 fontSize: 15,
                               ),
                             ),
+                            reservation != null
+                                ? Text(
+                                    "ID rezervacije: ${reservation!.reservationNo}",
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  )
+                                : SizedBox(),
+                            reservation != null
+                                ? Row(
+                                    spacing: 5,
+                                    children: [
+                                      Text(
+                                        "Status rezervacije:",
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      Text(
+                                        reservation!.reservationStatus!.name ??
+                                            "",
+                                        style: TextStyle(
+                                          color: getColorForReservationStatus(
+                                            reservation!.reservationStatusId!
+                                                .toUpperCase(),
+                                          ),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : SizedBox(),
+                            SizedBox(height: 10),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                IconButton(
+                                  padding: EdgeInsets.all(0),
+                                  icon: Icon(
+                                    Icons.description,
+                                    color: AppColors.primary,
+                                    size: 40,
+                                  ),
+                                  onPressed: () {},
+                                ),
+                                reservation != null ?
+                                Column(
+                                  children: [
+                                    Text(
+                                      "Uplaćeno",
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    Text(
+                                      "${FormatHelper.formatNumber(reservation!.paidAmount!)} KM / ${FormatHelper.formatNumber(reservation!.totalCost!)} KM",
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ],
+                                ) : SizedBox(),
                                 IconButton(
                                   padding: EdgeInsets.all(0),
                                   icon: Icon(
@@ -408,7 +482,8 @@ class _AddUpdateReservationScreenState
       item.currentState!.save();
       var passenger = item.currentState!.value;
       var passengerJson = Map<String, dynamic>.from(passenger);
-      passengerJson["dateOfBirth"] = (passengerJson["dateOfBirth"] as DateTime).toIso8601String();
+      passengerJson["dateOfBirth"] = (passengerJson["dateOfBirth"] as DateTime)
+          .toIso8601String();
 
       listOfPassengers.add(passengerJson);
     }
@@ -437,5 +512,30 @@ class _AddUpdateReservationScreenState
     }
 
     return isValid;
+  }
+
+  Future fetchReservationData() async {
+    if (widget.reservationId == null) return;
+
+    reservation = Reservation.fromJson(
+      await reservationProvider.getById(widget.reservationId!),
+    );
+
+    setState(() {});
+  }
+  
+  Color getColorForReservationStatus(String? reservationStatusId) {
+    switch (reservationStatusId) {
+      case AppConstants.reservationNotPaidGuid:
+        return Colors.black;
+      case AppConstants.reservationPartiallyPaidGuid:
+        return Colors.amber;
+      case AppConstants.reservationPaidGuid:
+        return Colors.green;
+      case AppConstants.reservationCancelled:
+        return AppColors.darkRed;
+      default:
+        return AppColors.primary;
+    }
   }
 }

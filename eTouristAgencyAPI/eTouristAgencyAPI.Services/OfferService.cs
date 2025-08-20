@@ -85,6 +85,18 @@ namespace eTouristAgencyAPI.Services
             return queryable;
         }
 
+        public override async Task<OfferResponse> GetByIdAsync(Guid id)
+        {
+            var offer = await _dbContext.Offers.FindAsync(id);
+
+            if (offer == null || (offer.OfferStatusId != AppConstants.FixedOfferStatusActive && offer.OfferStatusId != AppConstants.FixedOfferStatusInactive))
+            {
+                throw new Exception("Offer with provided id is not found.");
+            }
+
+            return await base.GetByIdAsync(id);
+        }
+
         protected override async Task<IQueryable<Offer>> BeforeFetchAllDataAsync(IQueryable<Offer> queryable, OfferSearchModel searchModel)
         {
             queryable = queryable.Include(x => x.Hotel.City.Country)
@@ -96,7 +108,15 @@ namespace eTouristAgencyAPI.Services
                                  .Include(x => x.OfferDocument)
                                  .Include(x => x.OfferImage);
 
-            if (!_userContextService.UserHasRole(Roles.Admin)) searchModel.OfferStatusId = AppConstants.FixedOfferStatusActive;
+            if (!_userContextService.UserHasRole(Roles.Admin) && searchModel.OfferStatusId != null && searchModel.OfferStatusId != AppConstants.FixedOfferStatusActive)
+            {
+                throw new Exception("Provided status is not avalible for this user.");
+            }
+
+            if (!_userContextService.UserHasRole(Roles.Admin) && searchModel.OfferStatusId == null)
+            {
+                searchModel.OfferStatusId = AppConstants.FixedOfferStatusActive;
+            }
 
             if (searchModel.OfferNo != null)
             {

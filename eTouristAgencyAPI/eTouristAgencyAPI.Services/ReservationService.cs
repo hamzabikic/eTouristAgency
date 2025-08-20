@@ -29,6 +29,8 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task BeforeInsertAsync(AddReservationRequest insertModel, Reservation dbModel)
         {
+            if (!insertModel.PassengerList.Any()) throw new Exception("You did not provide passengers.");
+
             var room = await _dbContext.Rooms.Include(x => x.RoomType)
                                              .Include(x => x.Offer)
                                              .ThenInclude(x => x.OfferDiscounts)
@@ -40,7 +42,7 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Room with provided id is not found");
             }
 
-            if (DateTime.Now.Date >= room.Offer.TripStartDate.Date || room.Offer.OfferStatusId != AppConstants.FixedOfferStatusActive)
+            if (DateTime.Now.Date > room.Offer.LastPaymentDeadline.Date || room.Offer.OfferStatusId != AppConstants.FixedOfferStatusActive)
             {
                 throw new Exception("Currently it is not possible to reserve room with provided id.");
             }
@@ -78,6 +80,8 @@ namespace eTouristAgencyAPI.Services
         protected override async Task BeforeUpdateAsync(UpdateReservationRequest updateModel, Reservation dbModel)
         {
             if (dbModel.UserId != _userId) throw new Exception("You can only edit reservations created by yourself.");
+
+            if (!updateModel.PassengerList.Any()) throw new Exception("You did not provide passengers.");
 
             var numberOfKids = updateModel.PassengerList.Where(x => x.DateOfBirth > DateTime.Now.AddYears(-18)).Count();
             var discountPercent = dbModel.OfferDiscount == null ? 0 : dbModel.OfferDiscount.Discount / 100;
@@ -152,14 +156,19 @@ namespace eTouristAgencyAPI.Services
 
         public override async Task<ReservationResponse> GetByIdAsync(Guid id)
         {
-            var reservationResponse = await base.GetByIdAsync(id);
+            var reservation = await _dbContext.Reservations.FindAsync(id);
 
-            if (!_userContextService.UserHasRole(Roles.Admin) && reservationResponse.UserId != _userId)
+            if (reservation == null)
+            {
+                throw new Exception("Reservation with provided id is not found.");
+            }
+
+            if (!_userContextService.UserHasRole(Roles.Admin) && reservation.UserId != _userId)
             {
                 throw new Exception("Reservation with provided id is not avalible for this user.");
             }
 
-            return reservationResponse;
+            return await base.GetByIdAsync(id);
         }
 
         public async Task ChangeStatusAsync(Guid reservationId, UpdateReservationStatusRequest request)
@@ -174,6 +183,30 @@ namespace eTouristAgencyAPI.Services
             reservation.ReservationStatusId = request.ReservationStatusId;
 
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<PaginatedList<MyReservationResponse>> GetAllForCurrentUserAsync(MyReservationSearchModel searchModel)
+        {
+            var countOfAllRecords = await _dbContext.Reservations.CountAsync(x => x.UserId == (_userId ?? Guid.Empty));
+
+            if (countOfAllRecords == 0) return new PaginatedList<MyReservationResponse>()
+            {
+                ListOfRecords = new List<MyReservationResponse>(),
+                TotalPages = 0
+            };
+
+            var listOfRecords = await _dbContext.Reservations.Include(x => x.ReservationStatus).Include(x => x.Room.RoomType).Include(x => x.Room.Offer.OfferImage)
+                                                             .Include(x => x.Room.Offer.BoardType).Include(x => x.Room.Offer.Hotel.City.Country)
+                                                             .Where(x => x.UserId == (_userId ?? Guid.Empty))
+                                                             .Skip((searchModel.Page - 1) * searchModel.RecordsPerPage).Take(searchModel.RecordsPerPage).ToListAsync();
+
+            var totalPages = countOfAllRecords % searchModel.RecordsPerPage == 0 ? countOfAllRecords / searchModel.RecordsPerPage : countOfAllRecords / searchModel.RecordsPerPage + 1;
+
+            return new PaginatedList<MyReservationResponse>()
+            {
+                ListOfRecords = _mapper.Map<List<MyReservationResponse>>(listOfRecords),
+                TotalPages = totalPages
+            };
         }
     }
 }

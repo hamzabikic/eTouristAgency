@@ -58,8 +58,6 @@ class _HotelImageDialogState extends State<HotelImageDialog> {
                       );
                     },
                     scrollPhysics: const BouncingScrollPhysics(),
-                    // Možeš dodati i PageController ako ti treba navigacija strelicama
-                    // pageController: _pageController,
                   )
                 : DialogHelper.openSpinner(context, "Učitavam fotografije..."),
           ),

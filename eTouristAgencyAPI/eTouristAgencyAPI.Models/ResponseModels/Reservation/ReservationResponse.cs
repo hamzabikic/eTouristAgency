@@ -24,7 +24,7 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Reservation
 
         public decimal TotalCost { get; set; }
 
-        public Guid OfferDiscountId { get; set; }
+        public Guid? OfferDiscountId { get; set; }
 
         public Guid ReservationStatusId { get; set; }
 

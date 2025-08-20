@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using eTouristAgencyAPI.Models.ResponseModels.Offer;
 using eTouristAgencyAPI.Models.ResponseModels.RoomType;
 
 namespace eTouristAgencyAPI.Models.ResponseModels.Room

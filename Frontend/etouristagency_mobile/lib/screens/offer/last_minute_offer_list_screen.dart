@@ -23,14 +23,28 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
   Map<String, dynamic> queryStrings = {
     "page": 1,
     "isBookableNow": true,
+    "recordsPerPage": 5,
     "isLastMinuteDiscountActive": true,
   };
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
+    _scrollController.addListener(_onScroll);
     offerProvider = OfferProvider();
     fetchData();
     super.initState();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoadingMore && queryStrings["page"] < paginatedList!.totalPages) {
+        queryStrings["page"] += 1;
+        populateOffers();
+      }
+    }
   }
 
   @override
@@ -39,7 +53,8 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
       "Last minute ponuda",
       paginatedList != null
           ? ListView.separated(
-              itemCount: paginatedList!.listOfRecords.length,
+              controller : _scrollController,
+              itemCount: paginatedList!.listOfRecords.length + (_isLoadingMore ? 1 : 0),
               padding: EdgeInsetsGeometry.only(
                 left: 30.0,
                 right: 30.0,
@@ -48,10 +63,8 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
               ),
               separatorBuilder: (context, index) => SizedBox(height: 15),
               itemBuilder: (context, index) {
-                if (index == queryStrings["page"] * 15 - 1 &&
-                    queryStrings["page"] < paginatedList!.totalPages) {
-                  queryStrings["page"] = queryStrings["page"] + 1;
-                  populateOffers();
+                if(index == paginatedList!.listOfRecords.length){
+                  return DialogHelper.openSpinner(context, "");
                 }
 
                 var offer = paginatedList!.listOfRecords[index];
@@ -161,10 +174,16 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
   }
 
   Future populateOffers() async {
+    setState((){
+      _isLoadingMore =true;
+    });
+
     var newRecords = await offerProvider.getAll(queryStrings);
 
     paginatedList!.listOfRecords.addAll(newRecords.listOfRecords);
 
-    setState(() {});
+    setState(() {
+      _isLoadingMore = false;
+    });
   }
 }

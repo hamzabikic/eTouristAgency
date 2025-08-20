@@ -31,18 +31,31 @@ class _OfferListScreenState extends State<OfferListScreen> {
   PaginatedList<Offer>? paginatedList;
   List<Country>? countries;
   List<EntityCodeValue>? boardTypes;
-  Map<String, dynamic> queryStrings = {"page": 1, "isBookableNow": true};
+  Map<String, dynamic> queryStrings = {"page": 1, "recordsPerPage": 5, "isBookableNow": true};
   bool isFiltersWidgetOpen = false;
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     offerProvider = OfferProvider();
     countryProvider = CountryProvider();
     entityCodeValueProvider = EntityCodeValueProvider();
+    _scrollController.addListener(_onScroll);
     fetchData();
     fetchCountries();
     fetchBoardTypes();
     super.initState();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoadingMore && queryStrings["page"] < paginatedList!.totalPages) {
+        queryStrings["page"] += 1;
+        populateOffers();
+      }
+    }
   }
 
   @override
@@ -70,7 +83,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                       ),
                       Expanded(
                         child: ListView.separated(
-                          itemCount: paginatedList!.listOfRecords.length,
+                          controller: _scrollController,
+                          itemCount:
+                              paginatedList!.listOfRecords.length +
+                              (_isLoadingMore ? 1 : 0),
                           padding: EdgeInsetsGeometry.only(
                             left: 30.0,
                             right: 30.0,
@@ -80,11 +96,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                           separatorBuilder: (context, index) =>
                               SizedBox(height: 15),
                           itemBuilder: (context, index) {
-                            if (index == queryStrings["page"] * 15 - 1 &&
-                                queryStrings["page"] <
-                                    paginatedList!.totalPages) {
-                              queryStrings["page"] = queryStrings["page"] + 1;
-                              populateOffers();
+                            if (index == paginatedList!.listOfRecords.length) {
+                              return DialogHelper.openSpinner(context, "");
                             }
 
                             var offer = paginatedList!.listOfRecords[index];
@@ -188,7 +201,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     ),
                                     Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: getStarIconsOnHotel(offer.hotel!.starRating!),),
+                                      children: getStarIconsOnHotel(
+                                        offer.hotel!.starRating!,
+                                      ),
+                                    ),
                                     Text(
                                       "${offer.hotel!.city!.name}, ${offer.hotel!.city!.country!.name}",
                                       style: TextStyle(
@@ -227,7 +243,12 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                       "Preostalo još ${offer.remainingSpots!} mjesta",
                                       style: TextStyle(
                                         color: offer.remainingSpots! > 10
-                                            ? const Color.fromARGB(255, 76, 175, 79)
+                                            ? const Color.fromARGB(
+                                                255,
+                                                76,
+                                                175,
+                                                79,
+                                              )
                                             : AppColors.darkRed,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
@@ -238,8 +259,17 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                       onPressed: offer.remainingSpots! < 1
                                           ? null
                                           : () {
-                                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> OfferDetailsScreen(offer.id!)));
-                                          },
+                                              Navigator.of(
+                                                context,
+                                              ).pushReplacement(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      OfferDetailsScreen(
+                                                        offer.id!,
+                                                      ),
+                                                ),
+                                              );
+                                            },
                                       child: Text("Pregledaj i rezerviši"),
                                     ),
                                   ],
@@ -482,11 +512,17 @@ class _OfferListScreenState extends State<OfferListScreen> {
   }
 
   Future populateOffers() async {
+    setState(() {
+      _isLoadingMore = true;
+    });
+
     var newRecords = await offerProvider.getAll(queryStrings);
 
     paginatedList!.listOfRecords.addAll(newRecords.listOfRecords);
 
-    setState(() {});
+    setState(() {
+      _isLoadingMore = false;
+    });
   }
 
   Future fetchBoardTypes() async {
@@ -507,10 +543,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
     await fetchData();
   }
 
-  List<Widget> getStarIconsOnHotel(int numberOfStars){
+  List<Widget> getStarIconsOnHotel(int numberOfStars) {
     List<Widget> list = [];
 
-    for(int i =0; i<numberOfStars; i++){
+    for (int i = 0; i < numberOfStars; i++) {
       list.add(Icon(Icons.star, color: Colors.amber));
     }
 
