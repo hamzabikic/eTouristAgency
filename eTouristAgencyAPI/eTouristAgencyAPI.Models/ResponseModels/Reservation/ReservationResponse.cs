@@ -30,6 +30,8 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Reservation
 
         public Guid RoomId { get; set; }
 
+        public string? Note { get; set; }
+
         public RoomResponse Room { get; set; }
 
         public OfferDiscountResponse OfferDiscount { get; set; }

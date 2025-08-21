@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/helpers/format_helper.dart';
@@ -7,8 +8,11 @@ import 'package:etouristagency_mobile/models/offer/offer.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/screens/hotel/hotel_images_dialog.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/add_update_reservation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class OfferDetailsScreen extends StatefulWidget {
   final String offerId;
@@ -33,6 +37,10 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
   Widget build(BuildContext context) {
     return MasterScreen(
       "Kreiranje rezervacije",
+      isBackButtonVisible: true,
+      onClickMethod: (){
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> OfferListScreen()));
+      },
       offer != null
           ? SingleChildScrollView(
               child: Padding(
@@ -134,8 +142,21 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                               ),
                             ),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                IconButton(
+                                  padding: EdgeInsets.all(0),
+                                  icon: Icon(
+                                    Icons.description,
+                                    color: AppColors.primary,
+                                    size: 40,
+                                  ),
+                                  onPressed: offer?.offerDocument != null
+                                      ? () async {
+                                          await saveAndOpenDocument(context);
+                                        }
+                                      : null,
+                                ),
                                 IconButton(
                                   padding: EdgeInsets.all(0),
                                   icon: Icon(
@@ -144,7 +165,11 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                                     size: 40,
                                   ),
                                   onPressed: () async {
-                                   await showDialog(context: context, builder: (context) => HotelImageDialog(offer!.hotelId!));
+                                    await showDialog(
+                                      context: context,
+                                      builder: (context) =>
+                                          HotelImageDialog(offer!.hotelId!),
+                                    );
                                   },
                                 ),
                               ],
@@ -158,7 +183,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                       "Odaberite sobu...",
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w500,
                         fontSize: 15,
                       ),
                     ),
@@ -180,6 +205,22 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     var avalibleRooms = offer!.rooms!
         .where((element) => element.isAvalible == true)
         .toList();
+
+    if (avalibleRooms.isEmpty) {
+      list.add(
+        Center(
+          child: Text(
+            "Trenutno nema dostupnih soba za ovu ponudu.",
+            style: TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+          ),
+        ),
+      );
+      return list;
+    }
 
     for (var item in avalibleRooms) {
       var card = SizedBox(
@@ -208,10 +249,23 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Cijena po osobi: ${FormatHelper.formatNumber(item.discountedPrice ?? 0)} KM"),
-                    ElevatedButton(onPressed: () {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> AddUpdateReservationScreen(widget.offerId, item.id, null)));
-                    }, child: Text("Odaberi")),
+                    Text(
+                      "Cijena po osobi: ${FormatHelper.formatNumber(item.discountedPrice ?? 0)} KM",
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => AddUpdateReservationScreen(
+                              widget.offerId,
+                              item.id,
+                              null,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text("Odaberi"),
+                    ),
                   ],
                 ),
               ],
@@ -249,5 +303,26 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     }
 
     return list;
+  }
+
+  Future<void> saveAndOpenDocument(BuildContext context) async {
+    try {
+      String fileName = offer!.offerDocument!.documentName!;
+      String base64Bytes = offer!.offerDocument!.documentBytes!;
+
+      Uint8List bytes = base64Decode(base64Bytes);
+
+      Directory dir = await getTemporaryDirectory();
+      String savePath = "${dir.path}/$fileName";
+
+      File file = File(savePath);
+      await file.writeAsBytes(bytes);
+      
+      await OpenFile.open(savePath);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Greška pri radu sa fajlom: $e")));
+    }
   }
 }

@@ -14,4 +14,13 @@ class Passenger {
       json["dateOfBirth"] != null ? DateTime.parse(json["dateOfBirth"]) : null,
     );
   }
+
+  Map<String, dynamic> toJson(Passenger passenger){
+    return {
+      "id" : passenger.id,
+      "fullName" : passenger.fullName,
+      "phoneNumber" : passenger.phoneNumber,
+      "dateOfBirth" : passenger.dateOfBirth
+    };
+  }
 }

@@ -6,5 +6,6 @@ namespace eTouristAgencyAPI.Models.RequestModels.Reservation
     {
         public Guid RoomId { get; set; }
         public List<AddPassengerRequest> PassengerList { get; set; }
+        public string? Note { get; set; }
     }
 }

@@ -40,25 +40,35 @@ class _HotelImageDialogState extends State<HotelImageDialog> {
           child: Padding(
             padding: EdgeInsetsGeometry.all(16),
             child: hotel != null && hotel!.hotelImages != null
-                ? PhotoViewGallery.builder(
-                    itemCount: hotel!.hotelImages!.length,
-                    builder: (BuildContext context, int index) {
-                      return PhotoViewGalleryPageOptions.customChild(
-                        child: Container(
-                          height: 300,
-                          child: PhotoView(
-                            backgroundDecoration: BoxDecoration(color: AppColors.lighterBlue),
-                            imageProvider: MemoryImage(
-                              base64Decode(
-                                hotel!.hotelImages![index].imageBytes!,
+                ? hotel!.hotelImages!.isEmpty == false
+                      ? PhotoViewGallery.builder(
+                          itemCount: hotel!.hotelImages!.length,
+                          builder: (BuildContext context, int index) {
+                            return PhotoViewGalleryPageOptions.customChild(
+                              child: Container(
+                                height: 300,
+                                child: PhotoView(
+                                  backgroundDecoration: BoxDecoration(
+                                    color: AppColors.lighterBlue,
+                                  ),
+                                  imageProvider: MemoryImage(
+                                    base64Decode(
+                                      hotel!.hotelImages![index].imageBytes!,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                            );
+                          },
+                          scrollPhysics: const BouncingScrollPhysics(),
+                        )
+                      : Center(
+                        child: Text(
+                            "Trenutno nema dostupnih fotografija za ovaj hotel.",
+                            style: TextStyle(fontSize: 15),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                      );
-                    },
-                    scrollPhysics: const BouncingScrollPhysics(),
-                  )
+                      )
                 : DialogHelper.openSpinner(context, "Učitavam fotografije..."),
           ),
         ),

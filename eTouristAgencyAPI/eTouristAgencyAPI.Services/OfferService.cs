@@ -194,13 +194,13 @@ namespace eTouristAgencyAPI.Services
 
             dbModel.MinimumPricePerPerson = minPricePerPerson - minPricePerPerson * (discount / 100);
             var quantity = dbModel.Rooms.Sum(x => x.Quantity * x.RoomType.RoomCapacity);
-            var reservedQuantity = dbModel.Rooms.Where(x => x.Reservations.Any()).Sum(x => x.Reservations.Count * x.RoomType.RoomCapacity);
+            var reservedQuantity = dbModel.Rooms.Where(x => x.Reservations.Any()).Sum(x => x.Reservations.Count(x=> x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) * x.RoomType.RoomCapacity);
 
             dbModel.RemainingSpots = quantity - reservedQuantity;
 
             foreach (var item in dbModel.Rooms)
             {
-                item.IsAvalible = item.Reservations.Count() < item.Quantity;
+                item.IsAvalible = item.Reservations.Count(x => x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) < item.Quantity;
                 item.DiscountedPrice = item.PricePerPerson - item.PricePerPerson * (discount / 100);
             }
         }

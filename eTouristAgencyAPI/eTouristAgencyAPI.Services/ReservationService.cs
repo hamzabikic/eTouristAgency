@@ -47,7 +47,7 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Currently it is not possible to reserve room with provided id.");
             }
 
-            if (room.Reservations.Count() >= room.Quantity)
+            if (room.Reservations.Count(x=> x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) >= room.Quantity)
             {
                 throw new Exception("Room with provided id is already included in other reservation");
             }
@@ -181,6 +181,25 @@ namespace eTouristAgencyAPI.Services
             }
 
             reservation.ReservationStatusId = request.ReservationStatusId;
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task CancelReservationAsync(Guid reservationId)
+        {
+            var reservation = await _dbContext.Reservations.FindAsync(reservationId);
+
+            if (reservation == null)
+            {
+                throw new Exception("Reservation with provided id is not found.");
+            }
+
+            if (reservation.UserId != _userId)
+            {
+                throw new Exception("You cannot cancel the reservation with the provided ID.");
+            }
+
+            reservation.ReservationStatusId = AppConstants.FixedReservationStatusCancelled;
 
             await _dbContext.SaveChangesAsync();
         }

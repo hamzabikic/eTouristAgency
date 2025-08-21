@@ -1,4 +1,5 @@
-﻿using eTouristAgencyAPI.Models.RequestModels.Reservation;
+﻿using Azure.Core;
+using eTouristAgencyAPI.Models.RequestModels.Reservation;
 using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.ResponseModels.Reservation;
 using eTouristAgencyAPI.Models.SearchModels;
@@ -44,6 +45,21 @@ namespace eTouristAgencyAPI.Controllers
             try
             {
                 await _reservationService.ChangeStatusAsync(id, request);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = Roles.Client)]
+        [HttpPatch("{id}/cancellation")]
+        public async Task<ActionResult> CancelReservation(Guid id)
+        {
+            try
+            {
+                await _reservationService.CancelReservationAsync(id);
                 return Ok();
             }
             catch (Exception ex)

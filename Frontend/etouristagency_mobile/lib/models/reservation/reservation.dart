@@ -1,6 +1,7 @@
 import 'package:etouristagency_mobile/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_mobile/models/offer_discount/offer_discount.dart';
 import 'package:etouristagency_mobile/models/passenger/passenger.dart';
+import 'package:etouristagency_mobile/models/reservation/reservation_payment.dart';
 import 'package:etouristagency_mobile/models/room/room.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
 
@@ -20,7 +21,9 @@ class Reservation {
   OfferDiscount? offerDiscount;
   List<Passenger>? passengers;
   EntityCodeValue? reservationStatus;
+  List<ReservationPayment>? reservationPayments;
   User? user;
+  String? note;
 
   Reservation(
     this.id,
@@ -38,7 +41,9 @@ class Reservation {
     this.offerDiscount,
     this.passengers,
     this.reservationStatus,
+    this.reservationPayments,
     this.user,
+    this.note
   );
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
@@ -70,7 +75,9 @@ class Reservation {
       json["reservationStatus"] != null
           ? EntityCodeValue.fromJson(json["reservationStatus"])
           : null,
+      json["reservationPayments"] != null ? (json["reservationPayments"] as List).map((e)=> ReservationPayment.fromJson(e)).toList() : null,
       json["user"] != null ? User.fromJson(json["user"]) : null,
+      json["note"]
     );
   }
 }

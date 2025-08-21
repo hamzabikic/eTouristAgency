@@ -14,7 +14,9 @@ class ReservationProvider extends BaseProvider<Reservation> {
     return Reservation.fromJson(json);
   }
 
-  Future<PaginatedList<MyReservation>> getAllForCurrentUser(Map<String, dynamic> filters) async {
+  Future<PaginatedList<MyReservation>> getAllForCurrentUser(
+    Map<String, dynamic> filters,
+  ) async {
     var queryStrings = getQueryStrings(filters);
     var url = Uri.parse("${controllerUrl}/me?${queryStrings}");
 
@@ -37,5 +39,23 @@ class ReservationProvider extends BaseProvider<Reservation> {
           .toList(),
       json["totalPages"],
     );
+  }
+
+  Future cancelReservation(String id) async {
+    var url = Uri.parse("${controllerUrl}/${id}/cancellation");
+
+    var response = await http.patch(
+      url,
+      headers: {
+        "Authorization": (await authService.getBasicKey())!,
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Dogodila se greška prilikom otkazivanja rezervacije: ${response.body}",
+      );
+    }
   }
 }

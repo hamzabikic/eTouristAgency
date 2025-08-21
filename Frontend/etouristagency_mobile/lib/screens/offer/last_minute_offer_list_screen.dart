@@ -52,7 +52,7 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
     return MasterScreen(
       "Last minute ponuda",
       paginatedList != null
-          ? ListView.separated(
+          ? paginatedList!.listOfRecords.isEmpty == false ? ListView.separated(
               controller : _scrollController,
               itemCount: paginatedList!.listOfRecords.length + (_isLoadingMore ? 1 : 0),
               padding: EdgeInsetsGeometry.only(
@@ -160,7 +160,13 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                 );
               },
             )
-          : DialogHelper.openSpinner(context, "Učitavam ponude..."),
+          :Center(child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("🙁", style: TextStyle(fontSize: 40)),
+              Text("Trenutno nema dostupnih last minute ponuda.", style: TextStyle(fontSize:15)),
+            ],
+          )): DialogHelper.openSpinner(context, "Učitavam ponude..."),
     );
   }
 

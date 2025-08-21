@@ -6,5 +6,6 @@ namespace eTouristAgencyAPI.Models.RequestModels.Reservation
     {
         public List<UpdatePassengerRequest> PassengerList { get; set; }
         public List<AddReservationPaymentRequest>? ReservationPaymentList { get; set; }
+        public string? Note { get; set; }
     }
 }

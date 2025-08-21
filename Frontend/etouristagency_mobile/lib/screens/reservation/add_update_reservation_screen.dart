@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:accordion/accordion.dart';
 import 'package:etouristagency_mobile/consts/app_colors.dart';
@@ -7,16 +10,21 @@ import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/helpers/format_helper.dart';
 import 'package:etouristagency_mobile/models/offer/offer.dart';
 import 'package:etouristagency_mobile/models/reservation/reservation.dart';
+import 'package:etouristagency_mobile/models/reservation/reservation_payment.dart';
 import 'package:etouristagency_mobile/models/room/room.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/providers/reservation_provider.dart';
 import 'package:etouristagency_mobile/screens/hotel/hotel_images_dialog.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
-import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
+import 'package:etouristagency_mobile/screens/reservation/my_reservations_list_screen.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AddUpdateReservationScreen extends StatefulWidget {
   final String offerId;
@@ -43,10 +51,15 @@ class _AddUpdateReservationScreenState
   final TextEditingController noteEditingController = TextEditingController();
   late final ReservationProvider reservationProvider;
   Reservation? reservation;
+  List<Map<String, dynamic>> initialValues = [];
+  List<ReservationPayment> addedPayments = [];
+  bool isProcessStarted = false;
 
   @override
   void initState() {
-    addNewPassenger();
+    if (widget.reservationId == null) {
+      addNewPassenger();
+    }
     offerProvider = OfferProvider();
     reservationProvider = ReservationProvider();
     fetchOfferData();
@@ -57,6 +70,14 @@ class _AddUpdateReservationScreenState
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      isBackButtonVisible: widget.reservationId == null,
+      onClickMethod: () {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => OfferDetailsScreen(widget.offerId),
+          ),
+        );
+      },
       widget.reservationId == null
           ? "Kreiranje rezervacije"
           : "Pregled rezervacije",
@@ -191,6 +212,7 @@ class _AddUpdateReservationScreenState
                                                 .toUpperCase(),
                                           ),
                                           fontWeight: FontWeight.bold,
+                                          fontStyle: FontStyle.italic,
                                           fontSize: 15,
                                         ),
                                       ),
@@ -208,29 +230,40 @@ class _AddUpdateReservationScreenState
                                     color: AppColors.primary,
                                     size: 40,
                                   ),
-                                  onPressed: () {},
+                                  onPressed: offer?.offerDocument != null
+                                      ? () async {
+                                          await saveAndOpenDocument(
+                                            context,
+                                            offer!.offerDocument!.documentName!,
+                                            offer!
+                                                .offerDocument!
+                                                .documentBytes!,
+                                          );
+                                        }
+                                      : null,
                                 ),
-                                reservation != null ?
-                                Column(
-                                  children: [
-                                    Text(
-                                      "Uplaćeno",
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    Text(
-                                      "${FormatHelper.formatNumber(reservation!.paidAmount!)} KM / ${FormatHelper.formatNumber(reservation!.totalCost!)} KM",
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ],
-                                ) : SizedBox(),
+                                reservation != null
+                                    ? Column(
+                                        children: [
+                                          Text(
+                                            "Uplaćeno",
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          Text(
+                                            "${FormatHelper.formatNumber(reservation!.paidAmount!)} KM / ${FormatHelper.formatNumber(reservation!.totalCost!)} KM",
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : SizedBox(),
                                 IconButton(
                                   padding: EdgeInsets.all(0),
                                   icon: Icon(
@@ -250,6 +283,15 @@ class _AddUpdateReservationScreenState
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Odabrana soba",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
                       ),
                     ),
                     SizedBox(height: 10),
@@ -282,6 +324,15 @@ class _AddUpdateReservationScreenState
                             ],
                           ),
                         ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Putnici",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
                       ),
                     ),
                     Accordion(
@@ -317,6 +368,29 @@ class _AddUpdateReservationScreenState
                           )
                         : SizedBox(),
                     SizedBox(height: 10),
+                    widget.reservationId != null
+                        ? Text(
+                            "Uplate",
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
+                            ),
+                          )
+                        : SizedBox(),
+                    widget.reservationId != null
+                        ? SizedBox(height: 10)
+                        : SizedBox(),
+                    widget.reservationId != null
+                        ? Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: getDocumentElements(),
+                          )
+                        : SizedBox(),
+                    widget.reservationId != null
+                        ? SizedBox(height: 10)
+                        : SizedBox(),
                     TextField(
                       minLines: 3,
                       maxLines: 6,
@@ -325,11 +399,35 @@ class _AddUpdateReservationScreenState
                     ),
                     SizedBox(height: 20),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        widget.reservationId == null
+                            ? SizedBox()
+                            : ElevatedButton(
+                                onPressed: cancelReservation,
+                                child: Text(
+                                  "Otkaži",
+                                  style: TextStyle(color: AppColors.darkRed),
+                                ),
+                              ),
                         ElevatedButton(
-                          onPressed: createUpdateReservation,
-                          child: Text("Kreiraj rezervaciju"),
+                          onPressed: !isProcessStarted
+                              ? createUpdateReservation
+                              : null,
+                          child: isProcessStarted == false
+                              ? Text(
+                                  widget.reservationId == null
+                                      ? "Kreiraj rezervaciju"
+                                      : "Sačuvaj promjene",
+                                )
+                              : SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -387,10 +485,15 @@ class _AddUpdateReservationScreenState
           ),
           content: FormBuilder(
             key: item,
+            initialValue: initialValues[counter - 1],
             child: Padding(
               padding: const EdgeInsets.only(left: 8.0, right: 8.0),
               child: Column(
                 children: [
+                  Visibility(
+                    visible: false,
+                    child: FormBuilderTextField(name: "id"),
+                  ),
                   FormBuilderTextField(
                     name: "fullName",
                     decoration: InputDecoration(labelText: "Ime i prezime"),
@@ -432,15 +535,20 @@ class _AddUpdateReservationScreenState
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            ElevatedButton(
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete_forever,
+                                color: AppColors.darkRed,
+                                size: 30,
+                              ),
                               onPressed: () {
-                                formBuilderKeys.remove(item);
+                                var indexToRemove = formBuilderKeys.indexOf(
+                                  item,
+                                );
+                                formBuilderKeys.removeAt(indexToRemove);
+                                initialValues.removeAt(indexToRemove);
                                 setState(() {});
                               },
-                              child: Text(
-                                "Ukloni",
-                                style: TextStyle(color: AppColors.darkRed),
-                              ),
                             ),
                           ],
                         )
@@ -461,6 +569,7 @@ class _AddUpdateReservationScreenState
   void addNewPassenger() {
     var key = GlobalKey<FormBuilderState>();
     formBuilderKeys.add(key);
+    initialValues.add({});
 
     setState(() {});
   }
@@ -470,10 +579,14 @@ class _AddUpdateReservationScreenState
 
     if (!passengersValidations) return;
 
+    isProcessStarted = true;
+    setState(() {});
+
     var json = {
       "note": noteEditingController.text,
       "roomId": room!.id,
       "passengerList": [],
+      "reservationPaymentList": [],
     };
 
     var listOfPassengers = [];
@@ -489,16 +602,46 @@ class _AddUpdateReservationScreenState
     }
 
     json["passengerList"] = listOfPassengers;
+    json["reservationPaymentList"] = addedPayments
+        .map((e) => e.toJson())
+        .toList();
 
     if (widget.reservationId == null) {
-      await reservationProvider.add(json);
+      try {
+        await reservationProvider.add(json);
 
-      DialogHelper.openDialog(context, "Uspješno dodavanje rezervacije", () {
-        Navigator.of(context).pop();
-      });
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => OfferListScreen()),
-      );
+        DialogHelper.openDialog(context, "Uspješno dodavanje rezervacije", () {
+          Navigator.of(context).pop();
+        });
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MyReservationsListScreen()),
+        );
+      } on Exception catch (ex) {
+        isProcessStarted = false;
+        setState(() {});
+
+        DialogHelper.openDialog(context, ex.toString(), () {
+          Navigator.of(context).pop();
+        }, type: DialogType.error);
+      }
+    } else {
+      try {
+        await reservationProvider.update(widget.reservationId!, json);
+
+        DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
+          Navigator.of(context).pop();
+        });
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MyReservationsListScreen()),
+        );
+      } on Exception catch (ex) {
+        isProcessStarted = false;
+        setState(() {});
+
+        DialogHelper.openDialog(context, ex.toString(), () {
+          Navigator.of(context).pop();
+        }, type: DialogType.error);
+      }
     }
   }
 
@@ -521,9 +664,16 @@ class _AddUpdateReservationScreenState
       await reservationProvider.getById(widget.reservationId!),
     );
 
+    noteEditingController.text = reservation!.note ?? "";
+
+    initialValues = reservation!.passengers!.map((e) => e.toJson(e)).toList();
+    for (int i = 0; i < reservation!.passengers!.length; i++) {
+      formBuilderKeys.add(GlobalKey<FormBuilderState>());
+    }
+
     setState(() {});
   }
-  
+
   Color getColorForReservationStatus(String? reservationStatusId) {
     switch (reservationStatusId) {
       case AppConstants.reservationNotPaidGuid:
@@ -537,5 +687,149 @@ class _AddUpdateReservationScreenState
       default:
         return AppColors.primary;
     }
+  }
+
+  Future<void> saveAndOpenDocument(
+    BuildContext context,
+    String fileName,
+    String base64Bytes,
+  ) async {
+    try {
+      Uint8List bytes = base64Decode(base64Bytes);
+
+      Directory dir = await getTemporaryDirectory();
+      String savePath = "${dir.path}/$fileName";
+
+      File file = File(savePath);
+      await file.writeAsBytes(bytes);
+
+      await OpenFile.open(savePath);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Greška pri radu sa fajlom: $e")));
+    }
+  }
+
+  List<Widget> getDocumentElements() {
+    List<Widget> documents = [];
+
+    if (reservation?.reservationPayments != null &&
+        !reservation!.reservationPayments!.isEmpty) {
+      for (var item in reservation!.reservationPayments!) {
+        documents.add(
+          InkWell(
+            child: Column(
+              children: [
+                Icon(Icons.receipt, color: AppColors.primary, size: 30),
+                Text(
+                  item.documentName?.substring(
+                        0,
+                        min(15, item.documentName!.length),
+                      ) ??
+                      "",
+                ),
+              ],
+            ),
+            onTap: () async {
+              await saveAndOpenDocument(
+                context,
+                item.documentName!,
+                item.documentBytes!,
+              );
+            },
+          ),
+        );
+      }
+    }
+
+    for (var item in addedPayments) {
+      documents.add(
+        Column(
+          children: [
+            InkWell(
+              child: Column(
+                children: [
+                  Icon(Icons.receipt, color: AppColors.primary, size: 30),
+                  Text(
+                    item.documentName?.substring(
+                          0,
+                          min(15, item.documentName!.length),
+                        ) ??
+                        "",
+                  ),
+                ],
+              ),
+              onTap: () async {
+                await saveAndOpenDocument(
+                  context,
+                  item.documentName!,
+                  item.documentBytes!,
+                );
+              },
+            ),
+            SizedBox(height: 5),
+            InkWell(
+              child: Icon(Icons.clear, size: 15, color: AppColors.darkRed),
+              onTap: () {
+                var indexToRemove = addedPayments.indexOf(item);
+                addedPayments.removeAt(indexToRemove);
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    documents.add(
+      IconButton(
+        icon: Icon(Icons.add_circle, color: AppColors.primary),
+        onPressed: pickAndUploadFile,
+      ),
+    );
+
+    return documents;
+  }
+
+  Future<void> pickAndUploadFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+
+      var bytes = await file.readAsBytes();
+      var fileName = result.files.single.name;
+
+      addedPayments.add(
+        ReservationPayment(null, base64Encode(bytes), fileName),
+      );
+
+      setState(() {});
+    }
+  }
+
+  Future cancelReservation() async {
+    DialogHelper.openConfirmationDialog(
+      context,
+      "Jeste li sigurni da želite otkazati ovu rezervaciju?",
+      "Otkazivanjem ove rezervacije moguće je da nećete ostvariti povrat novca.",
+      () async {
+        await reservationProvider.cancelReservation(widget.reservationId!);
+        Navigator.of(context).pop();
+        DialogHelper.openDialog(context, "Uspješno otkazana rezervacija", () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => AddUpdateReservationScreen(
+                widget.offerId,
+                widget.roomId,
+                widget.reservationId,
+              ),
+            ),
+          );
+        });
+      },
+    );
   }
 }
