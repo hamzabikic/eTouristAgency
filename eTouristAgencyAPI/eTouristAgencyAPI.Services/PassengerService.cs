@@ -26,13 +26,14 @@ namespace eTouristAgencyAPI.Services
         {
             var passengers = _mapper.Map<List<Passenger>>(passengerList);
 
-            passengers.ForEach(passenger =>
+            for (int i = 0; i < passengers.Count; i++)
             {
-                passenger.Id = Guid.NewGuid();
-                passenger.ReservationId = reservationId;
-                passenger.CreatedBy = _userId ?? Guid.Empty;
-                passenger.ModifiedBy = _userId ?? Guid.Empty;
-            });
+                passengers[i].Id = Guid.NewGuid();
+                passengers[i].ReservationId = reservationId;
+                passengers[i].CreatedBy = _userId ?? Guid.Empty;
+                passengers[i].ModifiedBy = _userId ?? Guid.Empty;
+                passengers[i].DisplayOrderWithinReservation = i + 1;
+            }
 
             await _dbContext.Passengers.AddRangeAsync(passengers);
             await _dbContext.SaveChangesAsync();
@@ -42,11 +43,17 @@ namespace eTouristAgencyAPI.Services
 
         public async Task<List<PassengerResponse>> UpdateByReservationIdAsync(Guid reservationId, List<UpdatePassengerRequest> passengerList)
         {
+            for(int i =0; i<passengerList.Count; i++)
+            {
+                passengerList[i].DisplayOrderWithinReservation = i + 1;
+            }
+
             var storagedPassengers = await _dbContext.Passengers.Where(x => x.ReservationId == reservationId).ToListAsync();
             var storagedPassengersForUpdate = storagedPassengers.Where(x => passengerList.Select(y => y.Id).Contains(x.Id)).ToList();
             var storagedPassengersForDelete = storagedPassengers.Where(x => !passengerList.Where(y => y.Id != null).Select(y => y.Id).Contains(x.Id)).ToList();
 
             var passengersForInsert = _mapper.Map<List<Passenger>>(passengerList.Where(x => x.Id == null).ToList());
+
             passengersForInsert.ForEach(x =>
             {
                 x.Id = Guid.NewGuid();

@@ -27,6 +27,8 @@ public partial class ReservationPayment
     [StringLength(255)]
     public string DocumentName { get; set; } = null!;
 
+    public int? DisplayOrderWithinReservation { get; set; }
+
     [ForeignKey("CreatedBy")]
     [InverseProperty("ReservationPaymentCreatedByNavigations")]
     public virtual User CreatedByNavigation { get; set; } = null!;

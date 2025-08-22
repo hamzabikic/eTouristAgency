@@ -8,7 +8,7 @@ namespace eTouristAgencyAPI.Services.Interfaces
 {
     public interface IReservationService : ICRUDService<Reservation, ReservationResponse, ReservationSearchModel, AddReservationRequest, UpdateReservationRequest>
     {
-        Task ChangeStatusAsync(Guid reservationId, UpdateReservationStatusRequest request);
+        Task AddPaymentAsync(Guid reservationId, UpdateReservationStatusRequest request);
         Task CancelReservationAsync(Guid reservationId);
         Task<PaginatedList<MyReservationResponse>> GetAllForCurrentUserAsync(MyReservationSearchModel searchModel);
     }

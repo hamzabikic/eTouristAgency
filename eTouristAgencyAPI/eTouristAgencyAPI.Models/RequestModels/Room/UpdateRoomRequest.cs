@@ -1,4 +1,6 @@
-﻿namespace eTouristAgencyAPI.Models.RequestModels.Room
+﻿using System.Text.Json.Serialization;
+
+namespace eTouristAgencyAPI.Models.RequestModels.Room
 {
     public class UpdateRoomRequest
     {
@@ -13,5 +15,8 @@
         public int Quantity { get; set; }
 
         public string? ShortDescription { get; set; }
+
+        [JsonIgnore]
+        public int DisplayOrderWithinOffer { get; set; }
     }
 }

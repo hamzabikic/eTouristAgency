@@ -35,6 +35,8 @@ public partial class Room
     [StringLength(255)]
     public string? ShortDescription { get; set; }
 
+    public int? DisplayOrderWithinOffer { get; set; }
+
     [ForeignKey("CreatedBy")]
     [InverseProperty("RoomCreatedByNavigations")]
     public virtual User CreatedByNavigation { get; set; } = null!;

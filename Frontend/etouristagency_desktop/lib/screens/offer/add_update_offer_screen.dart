@@ -35,6 +35,7 @@ class AddUpdateOfferScreen extends StatefulWidget {
 }
 
 class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
+  ScrollController horizontalScrollController = ScrollController();
   final formBuilderKey = GlobalKey<FormBuilderState>();
   List<GlobalKey<FormBuilderState>> formBuilderRoomsKey = [];
   List<GlobalKey<FormBuilderState>> formBuilderDiscountsKey = [];
@@ -93,491 +94,498 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
-      Center(
-        child: SingleChildScrollView(
+      SingleChildScrollView(
+        child: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.primaryTransparent,
-                borderRadius: BorderRadiusGeometry.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 16,
-                  left: 50,
-                  right: 50,
-                  bottom: 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: 700,
-                      child: Center(
-                        child: Text(
-                          widget.offer == null ? "Nova ponuda" : "Izmjena ponude",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.blueGrey,
+            child: Scrollbar(
+              controller: horizontalScrollController,
+              child: SingleChildScrollView(
+                controller: horizontalScrollController,
+                scrollDirection: Axis.horizontal,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTransparent,
+                    borderRadius: BorderRadiusGeometry.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      top: 16,
+                      left: 50,
+                      right: 50,
+                      bottom: 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 700,
+                          child: Center(
+                            child: Text(
+                              widget.offer == null ? "Nova ponuda" : "Izmjena ponude",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.blueGrey,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    FormBuilder(
-                      initialValue: widget.offer?.toJson() ?? {},
-                      key: formBuilderKey,
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            spacing: 100,
+                        SizedBox(height: 10),
+                        FormBuilder(
+                          initialValue: widget.offer?.toJson() ?? {},
+                          key: formBuilderKey,
+                          child: Column(
                             children: [
-                              Column(
+                              Row(
                                 mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                spacing: 100,
                                 children: [
-                                  photo == null
-                                      ? Icon(
-                                          Icons.image,
-                                          size: 200,
-                                          color: AppColors.primary,
-                                        )
-                                      : Image.memory(
-                                          base64Decode(photo!),
-                                          height: 200,
-                                          width: 200,
-                                        ),
-                                  SizedBox(height: 10),
-                                  !isInactiveStatus
-                                      ? ElevatedButton(
-                                          onPressed: uploadPhoto,
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.upload, size: 15),
-                                              SizedBox(width: 10),
-                                              Text("Učitaj sliku"),
-                                            ],
-                                          ),
-                                        )
-                                      : SizedBox(),
-                                  SizedBox(height: 5),
-                                  SizedBox(
-                                    width: 300,
-                                    child: FormBuilderDateTimePicker(
-                                      validator: FormBuilderValidators.compose([
-                                        FormBuilderValidators.required(
-                                          errorText: "Ovo polje je obavezno.",
-                                        ),
-                                      ]),
-                                      name: "firstPaymentDeadline",
-                                      initialDate: DateTime.now(),
-                                      inputType: InputType.date,
-                                      format: DateFormat("dd.MM.yyyy"),
-                                      enabled: !isInactiveStatus,
-                                      style: TextStyle(color: Colors.black),
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        labelText:
-                                            "Krajnji datum za uplatu prve rate",
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 300,
-                                    child: FormBuilderDateTimePicker(
-                                      validator: FormBuilderValidators.compose([
-                                        FormBuilderValidators.required(
-                                          errorText: "Ovo polje je obavezno.",
-                                        ),
-                                      ]),
-                                      name: "lastPaymentDeadline",
-                                      initialDate: DateTime.now(),
-                                      inputType: InputType.date,
-                                      format: DateFormat("dd.MM.yyyy"),
-                                      enabled: !isInactiveStatus,
-                                      style: TextStyle(color: Colors.black),
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        labelText:
-                                            "Krajnji datum za uplatu zadnje rate",
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Text("Opis putovanja"),
-                                  SizedBox(
-                                    width: 300,
-                                    child: FormBuilderTextField(
-                                      name: "description",
-                                      maxLines: 5,
-                                      enabled: !isInactiveStatus,
-                                      style: TextStyle(color: Colors.black),
-                                      validator: FormBuilderValidators.compose([
-                                        FormBuilderValidators.required(
-                                          errorText: "Ovo polje je obavezno.",
-                                        ),
-                                      ]),
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        labelText: "Unesite opis",
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    width: 300,
-                                    child: IntrinsicWidth(
-                                      child: FormBuilderDropdown(
-                                        validator:
-                                            FormBuilderValidators.compose([
-                                              FormBuilderValidators.required(
-                                                errorText:
-                                                    "Ovo polje je obavezno.",
-                                              ),
-                                            ]),
-                                        initialValue: hotelList != null
-                                            ? widget.offer?.hotelId ?? ""
-                                            : "",
-                                        name: "hotelId",
-                                        style: TextStyle(color: Colors.black),
-                                        enabled: !isInactiveStatus,
-                                        items: getHotelDropdownMenuItems(),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 300,
-                                    child: FormBuilderDateTimePicker(
-                                      validator: FormBuilderValidators.compose([
-                                        FormBuilderValidators.required(
-                                          errorText: "Ovo polje je obavezno.",
-                                        ),
-                                      ]),
-                                      name: "tripStartDate",
-                                      initialDate: DateTime.now(),
-                                      inputType: InputType.both,
-                                      style: TextStyle(color: Colors.black),
-                                      format: DateFormat("dd.MM.yyyy HH:mm:ss"),
-                                      enabled: !isInactiveStatus,
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        labelText: "Datum polaska",
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 300,
-                                    child: FormBuilderDateTimePicker(
-                                      validator: FormBuilderValidators.compose([
-                                        FormBuilderValidators.required(
-                                          errorText: "Ovo polje je obavezno.",
-                                        ),
-                                      ]),
-                                      name: "tripEndDate",
-                                      initialDate: DateTime.now(),
-                                      inputType: InputType.both,
-                                      style: TextStyle(color: Colors.black),
-                                      format: DateFormat("dd.MM.yyyy HH:mm:ss"),
-                                      enabled: !isInactiveStatus,
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        labelText: "Datum povratka",
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 300,
-                                    child: IntrinsicWidth(
-                                      child: FormBuilderDropdown(
-                                        validator:
-                                            FormBuilderValidators.compose([
-                                              FormBuilderValidators.required(
-                                                errorText:
-                                                    "Ovo polje je obavezno.",
-                                              ),
-                                            ]),
-                                        initialValue: boardTypeList != null
-                                            ? widget.offer?.boardTypeId ?? ""
-                                            : "",
-                                        name: "boardTypeId",
-                                        enabled: !isInactiveStatus,
-                                        items: getBoardTypeDropdownMenuItems(),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 300,
-                                    child: FormBuilderTextField(
-                                      name: "numberOfNights",
-                                      enabled: !isInactiveStatus,
-                                      style: TextStyle(color: Colors.black),
-                                      validator: FormBuilderValidators.compose([
-                                        FormBuilderValidators.required(
-                                          errorText: "Ovo polje je obavezno.",
-                                        ),
-                                        FormBuilderValidators.numeric(
-                                          errorText:
-                                              "Ovo polje može sadržavati isključivo brojeve.",
-                                        ),
-                                      ]),
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        labelText: "Broj noćenja",
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 300,
-                                    child: FormBuilderTextField(
-                                      name: "departurePlace",
-                                      enabled: !isInactiveStatus,
-                                      style: TextStyle(color: Colors.black),
-                                      validator: FormBuilderValidators.compose([
-                                        FormBuilderValidators.required(
-                                          errorText: "Ovo polje je obavezno.",
-                                        ),
-                                      ]),
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        labelText: "Mjesto polaska",
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 300,
-                                    child: FormBuilderTextField(
-                                      name: "carriers",
-                                      style: TextStyle(color: Colors.black),
-                                      enabled: !isInactiveStatus,
-                                      validator: FormBuilderValidators.compose([
-                                        FormBuilderValidators.required(
-                                          errorText: "Ovo polje je obavezno.",
-                                        ),
-                                      ]),
-                                      decoration: InputDecoration(
-                                        labelStyle: TextStyle(
-                                          color: Colors.black,
-                                        ),
-                                        labelText: "Prevoznici",
-                                      ),
-                                    ),
-                                  ),
-                                  widget.offer != null
-                                      ? SizedBox(
-                                          width: 300,
-                                          child: FormBuilderTextField(
-                                            name: "OfferStatus",
-                                            decoration: InputDecoration(
-                                              labelText: "Status ponude",
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      photo == null
+                                          ? Icon(
+                                              Icons.image,
+                                              size: 200,
+                                              color: AppColors.primary,
+                                            )
+                                          : Image.memory(
+                                              base64Decode(photo!),
+                                              height: 200,
+                                              width: 200,
                                             ),
-                                            initialValue:
-                                                widget.offer!.offerStatus!.name,
-                                            readOnly: true,
+                                      SizedBox(height: 10),
+                                      !isInactiveStatus
+                                          ? ElevatedButton(
+                                              onPressed: uploadPhoto,
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.upload, size: 15),
+                                                  SizedBox(width: 10),
+                                                  Text("Učitaj sliku"),
+                                                ],
+                                              ),
+                                            )
+                                          : SizedBox(),
+                                      SizedBox(height: 5),
+                                      SizedBox(
+                                        width: 300,
+                                        child: FormBuilderDateTimePicker(
+                                          validator: FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(
+                                              errorText: "Ovo polje je obavezno.",
+                                            ),
+                                          ]),
+                                          name: "firstPaymentDeadline",
+                                          initialDate: DateTime.now(),
+                                          inputType: InputType.date,
+                                          format: DateFormat("dd.MM.yyyy"),
+                                          enabled: !isInactiveStatus,
+                                          style: TextStyle(color: Colors.black),
+                                          decoration: InputDecoration(
+                                            labelStyle: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            labelText:
+                                                "Krajnji datum za uplatu prve rate",
                                           ),
-                                        )
-                                      : SizedBox(height: 40),
-                                  SizedBox(height: 40),
-                                  !isInactiveStatus
-                                      ? ElevatedButton(
-                                          onPressed: uploadDocument,
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.upload, size: 15),
-                                              SizedBox(width: 10),
-                                              Text("Učitaj dokument"),
-                                            ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 300,
+                                        child: FormBuilderDateTimePicker(
+                                          validator: FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(
+                                              errorText: "Ovo polje je obavezno.",
+                                            ),
+                                          ]),
+                                          name: "lastPaymentDeadline",
+                                          initialDate: DateTime.now(),
+                                          inputType: InputType.date,
+                                          format: DateFormat("dd.MM.yyyy"),
+                                          enabled: !isInactiveStatus,
+                                          style: TextStyle(color: Colors.black),
+                                          decoration: InputDecoration(
+                                            labelStyle: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            labelText:
+                                                "Krajnji datum za uplatu zadnje rate",
                                           ),
-                                        )
-                                      : SizedBox(),
-                                  SizedBox(height: 10),
-                                  document != null
-                                      ? ElevatedButton(
-                                          onPressed: downloadDocument,
-                                          child: Text("Preuzmi dokument"),
-                                        )
-                                      : SizedBox(),
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text("Opis putovanja"),
+                                      SizedBox(
+                                        width: 300,
+                                        child: FormBuilderTextField(
+                                          name: "description",
+                                          maxLines: 5,
+                                          enabled: !isInactiveStatus,
+                                          style: TextStyle(color: Colors.black),
+                                          validator: FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(
+                                              errorText: "Ovo polje je obavezno.",
+                                            ),
+                                          ]),
+                                          decoration: InputDecoration(
+                                            labelStyle: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            labelText: "Unesite opis",
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 300,
+                                        child: IntrinsicWidth(
+                                          child: FormBuilderDropdown(
+                                            validator:
+                                                FormBuilderValidators.compose([
+                                                  FormBuilderValidators.required(
+                                                    errorText:
+                                                        "Ovo polje je obavezno.",
+                                                  ),
+                                                ]),
+                                            initialValue: hotelList != null
+                                                ? widget.offer?.hotelId ?? ""
+                                                : "",
+                                            name: "hotelId",
+                                            style: TextStyle(color: Colors.black),
+                                            enabled: !isInactiveStatus,
+                                            items: getHotelDropdownMenuItems(),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 300,
+                                        child: FormBuilderDateTimePicker(
+                                          validator: FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(
+                                              errorText: "Ovo polje je obavezno.",
+                                            ),
+                                          ]),
+                                          name: "tripStartDate",
+                                          initialDate: DateTime.now(),
+                                          inputType: InputType.both,
+                                          style: TextStyle(color: Colors.black),
+                                          format: DateFormat("dd.MM.yyyy HH:mm:ss"),
+                                          enabled: !isInactiveStatus,
+                                          decoration: InputDecoration(
+                                            labelStyle: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            labelText: "Datum polaska",
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 300,
+                                        child: FormBuilderDateTimePicker(
+                                          validator: FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(
+                                              errorText: "Ovo polje je obavezno.",
+                                            ),
+                                          ]),
+                                          name: "tripEndDate",
+                                          initialDate: DateTime.now(),
+                                          inputType: InputType.both,
+                                          style: TextStyle(color: Colors.black),
+                                          format: DateFormat("dd.MM.yyyy HH:mm:ss"),
+                                          enabled: !isInactiveStatus,
+                                          decoration: InputDecoration(
+                                            labelStyle: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            labelText: "Datum povratka",
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 300,
+                                        child: IntrinsicWidth(
+                                          child: FormBuilderDropdown(
+                                            validator:
+                                                FormBuilderValidators.compose([
+                                                  FormBuilderValidators.required(
+                                                    errorText:
+                                                        "Ovo polje je obavezno.",
+                                                  ),
+                                                ]),
+                                            initialValue: boardTypeList != null
+                                                ? widget.offer?.boardTypeId ?? ""
+                                                : "",
+                                            name: "boardTypeId",
+                                            enabled: !isInactiveStatus,
+                                            items: getBoardTypeDropdownMenuItems(),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 300,
+                                        child: FormBuilderTextField(
+                                          name: "numberOfNights",
+                                          enabled: !isInactiveStatus,
+                                          style: TextStyle(color: Colors.black),
+                                          validator: FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(
+                                              errorText: "Ovo polje je obavezno.",
+                                            ),
+                                            FormBuilderValidators.numeric(
+                                              errorText:
+                                                  "Ovo polje može sadržavati isključivo brojeve.",
+                                            ),
+                                          ]),
+                                          decoration: InputDecoration(
+                                            labelStyle: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            labelText: "Broj noćenja",
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 300,
+                                        child: FormBuilderTextField(
+                                          name: "departurePlace",
+                                          enabled: !isInactiveStatus,
+                                          style: TextStyle(color: Colors.black),
+                                          validator: FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(
+                                              errorText: "Ovo polje je obavezno.",
+                                            ),
+                                          ]),
+                                          decoration: InputDecoration(
+                                            labelStyle: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            labelText: "Mjesto polaska",
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 300,
+                                        child: FormBuilderTextField(
+                                          name: "carriers",
+                                          style: TextStyle(color: Colors.black),
+                                          enabled: !isInactiveStatus,
+                                          validator: FormBuilderValidators.compose([
+                                            FormBuilderValidators.required(
+                                              errorText: "Ovo polje je obavezno.",
+                                            ),
+                                          ]),
+                                          decoration: InputDecoration(
+                                            labelStyle: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            labelText: "Prevoznici",
+                                          ),
+                                        ),
+                                      ),
+                                      widget.offer != null
+                                          ? SizedBox(
+                                              width: 300,
+                                              child: FormBuilderTextField(
+                                                name: "OfferStatus",
+                                                decoration: InputDecoration(
+                                                  labelText: "Status ponude",
+                                                ),
+                                                initialValue:
+                                                    widget.offer!.offerStatus!.name,
+                                                readOnly: true,
+                                              ),
+                                            )
+                                          : SizedBox(height: 40),
+                                      SizedBox(height: 40),
+                                      !isInactiveStatus
+                                          ? ElevatedButton(
+                                              onPressed: uploadDocument,
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.upload, size: 15),
+                                                  SizedBox(width: 10),
+                                                  Text("Učitaj dokument"),
+                                                ],
+                                              ),
+                                            )
+                                          : SizedBox(),
+                                      SizedBox(height: 10),
+                                      document != null
+                                          ? ElevatedButton(
+                                              onPressed: downloadDocument,
+                                              child: Text("Preuzmi dokument"),
+                                            )
+                                          : SizedBox(),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 30),
-                    Text("Popusti", style: TextStyle(fontSize: 18)),
-                    SizedBox(
-                      width: 700,
-                      child: Accordion(
-                        headerBackgroundColor: AppColors.primary,
-                        contentBorderColor: AppColors.primary,
-                        maxOpenSections: 1,
-                        children: getDiscountAccordionSectionList(),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 700,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          !isInactiveStatus
-                              ? ElevatedButton(
-                                  onPressed: isFirstMinuteEnabled
-                                      ? () {
-                                          offerDiscounts.add(
-                                            DiscountAccordionItem(
-                                              discountTypeId: AppConstants
-                                                  .firstMinuteDiscountGuid,
-                                            ),
-                                          );
-
-                                          setState(() {});
-                                        }
-                                      : null,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.add,
-                                        color: Colors.blueGrey,
-                                        size: 15,
+                        ),
+                        SizedBox(height: 30),
+                        Text("Popusti", style: TextStyle(fontSize: 18)),
+                        SizedBox(
+                          width: 700,
+                          child: Accordion(
+                            headerBackgroundColor: AppColors.primary,
+                            contentBorderColor: AppColors.primary,
+                            maxOpenSections: 1,
+                            children: getDiscountAccordionSectionList(),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 700,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              !isInactiveStatus
+                                  ? ElevatedButton(
+                                      onPressed: isFirstMinuteEnabled
+                                          ? () {
+                                              offerDiscounts.add(
+                                                DiscountAccordionItem(
+                                                  discountTypeId: AppConstants
+                                                      .firstMinuteDiscountGuid,
+                                                ),
+                                              );
+                          
+                                              setState(() {});
+                                            }
+                                          : null,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.add,
+                                            color: Colors.blueGrey,
+                                            size: 15,
+                                          ),
+                                          SizedBox(width: 2),
+                                          Text("Dodaj First Minute"),
+                                        ],
                                       ),
-                                      SizedBox(width: 2),
-                                      Text("Dodaj First Minute"),
-                                    ],
-                                  ),
-                                )
-                              : SizedBox(),
-                          SizedBox(width: 30),
-                          !isInactiveStatus
-                              ? ElevatedButton(
-                                  onPressed: isLastMinuteEnabled
-                                      ? () {
-                                          offerDiscounts.add(
-                                            DiscountAccordionItem(
-                                              discountTypeId: AppConstants
-                                                  .lastMinuteDiscountGuid,
-                                            ),
-                                          );
-
-                                          setState(() {});
-                                        }
-                                      : null,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.add,
-                                        color: Colors.blueGrey,
-                                        size: 15,
+                                    )
+                                  : SizedBox(),
+                              SizedBox(width: 30),
+                              !isInactiveStatus
+                                  ? ElevatedButton(
+                                      onPressed: isLastMinuteEnabled
+                                          ? () {
+                                              offerDiscounts.add(
+                                                DiscountAccordionItem(
+                                                  discountTypeId: AppConstants
+                                                      .lastMinuteDiscountGuid,
+                                                ),
+                                              );
+                          
+                                              setState(() {});
+                                            }
+                                          : null,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.add,
+                                            color: Colors.blueGrey,
+                                            size: 15,
+                                          ),
+                                          SizedBox(width: 2),
+                                          Text("Dodaj Last Minute"),
+                                        ],
                                       ),
-                                      SizedBox(width: 2),
-                                      Text("Dodaj Last Minute"),
-                                    ],
-                                  ),
-                                )
-                              : SizedBox(),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 30),
-                    Text("Sobe", style: TextStyle(fontSize: 18)),
-                    SizedBox(
-                      width: 700,
-                      child: Accordion(
-                        headerBackgroundColor: AppColors.primary,
-                        contentBorderColor: AppColors.primary,
-                        maxOpenSections: 1,
-                        children: getRoomAccordionSectionList(),
-                      ),
-                    ),
-                    isRoomUpdateEnabled
-                        ? SizedBox(
-                            width: 700,
-                            child: Center(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  rooms.add(RoomAccordionItem());
-                                  setState(() {});
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.add,
-                                      color: Colors.blueGrey,
-                                      size: 15,
+                                    )
+                                  : SizedBox(),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 30),
+                        Text("Sobe", style: TextStyle(fontSize: 18)),
+                        SizedBox(
+                          width: 700,
+                          child: Accordion(
+                            headerBackgroundColor: AppColors.primary,
+                            contentBorderColor: AppColors.primary,
+                            maxOpenSections: 1,
+                            children: getRoomAccordionSectionList(),
+                          ),
+                        ),
+                        isRoomUpdateEnabled
+                            ? SizedBox(
+                                width: 700,
+                                child: Center(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      rooms.add(RoomAccordionItem());
+                                      setState(() {});
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.add,
+                                          color: Colors.blueGrey,
+                                          size: 15,
+                                        ),
+                                        SizedBox(width: 2),
+                                        Text("Dodaj"),
+                                      ],
                                     ),
-                                    SizedBox(width: 2),
-                                    Text("Dodaj"),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                        : SizedBox(),
-                    SizedBox(height: 20),
-                    SizedBox(
-                      width: 700,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          widget.offer?.offerStatusId?.toLowerCase() ==
-                                  AppConstants.draftOfferGuid.toLowerCase()
-                              ? ElevatedButton(
-                                  onPressed: () async {
-                                    await activateOffer();
-                                  },
-                                  child: Text("Aktiviraj ponudu"),
-                                )
-                              : SizedBox(),
-                          widget.offer?.offerStatusId?.toLowerCase() ==
-                                  AppConstants.activeOfferGuid.toLowerCase()
-                              ? ElevatedButton(
-                                  onPressed: () async {
-                                    await deactivateOffer();
-                                  },
-                                  child: Text("Deaktiviraj ponudu"),
-                                )
-                              : SizedBox(),
-                          SizedBox(width: 20),
-                          !isInactiveStatus
-                              ? ElevatedButton(
-                                  onPressed: () async {
-                                    await addOffer();
-                                  },
-                                  child: Text(
-                                    widget.offer == null
-                                        ? "Sačuvaj kao skicu"
-                                        : "Sačuvaj promjene",
                                   ),
-                                )
-                              : SizedBox(),
-                        ],
-                      ),
+                                ),
+                              )
+                            : SizedBox(),
+                        SizedBox(height: 20),
+                        SizedBox(
+                          width: 700,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              widget.offer?.offerStatusId?.toLowerCase() ==
+                                      AppConstants.draftOfferGuid.toLowerCase()
+                                  ? ElevatedButton(
+                                      onPressed: () async {
+                                        await activateOffer();
+                                      },
+                                      child: Text("Aktiviraj ponudu"),
+                                    )
+                                  : SizedBox(),
+                              widget.offer?.offerStatusId?.toLowerCase() ==
+                                      AppConstants.activeOfferGuid.toLowerCase()
+                                  ? ElevatedButton(
+                                      onPressed: () async {
+                                        await deactivateOffer();
+                                      },
+                                      child: Text("Deaktiviraj ponudu"),
+                                    )
+                                  : SizedBox(),
+                              SizedBox(width: 20),
+                              !isInactiveStatus
+                                  ? ElevatedButton(
+                                      onPressed: () async {
+                                        await addOffer();
+                                      },
+                                      child: Text(
+                                        widget.offer == null
+                                            ? "Sačuvaj kao skicu"
+                                            : "Sačuvaj promjene",
+                                      ),
+                                    )
+                                  : SizedBox(),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

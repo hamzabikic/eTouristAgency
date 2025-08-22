@@ -53,7 +53,8 @@ class _AddUpdateReservationScreenState
   Reservation? reservation;
   List<Map<String, dynamic>> initialValues = [];
   List<ReservationPayment> addedPayments = [];
-  bool isProcessStarted = false;
+  bool _isProcessStarted = false;
+  bool _isEditingEnabled = true;
 
   @override
   void initState() {
@@ -342,7 +343,9 @@ class _AddUpdateReservationScreenState
                       maxOpenSections: 1,
                       children: getAccordionItems(),
                     ),
-                    room!.roomType!.roomCapacity! > formBuilderKeys.length
+                    _isEditingEnabled &&
+                            room!.roomType!.roomCapacity! >
+                                formBuilderKeys.length
                         ? Center(
                             child: ElevatedButton(
                               onPressed: addNewPassenger,
@@ -394,6 +397,7 @@ class _AddUpdateReservationScreenState
                     TextField(
                       minLines: 3,
                       maxLines: 6,
+                      enabled: _isEditingEnabled,
                       controller: noteEditingController,
                       decoration: InputDecoration(labelText: "Napomena"),
                     ),
@@ -401,7 +405,7 @@ class _AddUpdateReservationScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        widget.reservationId == null
+                        widget.reservationId == null || !_isEditingEnabled
                             ? SizedBox()
                             : ElevatedButton(
                                 onPressed: cancelReservation,
@@ -410,25 +414,27 @@ class _AddUpdateReservationScreenState
                                   style: TextStyle(color: AppColors.darkRed),
                                 ),
                               ),
-                        ElevatedButton(
-                          onPressed: !isProcessStarted
-                              ? createUpdateReservation
-                              : null,
-                          child: isProcessStarted == false
-                              ? Text(
-                                  widget.reservationId == null
-                                      ? "Kreiraj rezervaciju"
-                                      : "Sačuvaj promjene",
-                                )
-                              : SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                        ),
+                        _isEditingEnabled
+                            ? ElevatedButton(
+                                onPressed: !_isProcessStarted
+                                    ? createUpdateReservation
+                                    : null,
+                                child: _isProcessStarted == false
+                                    ? Text(
+                                        widget.reservationId == null
+                                            ? "Kreiraj rezervaciju"
+                                            : "Sačuvaj promjene",
+                                      )
+                                    : SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                              )
+                            : SizedBox(),
                       ],
                     ),
                   ],
@@ -495,6 +501,7 @@ class _AddUpdateReservationScreenState
                     child: FormBuilderTextField(name: "id"),
                   ),
                   FormBuilderTextField(
+                    enabled: _isEditingEnabled,
                     name: "fullName",
                     decoration: InputDecoration(labelText: "Ime i prezime"),
                     validator: FormBuilderValidators.compose([
@@ -504,6 +511,7 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   FormBuilderDateTimePicker(
+                    enabled: _isEditingEnabled,
                     name: "dateOfBirth",
                     decoration: InputDecoration(labelText: "Datum rođenja"),
                     format: DateFormat("dd.MM.yyyy"),
@@ -515,6 +523,7 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   FormBuilderTextField(
+                    enabled: _isEditingEnabled,
                     name: "phoneNumber",
                     decoration: InputDecoration(labelText: "Broj telefona"),
                     validator: FormBuilderValidators.compose([
@@ -531,7 +540,7 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   SizedBox(height: 5),
-                  formBuilderKeys.length > 1
+                  formBuilderKeys.length > 1 && _isEditingEnabled
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -579,7 +588,7 @@ class _AddUpdateReservationScreenState
 
     if (!passengersValidations) return;
 
-    isProcessStarted = true;
+    _isProcessStarted = true;
     setState(() {});
 
     var json = {
@@ -617,7 +626,7 @@ class _AddUpdateReservationScreenState
           MaterialPageRoute(builder: (context) => MyReservationsListScreen()),
         );
       } on Exception catch (ex) {
-        isProcessStarted = false;
+        _isProcessStarted = false;
         setState(() {});
 
         DialogHelper.openDialog(context, ex.toString(), () {
@@ -635,7 +644,7 @@ class _AddUpdateReservationScreenState
           MaterialPageRoute(builder: (context) => MyReservationsListScreen()),
         );
       } on Exception catch (ex) {
-        isProcessStarted = false;
+        _isProcessStarted = false;
         setState(() {});
 
         DialogHelper.openDialog(context, ex.toString(), () {
@@ -671,6 +680,10 @@ class _AddUpdateReservationScreenState
       formBuilderKeys.add(GlobalKey<FormBuilderState>());
     }
 
+    _isEditingEnabled =
+        reservation!.reservationStatusId!.toLowerCase() !=
+        AppConstants.reservationCancelledGuid.toLowerCase();
+
     setState(() {});
   }
 
@@ -682,7 +695,7 @@ class _AddUpdateReservationScreenState
         return Colors.amber;
       case AppConstants.reservationPaidGuid:
         return Colors.green;
-      case AppConstants.reservationCancelled:
+      case AppConstants.reservationCancelledGuid:
         return AppColors.darkRed;
       default:
         return AppColors.primary;
@@ -782,12 +795,14 @@ class _AddUpdateReservationScreenState
       );
     }
 
-    documents.add(
-      IconButton(
-        icon: Icon(Icons.add_circle, color: AppColors.primary),
-        onPressed: pickAndUploadFile,
-      ),
-    );
+    if (_isEditingEnabled) {
+      documents.add(
+        IconButton(
+          icon: Icon(Icons.add_circle, color: AppColors.primary),
+          onPressed: pickAndUploadFile,
+        ),
+      );
+    }
 
     return documents;
   }

@@ -39,12 +39,12 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        [HttpPatch("{id}/status")]
-        public async Task<ActionResult> ChangeStatus(Guid id, [FromBody] UpdateReservationStatusRequest request)
+        [HttpPatch("{id}/payment")]
+        public async Task<ActionResult> AddPayment(Guid id, [FromBody] UpdateReservationStatusRequest request)
         {
             try
             {
-                await _reservationService.ChangeStatusAsync(id, request);
+                await _reservationService.AddPaymentAsync(id, request);
                 return Ok();
             }
             catch (Exception ex)

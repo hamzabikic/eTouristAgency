@@ -83,10 +83,10 @@ public partial class Offer
     public bool IsLastMinuteDiscountActive { get; set; }
 
     [NotMapped]
-    public bool IsFirstMinuteDiscountActive { get; set; }
+    public decimal MinimumPricePerPerson { get; set; }
 
     [NotMapped]
-    public decimal MinimumPricePerPerson { get; set; }
+    public bool IsFirstMinuteDiscountActive { get; set; }
 
     [NotMapped]
     public int RemainingSpots { get; set; }

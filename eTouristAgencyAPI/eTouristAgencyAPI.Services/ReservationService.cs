@@ -47,7 +47,7 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Currently it is not possible to reserve room with provided id.");
             }
 
-            if (room.Reservations.Count(x=> x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) >= room.Quantity)
+            if (room.Reservations.Count(x => x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) >= room.Quantity)
             {
                 throw new Exception("Room with provided id is already included in other reservation");
             }
@@ -81,6 +81,8 @@ namespace eTouristAgencyAPI.Services
         {
             if (dbModel.UserId != _userId) throw new Exception("You can only edit reservations created by yourself.");
 
+            if (dbModel.ReservationStatusId == AppConstants.FixedReservationStatusCancelled) throw new Exception("You cannot update cancelled reservation.");
+
             if (!updateModel.PassengerList.Any()) throw new Exception("You did not provide passengers.");
 
             var numberOfKids = updateModel.PassengerList.Where(x => x.DateOfBirth > DateTime.Now.AddYears(-18)).Count();
@@ -99,14 +101,16 @@ namespace eTouristAgencyAPI.Services
                 updateModel.ReservationPaymentList.Select(x =>
                 new ReservationPayment
                 {
+                    Id = Guid.NewGuid(),
                     CreatedBy = _userId ?? Guid.Empty,
                     ModifiedBy = _userId ?? Guid.Empty,
                     DocumentBytes = x.DocumentBytes,
-                    DocumentName = x.DocumentName
+                    DocumentName = x.DocumentName,
+                    DisplayOrderWithinReservation = dbModel.ReservationPayments.Count + 1
                 }).ToList().ForEach(x =>
-                {
-                    dbModel.ReservationPayments.Add(x);
-                });
+        {
+            dbModel.ReservationPayments.Add(x);
+        });
             }
         }
 
@@ -122,9 +126,9 @@ namespace eTouristAgencyAPI.Services
         {
             queryable = queryable.Include(x => x.Room)
                                  .ThenInclude(x => x.RoomType)
-                                 .Include(x => x.OfferDiscount)
-                                 .Include(x => x.Passengers)
-                                 .Include(x => x.ReservationPayments)
+                                 .Include(x => x.OfferDiscount).ThenInclude(x => x.DiscountType)
+                                 .Include(x => x.Passengers.OrderBy(x => x.DisplayOrderWithinReservation))
+                                 .Include(x => x.ReservationPayments.OrderBy(x => x.DisplayOrderWithinReservation))
                                  .Include(x => x.ReservationStatus)
                                  .Include(x => x.User);
 
@@ -135,9 +139,9 @@ namespace eTouristAgencyAPI.Services
         {
             queryable = queryable.Include(x => x.Room)
                                  .ThenInclude(x => x.RoomType)
-                                 .Include(x => x.OfferDiscount)
-                                 .Include(x => x.Passengers)
-                                 .Include(x => x.ReservationPayments)
+                                 .Include(x => x.OfferDiscount).ThenInclude(x => x.DiscountType)
+                                 .Include(x => x.Passengers.OrderBy(x => x.DisplayOrderWithinReservation))
+                                 .Include(x => x.ReservationPayments.OrderBy(x => x.DisplayOrderWithinReservation))
                                  .Include(x => x.ReservationStatus)
                                  .Include(x => x.User);
 
@@ -150,6 +154,8 @@ namespace eTouristAgencyAPI.Services
             {
                 queryable = queryable.Where(x => x.ReservationStatusId == searchModel.ReservationStatusId);
             }
+
+            queryable = queryable.OrderByDescending(x => x.CreatedOn);
 
             return queryable;
         }
@@ -171,7 +177,7 @@ namespace eTouristAgencyAPI.Services
             return await base.GetByIdAsync(id);
         }
 
-        public async Task ChangeStatusAsync(Guid reservationId, UpdateReservationStatusRequest request)
+        public async Task AddPaymentAsync(Guid reservationId, UpdateReservationStatusRequest request)
         {
             var reservation = await _dbContext.Reservations.FindAsync(reservationId);
 
@@ -180,7 +186,13 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Reservation with provided id is not found.");
             }
 
+            if (reservation.ReservationStatusId == AppConstants.FixedReservationStatusCancelled)
+            {
+                throw new Exception("You cannot change reservation status on cancelled reservation.");
+            }
+
             reservation.ReservationStatusId = request.ReservationStatusId;
+            reservation.PaidAmount = request.PaidAmount;
 
             await _dbContext.SaveChangesAsync();
         }
@@ -217,6 +229,7 @@ namespace eTouristAgencyAPI.Services
             var listOfRecords = await _dbContext.Reservations.Include(x => x.ReservationStatus).Include(x => x.Room.RoomType).Include(x => x.Room.Offer.OfferImage)
                                                              .Include(x => x.Room.Offer.BoardType).Include(x => x.Room.Offer.Hotel.City.Country)
                                                              .Where(x => x.UserId == (_userId ?? Guid.Empty))
+                                                             .OrderByDescending(x => x.CreatedOn)
                                                              .Skip((searchModel.Page - 1) * searchModel.RecordsPerPage).Take(searchModel.RecordsPerPage).ToListAsync();
 
             var totalPages = countOfAllRecords % searchModel.RecordsPerPage == 0 ? countOfAllRecords / searchModel.RecordsPerPage : countOfAllRecords / searchModel.RecordsPerPage + 1;

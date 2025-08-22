@@ -9,6 +9,7 @@ import 'package:etouristagency_desktop/providers/entity_code_value_provider.dart
 import 'package:etouristagency_desktop/providers/offer_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/add_update_offer_screen.dart';
+import 'package:etouristagency_desktop/screens/reservation/reservation_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class OfferListScreen extends StatefulWidget {
@@ -234,7 +235,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                       DataCell(
                                         ElevatedButton(
                                           child: Text("Rezervacije"),
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> ReservationListScreen(x)));
+                                          },
                                         ),
                                       ),
                                     ],

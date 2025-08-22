@@ -74,8 +74,8 @@ namespace eTouristAgencyAPI.Services
         protected override async Task<IQueryable<Offer>> BeforeFetchRecordAsync(IQueryable<Offer> queryable)
         {
             queryable = queryable.Include(x => x.Hotel.City.Country)
-                                 .Include(x => x.Rooms).ThenInclude(x => x.RoomType)
-                                 .Include(x => x.Rooms).ThenInclude(x => x.Reservations)
+                                 .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.RoomType)
+                                 .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.Reservations)
                                  .Include(x => x.BoardType)
                                  .Include(x => x.OfferStatus)
                                  .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType)
@@ -100,8 +100,8 @@ namespace eTouristAgencyAPI.Services
         protected override async Task<IQueryable<Offer>> BeforeFetchAllDataAsync(IQueryable<Offer> queryable, OfferSearchModel searchModel)
         {
             queryable = queryable.Include(x => x.Hotel.City.Country)
-                                 .Include(x => x.Rooms).ThenInclude(x => x.RoomType)
-                                 .Include(x => x.Rooms).ThenInclude(x => x.Reservations)
+                                 .Include(x => x.Rooms.OrderBy(x=> x.DisplayOrderWithinOffer)).ThenInclude(x => x.RoomType)
+                                 .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.Reservations)
                                  .Include(x => x.BoardType)
                                  .Include(x => x.OfferStatus)
                                  .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType)

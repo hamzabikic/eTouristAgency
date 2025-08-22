@@ -30,6 +30,8 @@ public partial class Passenger
 
     public Guid ModifiedBy { get; set; }
 
+    public int? DisplayOrderWithinReservation { get; set; }
+
     [ForeignKey("CreatedBy")]
     [InverseProperty("PassengerCreatedByNavigations")]
     public virtual User CreatedByNavigation { get; set; } = null!;
