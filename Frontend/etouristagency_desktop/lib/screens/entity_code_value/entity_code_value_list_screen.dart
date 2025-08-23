@@ -1,4 +1,5 @@
 import 'package:etouristagency_desktop/consts/entity_code.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart'
     show DialogHelper;
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
@@ -33,6 +34,7 @@ class _EntityCodeValueListScreenState extends State<EntityCodeValueListScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.entityCodeScreen,
       SingleChildScrollView(
         child: entityCodeValues != null
             ? Column(
@@ -84,9 +86,7 @@ class _EntityCodeValueListScreenState extends State<EntityCodeValueListScreen> {
                                 .map(
                                   (x) => DataRow(
                                     cells: [
-                                      DataCell(
-                                        Text(x.name?.toString() ?? ""),
-                                      ),
+                                      DataCell(Text(x.name?.toString() ?? "")),
                                       DataCell(
                                         ElevatedButton(
                                           child: Text("Uredi"),
@@ -121,6 +121,9 @@ class _EntityCodeValueListScreenState extends State<EntityCodeValueListScreen> {
   Future fetchData() async {
     if (widget.entityCode == EntityCode.boardType) {
       entityCodeValues = await entityCodeValueProvider.GetBoardTypeList();
+    } else if (widget.entityCode == EntityCode.reservationStatus) {
+      entityCodeValues =
+          await entityCodeValueProvider.GetReservationStatusList();
     }
 
     setState(() {});

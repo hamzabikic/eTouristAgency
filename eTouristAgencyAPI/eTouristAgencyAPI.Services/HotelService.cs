@@ -1,4 +1,5 @@
 ﻿using eTouristAgencyAPI.Models.RequestModels.Hotel;
+using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.ResponseModels.Hotel;
 using eTouristAgencyAPI.Models.SearchModels;
 using eTouristAgencyAPI.Services.Database;
@@ -31,12 +32,21 @@ namespace eTouristAgencyAPI.Services
 
             if (insertModel.Images != null && insertModel.Images.Any())
             {
-                dbModel.HotelImages = insertModel.Images.Select(x => new HotelImage
+                int counter = 0;
+
+                dbModel.HotelImages = insertModel.Images.Select(x =>
                 {
-                    Id = Guid.NewGuid(),
-                    ImageBytes = x,
-                    CreatedBy = _userId ?? Guid.Empty,
-                    ModifiedBy = _userId ?? Guid.Empty
+                    counter++;
+
+                    return new HotelImage
+                    {
+                        Id = Guid.NewGuid(),
+                        ImageBytes = x.ImageBytes,
+                        ImageName = x.ImageName,
+                        CreatedBy = _userId ?? Guid.Empty,
+                        ModifiedBy = _userId ?? Guid.Empty,
+                        DisplayOrderWithinHotel = counter
+                    };
                 }).ToList();
             }
         }
@@ -58,7 +68,7 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task<IQueryable<Hotel>> BeforeFetchAllDataAsync(IQueryable<Hotel> queryable, HotelSearchModel searchModel)
         {
-            queryable = queryable.Include(x => x.City).ThenInclude(x => x.Country).Include(x => x.HotelImages);
+            queryable = queryable.Include(x => x.City).ThenInclude(x => x.Country);
 
             if (!string.IsNullOrEmpty(searchModel.SearchText))
             {
@@ -75,9 +85,39 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task<IQueryable<Hotel>> BeforeFetchRecordAsync(IQueryable<Hotel> queryable)
         {
-            queryable = queryable.Include(x => x.City).ThenInclude(x => x.Country).Include(x => x.HotelImages);
+            queryable = queryable.Include(x => x.City).ThenInclude(x => x.Country);
 
             return queryable;
+        }
+
+        public override async Task<PaginatedList<HotelResponse>> GetAllAsync(HotelSearchModel searchModel)
+        {
+            var paginatedList = await base.GetAllAsync(searchModel);
+
+            foreach(var item in paginatedList.ListOfRecords)
+            {
+                item.HotelImages = await _dbContext.HotelImages.Where(x => x.HotelId == item.Id).OrderBy(x=> x.DisplayOrderWithinHotel).Select(x => new HotelImageResponse { Id = x.Id }).ToListAsync();
+            }
+
+            return paginatedList;
+        }
+
+        public override async Task<HotelResponse> GetByIdAsync(Guid id)
+        {
+            var hotelResponse = await base.GetByIdAsync(id);
+
+            hotelResponse.HotelImages = await _dbContext.HotelImages.Where(x => x.HotelId == hotelResponse.Id).OrderBy(x=> x.DisplayOrderWithinHotel).Select(x => new HotelImageResponse { Id = x.Id }).ToListAsync();
+
+            return hotelResponse;
+        }
+
+        public async Task<HotelImage> GetImageByHotelImageIdAsync(Guid hotelImageId)
+        {
+            var hotelImage = await _dbContext.HotelImages.FindAsync(hotelImageId);
+
+            if (hotelImage == null) throw new Exception("Hotel image with provided id is not found.");
+
+            return hotelImage;
         }
     }
 }

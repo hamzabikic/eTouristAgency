@@ -38,6 +38,8 @@ public partial class eTouristAgencyDbContext : DbContext
 
     public virtual DbSet<OfferImage> OfferImages { get; set; }
 
+    public virtual DbSet<Passenger> Passengers { get; set; }
+
     public virtual DbSet<Reservation> Reservations { get; set; }
 
     public virtual DbSet<ReservationPayment> ReservationPayments { get; set; }
@@ -51,6 +53,10 @@ public partial class eTouristAgencyDbContext : DbContext
     public virtual DbSet<RoomType> RoomTypes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=localhost;Database=eTouristAgencyDB;User Id=sa;Password=admin123;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -260,6 +266,27 @@ public partial class eTouristAgencyDbContext : DbContext
                 .HasConstraintName("FKOfferImage870605");
         });
 
+        modelBuilder.Entity<Passenger>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Passenge__3214EC07ED8E0702");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.PassengerCreatedByNavigations)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Passenger__Creat__7849DB76");
+
+            entity.HasOne(d => d.ModifiedByNavigation).WithMany(p => p.PassengerModifiedByNavigations)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Passenger__Modif__793DFFAF");
+
+            entity.HasOne(d => d.Reservation).WithMany(p => p.Passengers)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Passenger__Reser__756D6ECB");
+        });
+
         modelBuilder.Entity<Reservation>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Reservat__3214EC0763351517");
@@ -267,6 +294,7 @@ public partial class eTouristAgencyDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.ReservationNo).ValueGeneratedOnAdd();
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.ReservationCreatedByNavigations)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -276,9 +304,7 @@ public partial class eTouristAgencyDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKReservatio955634");
 
-            entity.HasOne(d => d.OfferDiscount).WithMany(p => p.Reservations)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FKReservatio911731");
+            entity.HasOne(d => d.OfferDiscount).WithMany(p => p.Reservations).HasConstraintName("FKReservatio911731");
 
             entity.HasOne(d => d.ReservationStatus).WithMany(p => p.Reservations)
                 .OnDelete(DeleteBehavior.ClientSetNull)

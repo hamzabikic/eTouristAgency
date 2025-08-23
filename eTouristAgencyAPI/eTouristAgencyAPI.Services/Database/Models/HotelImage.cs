@@ -24,6 +24,11 @@ public partial class HotelImage
 
     public Guid ModifiedBy { get; set; }
 
+    [StringLength(255)]
+    public string ImageName { get; set; } = null!;
+
+    public int? DisplayOrderWithinHotel { get; set; }
+
     [ForeignKey("CreatedBy")]
     [InverseProperty("HotelImageCreatedByNavigations")]
     public virtual User CreatedByNavigation { get; set; } = null!;

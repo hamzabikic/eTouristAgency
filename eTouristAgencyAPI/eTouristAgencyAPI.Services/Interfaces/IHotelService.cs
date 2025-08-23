@@ -7,5 +7,6 @@ namespace eTouristAgencyAPI.Services.Interfaces
 {
     public interface IHotelService : ICRUDService<Hotel, HotelResponse, HotelSearchModel, AddHotelRequest, UpdateHotelRequest>
     {
+        Task<HotelImage> GetImageByHotelImageIdAsync(Guid hotelImageId);
     }
 }

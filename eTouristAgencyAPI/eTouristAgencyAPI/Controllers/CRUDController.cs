@@ -13,12 +13,12 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [HttpPost]
-        public virtual async Task<ActionResult<TResponseModel>> Add([FromBody] TInsertModel insertModel)
+        public virtual async Task<ActionResult> Add([FromBody] TInsertModel insertModel)
         {
             try
             {
-                var responseModel = await _service.AddAsync(insertModel);
-                return Ok(responseModel);
+                await _service.AddAsync(insertModel);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -27,12 +27,12 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public virtual async Task<ActionResult<TResponseModel>> Update(Guid id, [FromBody] TUpdateModel updateModel)
+        public virtual async Task<ActionResult> Update(Guid id, [FromBody] TUpdateModel updateModel)
         {
             try
             {
-                var responseModel = await _service.UpdateAsync(id, updateModel);
-                return Ok(responseModel);
+                await _service.UpdateAsync(id, updateModel);
+                return Ok();
             }
             catch (Exception ex)
             {

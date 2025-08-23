@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 namespace eTouristAgencyAPI.Services.Database.Models;
 
 [Table("Reservation")]
-[Index("ReservationNo", Name = "UQ__Reservat__B7ED239E9C9A742A", IsUnique = true)]
 public partial class Reservation
 {
     [Key]
@@ -19,19 +18,12 @@ public partial class Reservation
 
     public DateTime ModifiedOn { get; set; }
 
-    [Column(TypeName = "decimal(15, 2)")]
-    public decimal PaidAmount { get; set; }
-
-    public DateTime CancellationDate { get; set; }
-
-    public long ReservationNo { get; set; }
+    public DateTime? CancellationDate { get; set; }
 
     [Column(TypeName = "decimal(10, 2)")]
     public decimal TotalCost { get; set; }
 
-    public string PassengersJson { get; set; } = null!;
-
-    public Guid OfferDiscountId { get; set; }
+    public Guid? OfferDiscountId { get; set; }
 
     public Guid ReservationStatusId { get; set; }
 
@@ -40,6 +32,13 @@ public partial class Reservation
     public Guid CreatedBy { get; set; }
 
     public Guid RoomId { get; set; }
+
+    public long ReservationNo { get; set; }
+
+    [Column(TypeName = "decimal(15, 2)")]
+    public decimal PaidAmount { get; set; }
+
+    public string? Note { get; set; }
 
     [ForeignKey("CreatedBy")]
     [InverseProperty("ReservationCreatedByNavigations")]
@@ -51,7 +50,10 @@ public partial class Reservation
 
     [ForeignKey("OfferDiscountId")]
     [InverseProperty("Reservations")]
-    public virtual OfferDiscount OfferDiscount { get; set; } = null!;
+    public virtual OfferDiscount? OfferDiscount { get; set; }
+
+    [InverseProperty("Reservation")]
+    public virtual ICollection<Passenger> Passengers { get; set; } = new List<Passenger>();
 
     [InverseProperty("Reservation")]
     public virtual ICollection<ReservationPayment> ReservationPayments { get; set; } = new List<ReservationPayment>();

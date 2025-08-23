@@ -25,22 +25,14 @@ class OfferDiscount {
     return OfferDiscount(
       id: json["id"],
       discountTypeId: json["discountTypeId"],
-      discount: json["discount"],
+      discount: json["discount"] != null
+          ? (json["discount"] as num).toDouble()
+          : null,
       validFrom: DateTime.parse(json["validFrom"]),
       validTo: DateTime.parse(json["validTo"]),
       discountType: json["discountType"] != null
           ? EntityCodeValue.fromJson(json["discountType"])
           : null,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "discountTypeId": discountTypeId,
-      "discount": discount?.toString(),
-      "validFrom": validFrom,
-      "validTo": validTo,
-    };
   }
 }

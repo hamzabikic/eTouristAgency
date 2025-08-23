@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:etouristagency_desktop/consts/app_colors.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/models/city/city.dart';
 import 'package:etouristagency_desktop/models/country/country.dart';
@@ -42,6 +43,7 @@ class _CityListScreenState extends State<CityListScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.entityCodeScreen,
       SingleChildScrollView(
         child: paginatedList != null
             ? Column(

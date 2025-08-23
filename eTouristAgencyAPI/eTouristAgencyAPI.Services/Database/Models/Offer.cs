@@ -47,18 +47,6 @@ public partial class Offer
 
     public long OfferNo { get; set; }
 
-    [NotMapped]
-    public decimal MinimumPricePerPerson { get; set; }
-
-    [NotMapped] 
-    public bool IsFirstMinuteDiscountActive { get; set; }
-
-    [NotMapped]
-    public bool IsLastMinuteDiscountActive { get; set; }
-
-    [NotMapped]
-    public int RemainingSpots { get; set; }
-
     [ForeignKey("BoardTypeId")]
     [InverseProperty("OfferBoardTypes")]
     public virtual EntityCodeValue? BoardType { get; set; }
@@ -90,4 +78,16 @@ public partial class Offer
 
     [InverseProperty("Offer")]
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
+
+    [NotMapped]
+    public bool IsLastMinuteDiscountActive { get; set; }
+
+    [NotMapped]
+    public bool IsFirstMinuteDiscountActive { get; set; }
+
+    [NotMapped]
+    public decimal MinimumPricePerPerson { get; set; }
+
+    [NotMapped]
+    public int RemainingSpots { get; set; }
 }

@@ -21,15 +21,4 @@ class Hotel {
       json["hotelImages"] != null ? (json["hotelImages"] as List).map((x)=> HotelImage.fromJson(x)).toList() : null
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "name": name,
-      "starRating": starRating?.toString(),
-      "cityId": cityId,
-      "city": city?.toJson(),
-      "hotelImages" : hotelImages?.map((x)=> x.toJson()).toList()
-    };
-  }
 }

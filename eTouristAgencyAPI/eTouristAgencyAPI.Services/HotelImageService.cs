@@ -22,6 +22,11 @@ namespace eTouristAgencyAPI.Services
 
         public async Task UpdateAsync(Guid hotelId, List<UpdateHotelImageRequest> hotelImages)
         {
+            for(int i =0; i< hotelImages.Count; i++)
+            {
+                hotelImages[i].DisplayOrderWithinHotel = i + 1;
+            }
+
             var storagedImages = await _dbContext.HotelImages.Where(x => x.HotelId == hotelId).ToListAsync();
             var imagesForUpdate = storagedImages.Where(x => hotelImages.Select(y => y.Id).Contains(x.Id)).ToList();
             var imagesForDelete = storagedImages.Where(x => !hotelImages.Select(y => y.Id).Contains(x.Id)).ToList();

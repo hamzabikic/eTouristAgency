@@ -1,5 +1,6 @@
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/roles.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/models/paginated_list.dart';
 import 'package:etouristagency_desktop/models/role/role.dart';
@@ -49,6 +50,7 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.userScreen,
       SingleChildScrollView(
         child: paginatedList != null && username !=null
             ? Column(

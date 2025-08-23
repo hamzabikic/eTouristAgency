@@ -17,13 +17,13 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        public override Task<ActionResult<CityResponse>> Add([FromBody] AddCityRequest insertModel)
+        public override Task<ActionResult> Add([FromBody] AddCityRequest insertModel)
         {
             return base.Add(insertModel);
         }
 
         [Authorize(Roles = Roles.Admin)]
-        public override Task<ActionResult<CityResponse>> Update(Guid id, [FromBody] UpdateCityRequest updateModel)
+        public override Task<ActionResult> Update(Guid id, [FromBody] UpdateCityRequest updateModel)
         {
             return base.Update(id, updateModel);
         }

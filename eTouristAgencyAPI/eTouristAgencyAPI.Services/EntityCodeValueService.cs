@@ -1,5 +1,7 @@
-﻿using eTouristAgencyAPI.Models.RequestModels.EntityCodeValue;
+﻿using System.Linq;
+using eTouristAgencyAPI.Models.RequestModels.EntityCodeValue;
 using eTouristAgencyAPI.Models.ResponseModels.EntityCodeValue;
+using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
@@ -52,6 +54,8 @@ namespace eTouristAgencyAPI.Services
             var entityCodeValue = await _dbContext.EntityCodeValues.FindAsync(entityCodeValueId);
 
             if (entityCodeValue == null) throw new Exception("The entity with provided id is not found");
+
+            if (!AppConstants.AllowedEntityCodesToUpdate.Contains(entityCodeValue.EntityCodeId)) throw new Exception("Update action for this entity code is disabled.");
 
             _mapper.Map(updateModel, entityCodeValue);
             entityCodeValue.ModifiedBy = _userId;

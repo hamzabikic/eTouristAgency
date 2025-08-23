@@ -1,4 +1,5 @@
 import 'package:etouristagency_desktop/consts/app_colors.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/models/country/country.dart';
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
@@ -9,6 +10,7 @@ import 'package:etouristagency_desktop/providers/entity_code_value_provider.dart
 import 'package:etouristagency_desktop/providers/offer_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/add_update_offer_screen.dart';
+import 'package:etouristagency_desktop/screens/reservation/reservation_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class OfferListScreen extends StatefulWidget {
@@ -51,6 +53,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.offerScreen,
       SingleChildScrollView(
         child: paginatedList != null
             ? Column(
@@ -234,7 +237,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                       DataCell(
                                         ElevatedButton(
                                           child: Text("Rezervacije"),
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> ReservationListScreen(x)));
+                                          },
                                         ),
                                       ),
                                     ],

@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:etouristagency_mobile/consts/app_colors.dart';
+import 'package:etouristagency_mobile/consts/screen_names.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/helpers/format_helper.dart';
 import 'package:etouristagency_mobile/models/country/country.dart';
@@ -11,6 +10,7 @@ import 'package:etouristagency_mobile/providers/countryProvider.dart';
 import 'package:etouristagency_mobile/providers/entity_code_value_provider.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -30,18 +30,31 @@ class _OfferListScreenState extends State<OfferListScreen> {
   PaginatedList<Offer>? paginatedList;
   List<Country>? countries;
   List<EntityCodeValue>? boardTypes;
-  Map<String, dynamic> queryStrings = {"page": 1, "isBookableNow": true};
+  Map<String, dynamic> queryStrings = {"page": 1, "recordsPerPage": 5, "isBookableNow": true};
   bool isFiltersWidgetOpen = false;
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     offerProvider = OfferProvider();
     countryProvider = CountryProvider();
     entityCodeValueProvider = EntityCodeValueProvider();
+    _scrollController.addListener(_onScroll);
     fetchData();
     fetchCountries();
     fetchBoardTypes();
     super.initState();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoadingMore && queryStrings["page"] < paginatedList!.totalPages) {
+        queryStrings["page"] += 1;
+        populateOffers();
+      }
+    }
   }
 
   @override
@@ -69,7 +82,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                       ),
                       Expanded(
                         child: ListView.separated(
-                          itemCount: paginatedList!.listOfRecords.length,
+                          controller: _scrollController,
+                          itemCount:
+                              paginatedList!.listOfRecords.length +
+                              (_isLoadingMore ? 1 : 0),
                           padding: EdgeInsetsGeometry.only(
                             left: 30.0,
                             right: 30.0,
@@ -79,11 +95,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                           separatorBuilder: (context, index) =>
                               SizedBox(height: 15),
                           itemBuilder: (context, index) {
-                            if (index == queryStrings["page"] * 15 - 1 &&
-                                queryStrings["page"] <
-                                    paginatedList!.totalPages) {
-                              queryStrings["page"] = queryStrings["page"] + 1;
-                              populateOffers();
+                            if (index == paginatedList!.listOfRecords.length) {
+                              return DialogHelper.openSpinner(context, "");
                             }
 
                             var offer = paginatedList!.listOfRecords[index];
@@ -93,17 +106,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
-                                  children: [
-                                    offer.offerImage != null
-                                        ? Stack(
+                                  children: [Stack(
                                             children: [
-                                              Image.memory(
-                                                base64Decode(
-                                                  paginatedList!
-                                                      .listOfRecords[index]
-                                                      .offerImage!
-                                                      .imageBytes!,
-                                                ),
+                                              Image.network("${offerProvider.controllerUrl}/${offer.id}/image",
                                                 height: 200,
                                                 width: double.infinity,
                                                 fit: BoxFit.cover,
@@ -167,14 +172,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                           ),
                                                         ),
                                                       ),
-                                                    )
-                                                  : SizedBox(),
+                                                    ) : SizedBox(),
                                             ],
-                                          )
-                                        : SizedBox(
-                                            height: 200,
-                                            width: double.infinity,
-                                            child: Placeholder(),
                                           ),
                                     SizedBox(height: 10),
                                     Text(
@@ -183,6 +182,12 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                         color: AppColors.primary,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 17,
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: getStarIconsOnHotel(
+                                        offer.hotel!.starRating!,
                                       ),
                                     ),
                                     Text(
@@ -223,7 +228,12 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                       "Preostalo još ${offer.remainingSpots!} mjesta",
                                       style: TextStyle(
                                         color: offer.remainingSpots! > 10
-                                            ? const Color.fromARGB(255, 76, 175, 79)
+                                            ? const Color.fromARGB(
+                                                255,
+                                                76,
+                                                175,
+                                                79,
+                                              )
                                             : AppColors.darkRed,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
@@ -233,7 +243,19 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     ElevatedButton(
                                       onPressed: offer.remainingSpots! < 1
                                           ? null
-                                          : () {},
+                                          : () {
+                                              Navigator.of(
+                                                context,
+                                              ).pushReplacement(
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      OfferDetailsScreen(
+                                                        ScreenNames.offerListScreen,
+                                                        offer.id!
+                                                      ),
+                                                ),
+                                              );
+                                            },
                                       child: Text("Pregledaj i rezerviši"),
                                     ),
                                   ],
@@ -476,11 +498,17 @@ class _OfferListScreenState extends State<OfferListScreen> {
   }
 
   Future populateOffers() async {
+    setState(() {
+      _isLoadingMore = true;
+    });
+
     var newRecords = await offerProvider.getAll(queryStrings);
 
     paginatedList!.listOfRecords.addAll(newRecords.listOfRecords);
 
-    setState(() {});
+    setState(() {
+      _isLoadingMore = false;
+    });
   }
 
   Future fetchBoardTypes() async {
@@ -499,5 +527,15 @@ class _OfferListScreenState extends State<OfferListScreen> {
 
     queryStrings["page"] = 1;
     await fetchData();
+  }
+
+  List<Widget> getStarIconsOnHotel(int numberOfStars) {
+    List<Widget> list = [];
+
+    for (int i = 0; i < numberOfStars; i++) {
+      list.add(Icon(Icons.star, color: Colors.amber));
+    }
+
+    return list;
   }
 }

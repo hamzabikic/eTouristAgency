@@ -16,13 +16,13 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        public override Task<ActionResult<RoomTypeResponse>> Add([FromBody] AddRoomTypeRequest insertModel)
+        public override Task<ActionResult> Add([FromBody] AddRoomTypeRequest insertModel)
         {
             return base.Add(insertModel);
         }
 
         [Authorize(Roles = Roles.Admin)]
-        public override Task<ActionResult<RoomTypeResponse>> Update(Guid id, [FromBody] UpdateRoomTypeRequest updateModel)
+        public override Task<ActionResult> Update(Guid id, [FromBody] UpdateRoomTypeRequest updateModel)
         {
             return base.Update(id, updateModel);
         }

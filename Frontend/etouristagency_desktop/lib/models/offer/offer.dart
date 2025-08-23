@@ -1,7 +1,5 @@
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_desktop/models/hotel/hotel.dart';
-import 'package:etouristagency_desktop/models/offer/offer_document.dart';
-import 'package:etouristagency_desktop/models/offer/offer_image.dart';
 import 'package:etouristagency_desktop/models/offer_discount/offer_discount.dart';
 import 'package:etouristagency_desktop/models/room/room.dart';
 
@@ -24,8 +22,6 @@ class Offer {
   EntityCodeValue? offerStatus;
   List<OfferDiscount>? offerDiscounts;
   List<Room>? rooms;
-  OfferDocument? offerDocument;
-  OfferImage? offerImage;
 
   Offer(
     this.id,
@@ -45,9 +41,7 @@ class Offer {
     this.hotel,
     this.offerStatus,
     this.offerDiscounts,
-    this.rooms,
-    this.offerDocument,
-    this.offerImage,
+    this.rooms
   );
 
   factory Offer.fromJson(Map<String, dynamic> json) {
@@ -79,13 +73,7 @@ class Offer {
           : null,
       json["rooms"] != null
           ? (json["rooms"] as List).map((x) => Room.fromJson(x)).toList()
-          : null,
-      json["offerDocument"] != null
-          ? OfferDocument.fromJson(json["offerDocument"])
-          : null,
-      json["offerImage"] != null
-          ? OfferImage.fromJson(json["offerImage"])
-          : null,
+          : null
     );
   }
 

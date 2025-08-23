@@ -50,9 +50,5 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Offer
         public EntityCodeValueResponse OfferStatus { get; set; }
 
         public List<RoomResponse> Rooms { get; set; }
-
-        public OfferDocumentResponse OfferDocument { get; set; }
-
-        public OfferImageResponse OfferImage { get; set; }
     }
 }

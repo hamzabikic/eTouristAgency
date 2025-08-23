@@ -1,4 +1,5 @@
 ﻿using eTouristAgencyAPI.Models.RequestModels.Offer;
+using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.ResponseModels.Offer;
 using eTouristAgencyAPI.Models.SearchModels;
 using eTouristAgencyAPI.Services.Constants;
@@ -61,41 +62,68 @@ namespace eTouristAgencyAPI.Services
             await service.DeactivateAsync(id);
         }
 
-        public async Task<byte[]> GetImageAsync(Guid id)
-        {
-            var offerImage = await _dbContext.OfferImages.FindAsync(id);
-
-            if (offerImage == null) throw new Exception("Image is not found.");
-
-            return offerImage.ImageBytes;
-        }
-
         protected override async Task<IQueryable<Offer>> BeforeFetchRecordAsync(IQueryable<Offer> queryable)
         {
             queryable = queryable.Include(x => x.Hotel.City.Country)
-                                 .Include(x=> x.Hotel.HotelImages)
-                                 .Include(x => x.Rooms).ThenInclude(x => x.RoomType)
+                                 .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.RoomType)
+                                 .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.Reservations)
                                  .Include(x => x.BoardType)
                                  .Include(x => x.OfferStatus)
-                                 .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType)
-                                 .Include(x => x.OfferDocument)
-                                 .Include(x => x.OfferImage);
+                                 .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType);
 
             return queryable;
+        }
+
+        public override async Task<OfferResponse> GetByIdAsync(Guid id)
+        {
+            var offer = await _dbContext.Offers.FindAsync(id);
+
+            if (offer == null || (!_userContextService.UserHasRole(Roles.Admin) && 
+                                  offer.OfferStatusId != AppConstants.FixedOfferStatusActive && 
+                                  offer.OfferStatusId != AppConstants.FixedOfferStatusInactive))
+            {
+                throw new Exception("Offer with provided id is not found.");
+            }
+
+            return await base.GetByIdAsync(id);
+        }
+
+        public async Task<OfferImage> GetImageByIdAsync(Guid id)
+        {
+            var offerImage = await _dbContext.OfferImages.FindAsync(id);
+
+            if (offerImage == null) throw new Exception("Offer with provided id does not have image.");
+
+            return offerImage;
+        }
+
+        public async Task<OfferDocument> GetDocumentByIdAsync(Guid id)
+        {
+            var offerDocument = await _dbContext.OfferDocuments.FindAsync(id);
+
+            if (offerDocument == null) throw new Exception("Offer with provided id does not have document.");
+
+            return offerDocument;
         }
 
         protected override async Task<IQueryable<Offer>> BeforeFetchAllDataAsync(IQueryable<Offer> queryable, OfferSearchModel searchModel)
         {
             queryable = queryable.Include(x => x.Hotel.City.Country)
-                                 .Include(x => x.Rooms).ThenInclude(x => x.RoomType)
-                                 .Include(x => x.Rooms).ThenInclude(x => x.Reservations)
+                                 .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.RoomType)
+                                 .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.Reservations)
                                  .Include(x => x.BoardType)
                                  .Include(x => x.OfferStatus)
-                                 .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType)
-                                 .Include(x => x.OfferDocument)
-                                 .Include(x => x.OfferImage);
+                                 .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType);
 
-            if (!_userContextService.UserHasRole(Roles.Admin)) searchModel.OfferStatusId = AppConstants.FixedOfferStatusActive;
+            if (!_userContextService.UserHasRole(Roles.Admin) && searchModel.OfferStatusId != null && searchModel.OfferStatusId != AppConstants.FixedOfferStatusActive)
+            {
+                throw new Exception("Provided status is not avalible for this user.");
+            }
+
+            if (!_userContextService.UserHasRole(Roles.Admin) && searchModel.OfferStatusId == null)
+            {
+                searchModel.OfferStatusId = AppConstants.FixedOfferStatusActive;
+            }
 
             if (searchModel.OfferNo != null)
             {
@@ -154,21 +182,34 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task AfterFetchAllDataAsync(List<Offer> listOfRecords)
         {
-            listOfRecords = listOfRecords.Select(x =>
+            foreach (var x in listOfRecords)
             {
-                var firstMinuteDiscount = x.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeFirstMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
-                var lastMinuteDiscount = x.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
-                var discount = firstMinuteDiscount?.Discount ?? lastMinuteDiscount?.Discount ?? 0;
+                await AfterFetchRecordAsync(x);
+            }
+        }
 
-                x.IsLastMinuteDiscountActive = lastMinuteDiscount != null;
-                x.IsFirstMinuteDiscountActive = firstMinuteDiscount != null;
+        protected override async Task AfterFetchRecordAsync(Offer dbModel)
+        {
+            var firstMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeFirstMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
+            var lastMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
+            var discount = firstMinuteDiscount?.Discount ?? lastMinuteDiscount?.Discount ?? 0;
 
-                var minPricePerPerson = x.Rooms.Min(y => y.PricePerPerson);
+            dbModel.IsLastMinuteDiscountActive = lastMinuteDiscount != null;
+            dbModel.IsFirstMinuteDiscountActive = firstMinuteDiscount != null;
 
-                x.MinimumPricePerPerson = minPricePerPerson - minPricePerPerson * (discount / 100);
-                x.RemainingSpots = x.Rooms.Where(y => !y.Reservations.Any()).Sum(y => y.Quantity * y.RoomType.RoomCapacity);
-                return x;
-            }).ToList();
+            var minPricePerPerson = dbModel.Rooms.Min(y => y.PricePerPerson);
+
+            dbModel.MinimumPricePerPerson = minPricePerPerson - minPricePerPerson * (discount / 100);
+            var quantity = dbModel.Rooms.Sum(x => x.Quantity * x.RoomType.RoomCapacity);
+            var reservedQuantity = dbModel.Rooms.Where(x => x.Reservations.Any()).Sum(x => x.Reservations.Count(x=> x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) * x.RoomType.RoomCapacity);
+
+            dbModel.RemainingSpots = quantity - reservedQuantity;
+
+            foreach (var item in dbModel.Rooms)
+            {
+                item.IsAvalible = item.Reservations.Count(x => x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) < item.Quantity;
+                item.DiscountedPrice = item.PricePerPerson - item.PricePerPerson * (discount / 100);
+            }
         }
     }
 }

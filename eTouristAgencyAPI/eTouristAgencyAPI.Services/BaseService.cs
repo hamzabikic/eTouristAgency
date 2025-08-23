@@ -57,6 +57,10 @@ namespace eTouristAgencyAPI.Services
 
             var record = await query.FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
 
+            if (record == null) throw new Exception("Record with provided id is not found");
+
+            await AfterFetchRecordAsync(record);
+
             return _mapper.Map<TResponseModel>(record);
         }
 
@@ -70,7 +74,8 @@ namespace eTouristAgencyAPI.Services
             return queryable;
         }
 
-        protected virtual async Task AfterFetchAllDataAsync(List<TDbModel> listOfRecords)
-        { }
+        protected virtual async Task AfterFetchAllDataAsync(List<TDbModel> listOfRecords) { }
+
+        protected virtual async Task AfterFetchRecordAsync(TDbModel dbModel) { }
     }
 }

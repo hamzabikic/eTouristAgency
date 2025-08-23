@@ -6,7 +6,7 @@ namespace eTouristAgencyAPI.Services.Interfaces
     public interface IRoomService
     {
         Task<List<RoomResponse>> AddByOfferIdAsync(Guid offerId, List<AddRoomRequest> roomList);
+
         Task<List<RoomResponse>> UpdateAsync(Guid offerId, List<UpdateRoomRequest> roomList);
-        Task<List<RoomResponse>> GetAllByOfferIdAsync(Guid offerId);
     }
 }

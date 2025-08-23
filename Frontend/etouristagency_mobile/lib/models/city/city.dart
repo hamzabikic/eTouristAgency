@@ -16,13 +16,4 @@ class City {
       json["country"] != null ? Country.fromJson(json["country"]) : null,
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "name": name,
-      "countryId": countryId,
-      "country": country?.toJson(),
-    };
-  }
 }

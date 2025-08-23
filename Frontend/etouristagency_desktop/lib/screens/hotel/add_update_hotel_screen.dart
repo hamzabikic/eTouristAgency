@@ -1,11 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:etouristagency_desktop/consts/app_colors.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/models/city/city.dart';
 import 'package:etouristagency_desktop/models/hotel/hotel.dart';
-import 'package:etouristagency_desktop/models/hotel/hotel_image.dart';
+import 'package:etouristagency_desktop/models/hotel/hotel_image_info.dart';
 import 'package:etouristagency_desktop/providers/city_provider.dart';
 import 'package:etouristagency_desktop/providers/hotel_provider.dart';
 import 'package:etouristagency_desktop/screens/hotel/hotel_list_screen.dart';
@@ -27,15 +27,15 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
   List<City>? cityData;
   late final CityProvider cityProvider;
   late final HotelProvider hotelProvider;
-  List<HotelImage>? images;
+  List<HotelImageInfo>? images;
   GlobalKey<FormBuilderState> addHotelFormBuilder =
       GlobalKey<FormBuilderState>();
 
   @override
   void initState() {
-    images = widget.hotel?.hotelImages;
     cityProvider = CityProvider();
     hotelProvider = HotelProvider();
+    loadHotelImages();
     fetchCityData();
     super.initState();
   }
@@ -43,6 +43,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.entityCodeScreen,
       Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -187,7 +188,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
   }
 
   Widget getWrapOfImages() {
-    if (images == null || images!.length == 0) return SizedBox();
+    if (images == null || images!.isEmpty) return SizedBox();
 
     return Center(
       child: Wrap(
@@ -208,7 +209,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: Image.memory(
-                        base64Decode(x.imageBytes ?? ""),
+                        x.imageBytes!,
                         fit: BoxFit.fill,
                         height: 200,
                         width: 300,
@@ -245,12 +246,12 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
 
     File file = File(result.files.single.path!);
     var photoBytes = file.readAsBytesSync();
-    var photo = base64Encode(photoBytes);
+    String fileName = result.files.single.name;
 
     if (images != null) {
-      images!.add(HotelImage(null, photo));
+      images!.add(HotelImageInfo(null, photoBytes, fileName));
     } else {
-      images = [HotelImage(null, photo)];
+      images = [HotelImageInfo(null, photoBytes, fileName)];
     }
 
     setState(() {});
@@ -292,5 +293,18 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
         Navigator.of(context).pop();
       }, type: DialogType.error);
     }
+  }
+
+  Future loadHotelImages() async {
+    if(widget.hotel== null || widget.hotel!.hotelImages == null || widget.hotel!.hotelImages!.isEmpty) return;
+    images = [];
+
+    for(var item in widget.hotel!.hotelImages!){
+      var hotelImageInfo = await hotelProvider.getHotelImage(item.id!);
+
+      images!.add(HotelImageInfo(item.id, hotelImageInfo.imageBytes, hotelImageInfo.imageName));
+    }
+
+    setState((){});
   }
 }
