@@ -38,8 +38,8 @@ namespace eTouristAgencyAPI.Controllers
         {
             try
             {
-                var response = await _entityCodeValueService.AddAsync(EntityCodes.BoardType, request);
-                return Ok(response);
+                await _entityCodeValueService.AddAsync(EntityCodes.BoardType, request);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -100,8 +100,8 @@ namespace eTouristAgencyAPI.Controllers
         {
             try
             {
-                var response = await _entityCodeValueService.AddAsync(EntityCodes.ReservationStatus, request);
-                return Ok(response);
+                await _entityCodeValueService.AddAsync(EntityCodes.ReservationStatus, request);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -115,8 +115,8 @@ namespace eTouristAgencyAPI.Controllers
         {
             try
             {
-                var response = await _entityCodeValueService.UpdateAsync(id, updateModel);
-                return Ok(response);
+                await _entityCodeValueService.UpdateAsync(id, updateModel);
+                return Ok();
             }
             catch (Exception ex)
             {

@@ -86,7 +86,5 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Reservation
         public EntityCodeValueResponse BoardType { get; set; }
 
         public HotelResponse Hotel { get; set; }
-
-        public OfferImageResponse OfferImage { get; set; }
     }
 }

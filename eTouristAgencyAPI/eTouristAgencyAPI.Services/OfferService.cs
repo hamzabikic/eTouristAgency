@@ -62,15 +62,6 @@ namespace eTouristAgencyAPI.Services
             await service.DeactivateAsync(id);
         }
 
-        public async Task<byte[]> GetImageAsync(Guid id)
-        {
-            var offerImage = await _dbContext.OfferImages.FindAsync(id);
-
-            if (offerImage == null) throw new Exception("Image is not found.");
-
-            return offerImage.ImageBytes;
-        }
-
         protected override async Task<IQueryable<Offer>> BeforeFetchRecordAsync(IQueryable<Offer> queryable)
         {
             queryable = queryable.Include(x => x.Hotel.City.Country)
@@ -78,9 +69,7 @@ namespace eTouristAgencyAPI.Services
                                  .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.Reservations)
                                  .Include(x => x.BoardType)
                                  .Include(x => x.OfferStatus)
-                                 .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType)
-                                 .Include(x => x.OfferDocument)
-                                 .Include(x => x.OfferImage);
+                                 .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType);
 
             return queryable;
         }
@@ -89,7 +78,9 @@ namespace eTouristAgencyAPI.Services
         {
             var offer = await _dbContext.Offers.FindAsync(id);
 
-            if (offer == null || (offer.OfferStatusId != AppConstants.FixedOfferStatusActive && offer.OfferStatusId != AppConstants.FixedOfferStatusInactive))
+            if (offer == null || (!_userContextService.UserHasRole(Roles.Admin) && 
+                                  offer.OfferStatusId != AppConstants.FixedOfferStatusActive && 
+                                  offer.OfferStatusId != AppConstants.FixedOfferStatusInactive))
             {
                 throw new Exception("Offer with provided id is not found.");
             }
@@ -97,16 +88,32 @@ namespace eTouristAgencyAPI.Services
             return await base.GetByIdAsync(id);
         }
 
+        public async Task<OfferImage> GetImageByIdAsync(Guid id)
+        {
+            var offerImage = await _dbContext.OfferImages.FindAsync(id);
+
+            if (offerImage == null) throw new Exception("Offer with provided id does not have image.");
+
+            return offerImage;
+        }
+
+        public async Task<OfferDocument> GetDocumentByIdAsync(Guid id)
+        {
+            var offerDocument = await _dbContext.OfferDocuments.FindAsync(id);
+
+            if (offerDocument == null) throw new Exception("Offer with provided id does not have document.");
+
+            return offerDocument;
+        }
+
         protected override async Task<IQueryable<Offer>> BeforeFetchAllDataAsync(IQueryable<Offer> queryable, OfferSearchModel searchModel)
         {
             queryable = queryable.Include(x => x.Hotel.City.Country)
-                                 .Include(x => x.Rooms.OrderBy(x=> x.DisplayOrderWithinOffer)).ThenInclude(x => x.RoomType)
+                                 .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.RoomType)
                                  .Include(x => x.Rooms.OrderBy(x => x.DisplayOrderWithinOffer)).ThenInclude(x => x.Reservations)
                                  .Include(x => x.BoardType)
                                  .Include(x => x.OfferStatus)
-                                 .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType)
-                                 .Include(x => x.OfferDocument)
-                                 .Include(x => x.OfferImage);
+                                 .Include(x => x.OfferDiscounts).ThenInclude(x => x.DiscountType);
 
             if (!_userContextService.UserHasRole(Roles.Admin) && searchModel.OfferStatusId != null && searchModel.OfferStatusId != AppConstants.FixedOfferStatusActive)
             {

@@ -1,4 +1,5 @@
 import 'package:etouristagency_desktop/consts/app_colors.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:etouristagency_desktop/providers/user_provider.dart';
@@ -36,6 +37,7 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.adminPanelScreen,
       Center(
         child: SingleChildScrollView(
           child: Padding(

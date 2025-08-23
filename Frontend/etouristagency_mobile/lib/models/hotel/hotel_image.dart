@@ -1,10 +1,9 @@
 class HotelImage {
   String? id;
-  String? imageBytes;
 
-  HotelImage(this.id, this.imageBytes);
+  HotelImage(this.id);
 
   factory HotelImage.fromJson(Map<String, dynamic> json) {
-    return HotelImage(json["id"], json["imageBytes"]);
+    return HotelImage(json["id"]);
   }
 }

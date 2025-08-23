@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -9,8 +8,10 @@ import 'package:etouristagency_mobile/consts/app_constants.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/helpers/format_helper.dart';
 import 'package:etouristagency_mobile/models/offer/offer.dart';
+import 'package:etouristagency_mobile/models/offer/offer_document_info.dart';
+import 'package:etouristagency_mobile/models/offer/offer_image_info.dart';
 import 'package:etouristagency_mobile/models/reservation/reservation.dart';
-import 'package:etouristagency_mobile/models/reservation/reservation_payment.dart';
+import 'package:etouristagency_mobile/models/reservation/reservation_payment_info.dart';
 import 'package:etouristagency_mobile/models/room/room.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/providers/reservation_provider.dart';
@@ -30,10 +31,13 @@ class AddUpdateReservationScreen extends StatefulWidget {
   final String offerId;
   final String? roomId;
   final String? reservationId;
+  final String? previousScreenName;
+
   const AddUpdateReservationScreen(
     this.offerId,
     this.roomId,
     this.reservationId, {
+    this.previousScreenName,
     super.key,
   });
 
@@ -46,13 +50,16 @@ class _AddUpdateReservationScreenState
     extends State<AddUpdateReservationScreen> {
   Offer? offer;
   Room? room;
+  OfferImageInfo? offerImageInfo;
+  OfferDocumentInfo? offerDocumentInfo;
   late final OfferProvider offerProvider;
   final List<GlobalKey<FormBuilderState>> formBuilderKeys = [];
   final TextEditingController noteEditingController = TextEditingController();
   late final ReservationProvider reservationProvider;
   Reservation? reservation;
   List<Map<String, dynamic>> initialValues = [];
-  List<ReservationPayment> addedPayments = [];
+  List<ReservationPaymentInfo> loadedPayments = [];
+  List<ReservationPaymentInfo> addedPayments = [];
   bool _isProcessStarted = false;
   bool _isEditingEnabled = true;
 
@@ -75,7 +82,7 @@ class _AddUpdateReservationScreenState
       onClickMethod: () {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => OfferDetailsScreen(widget.offerId),
+            builder: (context) => OfferDetailsScreen(widget.previousScreenName ?? "", widget.offerId),
           ),
         );
       },
@@ -96,11 +103,9 @@ class _AddUpdateReservationScreenState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            offer!.offerImage != null
+                            offerImageInfo != null
                                 ? Image.memory(
-                                    base64Decode(
-                                      offer!.offerImage!.imageBytes!,
-                                    ),
+                                    offerImageInfo!.imageBytes!,
                                     height: 200,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
@@ -220,29 +225,73 @@ class _AddUpdateReservationScreenState
                                     ],
                                   )
                                 : SizedBox(),
+                            reservation != null
+                                ? Row(
+                                    spacing: 5,
+                                    children: [
+                                      Text(
+                                        "Rok za prvu ratu (30%):",
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      Text(
+                                        offer!.formatedFirstPaymentDeadline,
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : SizedBox(),
+                            reservation != null
+                                ? Row(
+                                    spacing: 5,
+                                    children: [
+                                      Text(
+                                        "Krajnji rok za uplatu:",
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      Text(
+                                        offer!.formatedLastPaymentDeadline,
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : SizedBox(),
                             SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                IconButton(
-                                  padding: EdgeInsets.all(0),
-                                  icon: Icon(
-                                    Icons.description,
-                                    color: AppColors.primary,
-                                    size: 40,
-                                  ),
-                                  onPressed: offer?.offerDocument != null
-                                      ? () async {
+                                offerDocumentInfo != null
+                                    ? IconButton(
+                                        padding: EdgeInsets.all(0),
+                                        icon: Icon(
+                                          Icons.description,
+                                          color: AppColors.primary,
+                                          size: 40,
+                                        ),
+                                        onPressed: () async {
                                           await saveAndOpenDocument(
                                             context,
-                                            offer!.offerDocument!.documentName!,
-                                            offer!
-                                                .offerDocument!
-                                                .documentBytes!,
+                                            offerDocumentInfo!.documentName!,
+                                            offerDocumentInfo!.documentBytes!,
                                           );
-                                        }
-                                      : null,
-                                ),
+                                        },
+                                      )
+                                    : SizedBox(width: 40),
                                 reservation != null
                                     ? Column(
                                         children: [
@@ -449,6 +498,14 @@ class _AddUpdateReservationScreenState
     offer = Offer.fromJson(await offerProvider.getById(widget.offerId));
     room = offer!.rooms!.firstWhere((element) => element.id == widget.roomId);
 
+    try {
+      offerImageInfo = await offerProvider.getOfferImage(widget.offerId);
+    } on Exception catch (ex) {}
+
+    try {
+      offerDocumentInfo = await offerProvider.getOfferDocument(widget.offerId);
+    } on Exception catch (ex) {}
+
     setState(() {});
   }
 
@@ -586,7 +643,17 @@ class _AddUpdateReservationScreenState
   Future createUpdateReservation() async {
     bool passengersValidations = validatePassengers();
 
-    if (!passengersValidations) return;
+    if (!passengersValidations) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Neuspješna validacija: Neka od obaveznih polja nisu unesena ili su unesena u neispravnom formatu.",
+          ),
+        ),
+      );
+
+      return;
+    }
 
     _isProcessStarted = true;
     setState(() {});
@@ -680,11 +747,27 @@ class _AddUpdateReservationScreenState
       formBuilderKeys.add(GlobalKey<FormBuilderState>());
     }
 
+    await loadReservationPayments();
+
     _isEditingEnabled =
         reservation!.reservationStatusId!.toLowerCase() !=
         AppConstants.reservationCancelledGuid.toLowerCase();
 
     setState(() {});
+  }
+
+  Future loadReservationPayments() async {
+    if (reservation == null ||
+        reservation!.reservationPayments == null ||
+        reservation!.reservationPayments!.isEmpty)
+      return;
+
+    for (var item in reservation!.reservationPayments!) {
+      var reservationPaymentInfo = await reservationProvider
+          .getReservationPaymentDocument(item.id!);
+
+      loadedPayments.add(reservationPaymentInfo);
+    }
   }
 
   Color getColorForReservationStatus(String? reservationStatusId) {
@@ -705,16 +788,14 @@ class _AddUpdateReservationScreenState
   Future<void> saveAndOpenDocument(
     BuildContext context,
     String fileName,
-    String base64Bytes,
+    Uint8List fileBytes,
   ) async {
     try {
-      Uint8List bytes = base64Decode(base64Bytes);
-
       Directory dir = await getTemporaryDirectory();
       String savePath = "${dir.path}/$fileName";
 
       File file = File(savePath);
-      await file.writeAsBytes(bytes);
+      await file.writeAsBytes(fileBytes);
 
       await OpenFile.open(savePath);
     } catch (e) {
@@ -727,9 +808,8 @@ class _AddUpdateReservationScreenState
   List<Widget> getDocumentElements() {
     List<Widget> documents = [];
 
-    if (reservation?.reservationPayments != null &&
-        !reservation!.reservationPayments!.isEmpty) {
-      for (var item in reservation!.reservationPayments!) {
+    if (loadedPayments.isNotEmpty) {
+      for (var item in loadedPayments) {
         documents.add(
           InkWell(
             child: Column(
@@ -816,9 +896,7 @@ class _AddUpdateReservationScreenState
       var bytes = await file.readAsBytes();
       var fileName = result.files.single.name;
 
-      addedPayments.add(
-        ReservationPayment(null, base64Encode(bytes), fileName),
-      );
+      addedPayments.add(ReservationPaymentInfo(bytes, fileName));
 
       setState(() {});
     }

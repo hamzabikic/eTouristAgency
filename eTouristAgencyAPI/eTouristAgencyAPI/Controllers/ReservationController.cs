@@ -21,13 +21,13 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [Authorize(Roles = Roles.Client)]
-        public override Task<ActionResult<ReservationResponse>> Add([FromBody] AddReservationRequest insertModel)
+        public override Task<ActionResult> Add([FromBody] AddReservationRequest insertModel)
         {
             return base.Add(insertModel);
         }
 
         [Authorize(Roles = Roles.Client)]
-        public override Task<ActionResult<ReservationResponse>> Update(Guid id, [FromBody] UpdateReservationRequest updateModel)
+        public override Task<ActionResult> Update(Guid id, [FromBody] UpdateReservationRequest updateModel)
         {
             return base.Update(id, updateModel);
         }
@@ -75,6 +75,22 @@ namespace eTouristAgencyAPI.Controllers
             try
             {
                 return Ok(await _reservationService.GetAllForCurrentUserAsync(searchModel));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("{reservationPaymentId}/payment-document")]
+        public async Task<ActionResult> GetReservationPaymentDocument(Guid reservationPaymentId)
+        {
+            try
+            {
+                var reservationPayment = await _reservationService.GetReservationPaymentByReservationPaymentIdAsync(reservationPaymentId);
+
+                Response.Headers.Add("DocumentName", reservationPayment.DocumentName);
+                return File(reservationPayment.DocumentBytes, "application/octet-stream", reservationPayment.DocumentName);
             }
             catch (Exception ex)
             {

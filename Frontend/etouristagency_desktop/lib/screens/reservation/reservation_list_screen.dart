@@ -1,4 +1,5 @@
 import 'package:etouristagency_desktop/consts/app_colors.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/helpers/format_helper.dart';
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
@@ -26,7 +27,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
   final ScrollController horizontalScrollController = ScrollController();
   Map<String, dynamic> queryStrings = {
     "page": 1,
-    "searchText": "",
+    "reservationNoSearchText": "",
     "reservationStatusId": "",
     "offerId": "",
   };
@@ -46,6 +47,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.offerScreen,
       SingleChildScrollView(
         child: paginatedList != null
             ? Column(
@@ -73,6 +75,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                           ],
                         ),
                         SizedBox(height: 20),
+                        paginatedList!.listOfRecords!.isNotEmpty ?
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -91,7 +94,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                                       ),
                                     ),
                                     onSubmitted: (value) async {
-                                      queryStrings["searchText"] = value;
+                                      queryStrings["reservationNoSearchText"] = value;
                                       queryStrings["page"] = 1;
                                       await fetchData();
                                     },
@@ -119,11 +122,11 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                               ],
                             ),
                           ],
-                        ),
+                        ) : SizedBox(),
                       ],
                     ),
                   ),
-                  Scrollbar(
+                  paginatedList!.listOfRecords!.isNotEmpty ? Scrollbar(
                     thumbVisibility: true,
                     interactive: true,
                     controller: horizontalScrollController,
@@ -216,8 +219,9 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                         ),
                       ),
                     ),
-                  ),
-                  buildPaginationButtons(),
+                  ) : SizedBox(),
+                  paginatedList!.listOfRecords!.isNotEmpty? buildPaginationButtons(): SizedBox(),
+                  paginatedList!.listOfRecords!.isEmpty ? Center(child: Text("Trenutno nema kreiranih rezervacija za ovu ponudu.", style: TextStyle(fontSize: 20))) : SizedBox()
                 ],
               )
             : DialogHelper.openSpinner(context, "Dohvatam rezervacije..."),

@@ -1,3 +1,4 @@
+import 'package:etouristagency_desktop/helpers/format_helper.dart';
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_desktop/models/offer_discount/offer_discount.dart';
 import 'package:etouristagency_desktop/models/passenger/passenger.dart';
@@ -26,7 +27,8 @@ class Reservation {
   User? user;
   String? note;
 
-  String get formatedCreatedOn => DateFormat('dd.MM.yyyy HH:mm').format(createdOn!);
+  String get formatedCreatedOn =>
+      DateFormat('dd.MM.yyyy HH:mm').format(createdOn!);
 
   Reservation(
     this.id,
@@ -46,7 +48,7 @@ class Reservation {
     this.reservationStatus,
     this.reservationPayments,
     this.user,
-    this.note
+    this.note,
   );
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
@@ -78,9 +80,20 @@ class Reservation {
       json["reservationStatus"] != null
           ? EntityCodeValue.fromJson(json["reservationStatus"])
           : null,
-      json["reservationPayments"] != null ? (json["reservationPayments"] as List).map((e)=> ReservationPayment.fromJson(e)).toList() : null,
+      json["reservationPayments"] != null
+          ? (json["reservationPayments"] as List)
+                .map((e) => ReservationPayment.fromJson(e))
+                .toList()
+          : null,
       json["user"] != null ? User.fromJson(json["user"]) : null,
-      json["note"]
+      json["note"],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "reservationStatusId": reservationStatusId,
+      "paidAmount": FormatHelper.formatNumber(paidAmount!),
+    };
   }
 }

@@ -1,5 +1,6 @@
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/roles.dart';
+import 'package:etouristagency_desktop/models/offer/offer.dart';
 import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:etouristagency_desktop/providers/user_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
@@ -136,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => MasterScreen(Placeholder())),
+        MaterialPageRoute(builder: (context) => OfferListScreen()),
       );
     } on Exception catch (e) {
       operationErrorMessage = e.toString();

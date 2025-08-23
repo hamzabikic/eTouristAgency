@@ -29,20 +29,23 @@ namespace eTouristAgencyAPI.Services
             dbModel.ModifiedBy = _userId ?? Guid.Empty;
             dbModel.OfferStatusId = AppConstants.FixedOfferStatusDraft;
 
+            dbModel.OfferImage = new OfferImage
+            {
+                ImageBytes = insertModel.OfferImageBytes,
+                ImageName = insertModel.OfferImageName,
+                CreatedBy = _userId ?? Guid.Empty,
+                ModifiedBy = _userId ?? Guid.Empty
+            };
+
             if (insertModel.OfferDocumentBytes != null)
             {
-                dbModel.OfferDocument = new OfferDocument { DocumentBytes = insertModel.OfferDocumentBytes,
-                                                            DocumentName = insertModel.OfferDocumentName,
-                                                            CreatedBy = _userId ?? Guid.Empty,
-                                                            ModifiedBy = _userId ?? Guid.Empty };
-            }
-
-            if (insertModel.OfferImageBytes != null)
-            {
-                dbModel.OfferImage = new OfferImage { ImageBytes = insertModel.OfferImageBytes,
-                                                      ImageName = insertModel.OfferImageName,
-                                                      CreatedBy = _userId ?? Guid.Empty,
-                                                      ModifiedBy = _userId ?? Guid.Empty };
+                dbModel.OfferDocument = new OfferDocument
+                {
+                    DocumentBytes = insertModel.OfferDocumentBytes,
+                    DocumentName = insertModel.OfferDocumentName,
+                    CreatedBy = _userId ?? Guid.Empty,
+                    ModifiedBy = _userId ?? Guid.Empty
+                };
             }
         }
 
@@ -72,29 +75,40 @@ namespace eTouristAgencyAPI.Services
                 }
                 else
                 {
-                    dbModel.OfferDocument = new OfferDocument { DocumentBytes = updateModel.OfferDocumentBytes,
-                                                                DocumentName = updateModel.OfferDocumentName,
-                                                                CreatedBy = _userId ?? Guid.Empty,
-                                                                ModifiedBy = _userId ?? Guid.Empty };
+                    dbModel.OfferDocument = new OfferDocument
+                    {
+                        DocumentBytes = updateModel.OfferDocumentBytes,
+                        DocumentName = updateModel.OfferDocumentName,
+                        CreatedBy = _userId ?? Guid.Empty,
+                        ModifiedBy = _userId ?? Guid.Empty
+                    };
+                }
+            }
+            else
+            {
+                if (dbModel.OfferDocument != null)
+                {
+                    _dbContext.OfferDocuments.Remove(dbModel.OfferDocument);
+                    await _dbContext.SaveChangesAsync();
                 }
             }
 
-            if (updateModel.OfferImageBytes != null)
+            if (dbModel.OfferImage != null)
             {
-                if (dbModel.OfferImage != null)
+                dbModel.OfferImage.ImageBytes = updateModel.OfferImageBytes;
+                dbModel.OfferImage.ImageName = updateModel.OfferImageName;
+                dbModel.OfferImage.ModifiedBy = _userId ?? Guid.Empty;
+                dbModel.OfferImage.ModifiedOn = DateTime.Now;
+            }
+            else
+            {
+                dbModel.OfferImage = new OfferImage
                 {
-                    dbModel.OfferImage.ImageBytes = updateModel.OfferImageBytes;
-                    dbModel.OfferImage.ImageName = updateModel.OfferImageName;
-                    dbModel.OfferImage.ModifiedBy = _userId ?? Guid.Empty;
-                    dbModel.OfferImage.ModifiedOn = DateTime.Now;
-                }
-                else
-                {
-                    dbModel.OfferImage = new OfferImage { ImageBytes = updateModel.OfferImageBytes,
-                                                          ImageName = updateModel.OfferImageName,
-                                                          CreatedBy = _userId ?? Guid.Empty,
-                                                          ModifiedBy = _userId ?? Guid.Empty };
-                }
+                    ImageBytes = updateModel.OfferImageBytes,
+                    ImageName = updateModel.OfferImageName,
+                    CreatedBy = _userId ?? Guid.Empty,
+                    ModifiedBy = _userId ?? Guid.Empty
+                };
             }
         }
 

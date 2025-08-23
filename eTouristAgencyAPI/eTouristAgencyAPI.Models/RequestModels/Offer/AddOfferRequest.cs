@@ -25,9 +25,9 @@ namespace eTouristAgencyAPI.Models.RequestModels.Offer
 
         public Guid BoardTypeId { get; set; }
 
-        public byte[]? OfferImageBytes { get; set; }
+        public byte[] OfferImageBytes { get; set; }
 
-        public string? OfferImageName { get; set; }
+        public string OfferImageName { get; set; }
 
         public byte[]? OfferDocumentBytes { get; set; }
 

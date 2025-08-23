@@ -1,13 +1,16 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:etouristagency_mobile/consts/app_colors.dart';
+import 'package:etouristagency_mobile/consts/screen_names.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/helpers/format_helper.dart';
 import 'package:etouristagency_mobile/models/offer/offer.dart';
+import 'package:etouristagency_mobile/models/offer/offer_document_info.dart';
+import 'package:etouristagency_mobile/models/offer/offer_image_info.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/screens/hotel/hotel_images_dialog.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/last_minute_offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/add_update_reservation_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +19,8 @@ import 'package:path_provider/path_provider.dart';
 
 class OfferDetailsScreen extends StatefulWidget {
   final String offerId;
-  const OfferDetailsScreen(this.offerId, {super.key});
+  final String previousScreenName;
+  const OfferDetailsScreen(this.previousScreenName, this.offerId, {super.key});
 
   @override
   State<OfferDetailsScreen> createState() => _OfferDetailsScreenState();
@@ -24,6 +28,8 @@ class OfferDetailsScreen extends StatefulWidget {
 
 class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
   Offer? offer;
+  OfferDocumentInfo? offerDocumentInfo;
+  OfferImageInfo? offerImageInfo;
   late final OfferProvider offerProvider;
 
   @override
@@ -38,8 +44,15 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     return MasterScreen(
       "Kreiranje rezervacije",
       isBackButtonVisible: true,
-      onClickMethod: (){
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> OfferListScreen()));
+      onClickMethod: () {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) =>
+                widget.previousScreenName == ScreenNames.offerListScreen
+                ? OfferListScreen()
+                : LastMinuteOfferListScreen(),
+          ),
+        );
       },
       offer != null
           ? SingleChildScrollView(
@@ -55,11 +68,9 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            offer!.offerImage != null
+                            offerImageInfo != null
                                 ? Image.memory(
-                                    base64Decode(
-                                      offer!.offerImage!.imageBytes!,
-                                    ),
+                                    offerImageInfo!.imageBytes!,
                                     height: 200,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
@@ -144,19 +155,19 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                IconButton(
-                                  padding: EdgeInsets.all(0),
-                                  icon: Icon(
-                                    Icons.description,
-                                    color: AppColors.primary,
-                                    size: 40,
-                                  ),
-                                  onPressed: offer?.offerDocument != null
-                                      ? () async {
+                                offerDocumentInfo != null
+                                    ? IconButton(
+                                        padding: EdgeInsets.all(0),
+                                        icon: Icon(
+                                          Icons.description,
+                                          color: AppColors.primary,
+                                          size: 40,
+                                        ),
+                                        onPressed: () async {
                                           await saveAndOpenDocument(context);
-                                        }
-                                      : null,
-                                ),
+                                        },
+                                      )
+                                    : SizedBox(width: 40),
                                 IconButton(
                                   padding: EdgeInsets.all(0),
                                   icon: Icon(
@@ -260,6 +271,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                               widget.offerId,
                               item.id,
                               null,
+                              previousScreenName: widget.previousScreenName,
                             ),
                           ),
                         );
@@ -281,6 +293,14 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
 
   Future fetchOfferData() async {
     offer = Offer.fromJson(await offerProvider.getById(widget.offerId));
+
+    try {
+      offerImageInfo = await offerProvider.getOfferImage(widget.offerId);
+    } on Exception catch (ex) {}
+
+    try {
+      offerDocumentInfo = await offerProvider.getOfferDocument(widget.offerId);
+    } on Exception catch (ex) {}
 
     setState(() {});
   }
@@ -307,17 +327,15 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
 
   Future<void> saveAndOpenDocument(BuildContext context) async {
     try {
-      String fileName = offer!.offerDocument!.documentName!;
-      String base64Bytes = offer!.offerDocument!.documentBytes!;
-
-      Uint8List bytes = base64Decode(base64Bytes);
+      String fileName = offerDocumentInfo!.documentName!;
+      Uint8List fileBytes = offerDocumentInfo!.documentBytes!;
 
       Directory dir = await getTemporaryDirectory();
       String savePath = "${dir.path}/$fileName";
 
       File file = File(savePath);
-      await file.writeAsBytes(bytes);
-      
+      await file.writeAsBytes(fileBytes);
+
       await OpenFile.open(savePath);
     } catch (e) {
       ScaffoldMessenger.of(

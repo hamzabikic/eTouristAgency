@@ -5,8 +5,8 @@ import 'dart:typed_data';
 import 'package:accordion/accordion.dart';
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/app_constants.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
-import 'package:etouristagency_desktop/helpers/file_helper.dart';
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_desktop/models/hotel/hotel.dart';
 import 'package:etouristagency_desktop/models/offer/offer.dart';
@@ -20,11 +20,12 @@ import 'package:etouristagency_desktop/screens/offer/models/discount_accordion_i
 import 'package:etouristagency_desktop/screens/offer/models/room_accordion_item.dart';
 import 'package:etouristagency_desktop/screens/offer/offer_list_screen.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AddUpdateOfferScreen extends StatefulWidget {
   final Offer? offer;
@@ -43,9 +44,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   late final EntityCodeValueProvider entityCodeValueProvider;
   late final RoomTypeProvider roomTypeProvider;
   late final OfferProvider offerProvider;
-  String? photo;
+  Uint8List? photo;
   String? photoName;
-  String? document;
+  Uint8List? document;
   String? documentName;
   List<Hotel>? hotelList;
   List<EntityCodeValue>? boardTypeList;
@@ -56,13 +57,10 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   bool isLastMinuteEnabled = true;
   late final bool isRoomUpdateEnabled;
   late final bool isInactiveStatus;
+  String photoErrorMessage = "";
 
   @override
   void initState() {
-    if (widget.offer != null) {
-      loadImage();
-      loadDocument();
-    }
     rooms =
         widget.offer?.rooms
             ?.map((x) => RoomAccordionItem.fromRoom(x))
@@ -77,6 +75,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
     entityCodeValueProvider = EntityCodeValueProvider();
     roomTypeProvider = RoomTypeProvider();
     offerProvider = OfferProvider();
+    loadImage();
+    loadDocument();
     fetchHotelData();
     fetchBoardTypeData();
     fetchRoomTypeData();
@@ -94,6 +94,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.offerScreen,
       SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -123,7 +124,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                           width: 700,
                           child: Center(
                             child: Text(
-                              widget.offer == null ? "Nova ponuda" : "Izmjena ponude",
+                              widget.offer == null
+                                  ? "Nova ponuda"
+                                  : "Izmjena ponude",
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w500,
@@ -144,7 +147,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                 children: [
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       photo == null
                                           ? Icon(
@@ -153,7 +157,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                               color: AppColors.primary,
                                             )
                                           : Image.memory(
-                                              base64Decode(photo!),
+                                              photo!,
                                               height: 200,
                                               width: 200,
                                             ),
@@ -170,15 +174,23 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                               ),
                                             )
                                           : SizedBox(),
+                                      Text(
+                                        photoErrorMessage,
+                                        style: TextStyle(
+                                          color: AppColors.darkRed,
+                                        ),
+                                      ),
                                       SizedBox(height: 5),
                                       SizedBox(
                                         width: 300,
                                         child: FormBuilderDateTimePicker(
-                                          validator: FormBuilderValidators.compose([
-                                            FormBuilderValidators.required(
-                                              errorText: "Ovo polje je obavezno.",
-                                            ),
-                                          ]),
+                                          validator:
+                                              FormBuilderValidators.compose([
+                                                FormBuilderValidators.required(
+                                                  errorText:
+                                                      "Ovo polje je obavezno.",
+                                                ),
+                                              ]),
                                           name: "firstPaymentDeadline",
                                           initialDate: DateTime.now(),
                                           inputType: InputType.date,
@@ -197,11 +209,13 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                       SizedBox(
                                         width: 300,
                                         child: FormBuilderDateTimePicker(
-                                          validator: FormBuilderValidators.compose([
-                                            FormBuilderValidators.required(
-                                              errorText: "Ovo polje je obavezno.",
-                                            ),
-                                          ]),
+                                          validator:
+                                              FormBuilderValidators.compose([
+                                                FormBuilderValidators.required(
+                                                  errorText:
+                                                      "Ovo polje je obavezno.",
+                                                ),
+                                              ]),
                                           name: "lastPaymentDeadline",
                                           initialDate: DateTime.now(),
                                           inputType: InputType.date,
@@ -226,11 +240,13 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                           maxLines: 5,
                                           enabled: !isInactiveStatus,
                                           style: TextStyle(color: Colors.black),
-                                          validator: FormBuilderValidators.compose([
-                                            FormBuilderValidators.required(
-                                              errorText: "Ovo polje je obavezno.",
-                                            ),
-                                          ]),
+                                          validator:
+                                              FormBuilderValidators.compose([
+                                                FormBuilderValidators.required(
+                                                  errorText:
+                                                      "Ovo polje je obavezno.",
+                                                ),
+                                              ]),
                                           decoration: InputDecoration(
                                             labelStyle: TextStyle(
                                               color: Colors.black,
@@ -259,7 +275,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                 ? widget.offer?.hotelId ?? ""
                                                 : "",
                                             name: "hotelId",
-                                            style: TextStyle(color: Colors.black),
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
                                             enabled: !isInactiveStatus,
                                             items: getHotelDropdownMenuItems(),
                                           ),
@@ -268,16 +286,20 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                       SizedBox(
                                         width: 300,
                                         child: FormBuilderDateTimePicker(
-                                          validator: FormBuilderValidators.compose([
-                                            FormBuilderValidators.required(
-                                              errorText: "Ovo polje je obavezno.",
-                                            ),
-                                          ]),
+                                          validator:
+                                              FormBuilderValidators.compose([
+                                                FormBuilderValidators.required(
+                                                  errorText:
+                                                      "Ovo polje je obavezno.",
+                                                ),
+                                              ]),
                                           name: "tripStartDate",
                                           initialDate: DateTime.now(),
                                           inputType: InputType.both,
                                           style: TextStyle(color: Colors.black),
-                                          format: DateFormat("dd.MM.yyyy HH:mm:ss"),
+                                          format: DateFormat(
+                                            "dd.MM.yyyy HH:mm:ss",
+                                          ),
                                           enabled: !isInactiveStatus,
                                           decoration: InputDecoration(
                                             labelStyle: TextStyle(
@@ -290,16 +312,20 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                       SizedBox(
                                         width: 300,
                                         child: FormBuilderDateTimePicker(
-                                          validator: FormBuilderValidators.compose([
-                                            FormBuilderValidators.required(
-                                              errorText: "Ovo polje je obavezno.",
-                                            ),
-                                          ]),
+                                          validator:
+                                              FormBuilderValidators.compose([
+                                                FormBuilderValidators.required(
+                                                  errorText:
+                                                      "Ovo polje je obavezno.",
+                                                ),
+                                              ]),
                                           name: "tripEndDate",
                                           initialDate: DateTime.now(),
                                           inputType: InputType.both,
                                           style: TextStyle(color: Colors.black),
-                                          format: DateFormat("dd.MM.yyyy HH:mm:ss"),
+                                          format: DateFormat(
+                                            "dd.MM.yyyy HH:mm:ss",
+                                          ),
                                           enabled: !isInactiveStatus,
                                           decoration: InputDecoration(
                                             labelStyle: TextStyle(
@@ -321,11 +347,13 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                   ),
                                                 ]),
                                             initialValue: boardTypeList != null
-                                                ? widget.offer?.boardTypeId ?? ""
+                                                ? widget.offer?.boardTypeId ??
+                                                      ""
                                                 : "",
                                             name: "boardTypeId",
                                             enabled: !isInactiveStatus,
-                                            items: getBoardTypeDropdownMenuItems(),
+                                            items:
+                                                getBoardTypeDropdownMenuItems(),
                                           ),
                                         ),
                                       ),
@@ -337,7 +365,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                           style: TextStyle(color: Colors.black),
                                           validator: FormBuilderValidators.compose([
                                             FormBuilderValidators.required(
-                                              errorText: "Ovo polje je obavezno.",
+                                              errorText:
+                                                  "Ovo polje je obavezno.",
                                             ),
                                             FormBuilderValidators.numeric(
                                               errorText:
@@ -358,11 +387,13 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                           name: "departurePlace",
                                           enabled: !isInactiveStatus,
                                           style: TextStyle(color: Colors.black),
-                                          validator: FormBuilderValidators.compose([
-                                            FormBuilderValidators.required(
-                                              errorText: "Ovo polje je obavezno.",
-                                            ),
-                                          ]),
+                                          validator:
+                                              FormBuilderValidators.compose([
+                                                FormBuilderValidators.required(
+                                                  errorText:
+                                                      "Ovo polje je obavezno.",
+                                                ),
+                                              ]),
                                           decoration: InputDecoration(
                                             labelStyle: TextStyle(
                                               color: Colors.black,
@@ -377,11 +408,13 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                           name: "carriers",
                                           style: TextStyle(color: Colors.black),
                                           enabled: !isInactiveStatus,
-                                          validator: FormBuilderValidators.compose([
-                                            FormBuilderValidators.required(
-                                              errorText: "Ovo polje je obavezno.",
-                                            ),
-                                          ]),
+                                          validator:
+                                              FormBuilderValidators.compose([
+                                                FormBuilderValidators.required(
+                                                  errorText:
+                                                      "Ovo polje je obavezno.",
+                                                ),
+                                              ]),
                                           decoration: InputDecoration(
                                             labelStyle: TextStyle(
                                               color: Colors.black,
@@ -398,8 +431,10 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                 decoration: InputDecoration(
                                                   labelText: "Status ponude",
                                                 ),
-                                                initialValue:
-                                                    widget.offer!.offerStatus!.name,
+                                                initialValue: widget
+                                                    .offer!
+                                                    .offerStatus!
+                                                    .name,
                                                 readOnly: true,
                                               ),
                                             )
@@ -420,7 +455,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                       SizedBox(height: 10),
                                       document != null
                                           ? ElevatedButton(
-                                              onPressed: downloadDocument,
+                                              onPressed: openDocument,
                                               child: Text("Preuzmi dokument"),
                                             )
                                           : SizedBox(),
@@ -447,63 +482,61 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              !isInactiveStatus
-                                  ? ElevatedButton(
-                                      onPressed: isFirstMinuteEnabled
-                                          ? () {
-                                              offerDiscounts.add(
-                                                DiscountAccordionItem(
-                                                  discountTypeId: AppConstants
-                                                      .firstMinuteDiscountGuid,
-                                                ),
-                                              );
-                          
-                                              setState(() {});
-                                            }
-                                          : null,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.add,
-                                            color: Colors.blueGrey,
-                                            size: 15,
+                              ElevatedButton(
+                                onPressed:
+                                    isFirstMinuteEnabled && !isInactiveStatus
+                                    ? () {
+                                        offerDiscounts.add(
+                                          DiscountAccordionItem(
+                                            discountTypeId: AppConstants
+                                                .firstMinuteDiscountGuid,
                                           ),
-                                          SizedBox(width: 2),
-                                          Text("Dodaj First Minute"),
-                                        ],
-                                      ),
-                                    )
-                                  : SizedBox(),
+                                        );
+
+                                        setState(() {});
+                                      }
+                                    : null,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.add,
+                                      color: Colors.blueGrey,
+                                      size: 15,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text("Dodaj First Minute"),
+                                  ],
+                                ),
+                              ),
                               SizedBox(width: 30),
-                              !isInactiveStatus
-                                  ? ElevatedButton(
-                                      onPressed: isLastMinuteEnabled
-                                          ? () {
-                                              offerDiscounts.add(
-                                                DiscountAccordionItem(
-                                                  discountTypeId: AppConstants
-                                                      .lastMinuteDiscountGuid,
-                                                ),
-                                              );
-                          
-                                              setState(() {});
-                                            }
-                                          : null,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.add,
-                                            color: Colors.blueGrey,
-                                            size: 15,
+                              ElevatedButton(
+                                onPressed:
+                                    isLastMinuteEnabled && !isInactiveStatus
+                                    ? () {
+                                        offerDiscounts.add(
+                                          DiscountAccordionItem(
+                                            discountTypeId: AppConstants
+                                                .lastMinuteDiscountGuid,
                                           ),
-                                          SizedBox(width: 2),
-                                          Text("Dodaj Last Minute"),
-                                        ],
-                                      ),
-                                    )
-                                  : SizedBox(),
+                                        );
+
+                                        setState(() {});
+                                      }
+                                    : null,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.add,
+                                      color: Colors.blueGrey,
+                                      size: 15,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text("Dodaj Last Minute"),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -595,32 +628,15 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
     );
   }
 
-  Future downloadDocument() async {
-    if (document == null) return;
+  Future openDocument() async {
+    Directory tempDir = await getTemporaryDirectory();
 
-    Uint8List bytes = base64Decode(document!);
+    String filePath = '${tempDir.path}/${documentName}';
 
-    final XTypeGroup pdfGroup = XTypeGroup(
-      label: 'Documents',
-      extensions: FileHelper.allowedExtensions,
-    );
+    File file = File(filePath);
+    await file.writeAsBytes(document!);
 
-    final FileSaveLocation? path = await getSaveLocation(
-      suggestedName: documentName,
-      acceptedTypeGroups: [pdfGroup],
-    );
-
-    if (path == null) {
-      return;
-    }
-
-    final file = XFile.fromData(
-      bytes,
-      mimeType: FileHelper.getMimeType(documentName!),
-      name: documentName,
-    );
-
-    await file.saveTo(path.path);
+    final result = await OpenFile.open(filePath);
   }
 
   Future uploadDocument() async {
@@ -634,8 +650,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
     }
 
     File file = File(result.files.single.path!);
-    var photoBytes = file.readAsBytesSync();
-    document = base64Encode(photoBytes);
+    var documentBytes = file.readAsBytesSync();
+    document = documentBytes;
     documentName = result.files.first.name;
 
     setState(() {});
@@ -653,7 +669,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
 
     File file = File(result.files.single.path!);
     var photoBytes = file.readAsBytesSync();
-    photo = base64Encode(photoBytes);
+    photo = photoBytes;
     photoName = result.files.first.name;
 
     setState(() {});
@@ -1041,7 +1057,17 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   }
 
   Future addOffer() async {
-    if (!validateOfferForm()) return;
+    if (!validateOfferForm()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Neuspješna validacija: Neka od obaveznih polja nisu unesena ili su unesena u neispravnom formatu.",
+          ),
+        ),
+      );
+
+      return;
+    }
 
     formBuilderKey.currentState!.save();
 
@@ -1073,9 +1099,11 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
 
     offerJson["roomList"] = roomJsons;
     offerJson["discountList"] = discountJsons;
-    offerJson["offerImageBytes"] = photo;
+    offerJson["offerImageBytes"] = photo != null ? base64Encode(photo!) : null;
     offerJson["offerImageName"] = photoName;
-    offerJson["offerDocumentBytes"] = document;
+    offerJson["offerDocumentBytes"] = document != null
+        ? base64Encode(document!)
+        : null;
     offerJson["offerDocumentName"] = documentName;
     offerJson["firstPaymentDeadline"] =
         (offerJson["firstPaymentDeadline"] as DateTime).toIso8601String();
@@ -1088,11 +1116,14 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
 
     if (widget.offer == null) {
       try {
-        // DialogHelper.openSpinner(context, "Podaci se procesuiraju...");
         await offerProvider.add(offerJson);
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => OfferListScreen()),
-        );
+
+        DialogHelper.openDialog(context, "Uspješno kreirana rezervacija", () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => OfferListScreen()),
+          );
+        });
       } on Exception catch (ex) {
         DialogHelper.openDialog(
           context,
@@ -1105,11 +1136,13 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
       }
     } else {
       try {
-        // DialogHelper.openSpinner(context, "Podaci se procesuiraju...");
         await offerProvider.update(widget.offer!.id!, offerJson);
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => OfferListScreen()),
-        );
+        DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => OfferListScreen()),
+          );
+        });
       } on Exception catch (ex) {
         DialogHelper.openDialog(
           context,
@@ -1124,7 +1157,18 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   }
 
   bool validateOfferForm() {
-    bool isValidForm = formBuilderKey.currentState!.validate();
+    bool isValidForm = true;
+
+    if (photo == null || photoName == null) {
+      photoErrorMessage = "Upload slike je obavezan.";
+      isValidForm = false;
+    } else {
+      photoErrorMessage = "";
+    }
+
+    if (!formBuilderKey.currentState!.validate()) {
+      isValidForm = false;
+    }
 
     for (var x in formBuilderRoomsKey) {
       if (!x.currentState!.validate()) {
@@ -1138,25 +1182,35 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
       }
     }
 
+    setState((){});
+
     return isValidForm;
   }
 
-  void loadImage() {
-    if (widget.offer!.offerImage != null) {
-      photo = widget.offer!.offerImage!.imageBytes;
-      photoName = widget.offer!.offerImage!.imageName;
+  Future loadImage() async {
+    if (widget.offer == null) return;
 
-      setState(() {});
-    }
+    try {
+      var offerImageInfo = await offerProvider.getOfferImage(widget.offer!.id!);
+      photo = offerImageInfo.imageBytes;
+      photoName = offerImageInfo.imageName;
+    } on Exception catch (ex) {}
+
+    setState(() {});
   }
 
-  void loadDocument() {
-    if (widget.offer!.offerDocument != null) {
-      document = widget.offer!.offerDocument!.documentBytes;
-      documentName = photoName = widget.offer!.offerDocument!.documentName;
+  Future loadDocument() async {
+    if (widget.offer == null) return;
 
-      setState(() {});
-    }
+    try {
+      var documentInfo = await offerProvider.getOfferDocument(
+        widget.offer!.id!,
+      );
+      document = documentInfo.documentBytes;
+      documentName = documentInfo.documentName;
+    } on Exception catch (ex) {}
+
+    setState(() {});
   }
 
   Future activateOffer() async {

@@ -11,5 +11,6 @@ namespace eTouristAgencyAPI.Services.Interfaces
         Task AddPaymentAsync(Guid reservationId, UpdateReservationStatusRequest request);
         Task CancelReservationAsync(Guid reservationId);
         Task<PaginatedList<MyReservationResponse>> GetAllForCurrentUserAsync(MyReservationSearchModel searchModel);
+        Task<ReservationPayment> GetReservationPaymentByReservationPaymentIdAsync(Guid reservationPaymentId);
     }
 }

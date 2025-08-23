@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:etouristagency_mobile/consts/app_colors.dart';
+import 'package:etouristagency_mobile/consts/screen_names.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/helpers/format_helper.dart';
 import 'package:etouristagency_mobile/models/country/country.dart';
@@ -107,17 +106,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
-                                  children: [
-                                    offer.offerImage != null
-                                        ? Stack(
+                                  children: [Stack(
                                             children: [
-                                              Image.memory(
-                                                base64Decode(
-                                                  paginatedList!
-                                                      .listOfRecords[index]
-                                                      .offerImage!
-                                                      .imageBytes!,
-                                                ),
+                                              Image.network("${offerProvider.controllerUrl}/${offer.id}/image",
                                                 height: 200,
                                                 width: double.infinity,
                                                 fit: BoxFit.cover,
@@ -181,14 +172,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                           ),
                                                         ),
                                                       ),
-                                                    )
-                                                  : SizedBox(),
+                                                    ) : SizedBox(),
                                             ],
-                                          )
-                                        : SizedBox(
-                                            height: 200,
-                                            width: double.infinity,
-                                            child: Placeholder(),
                                           ),
                                     SizedBox(height: 10),
                                     Text(
@@ -265,7 +250,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                 MaterialPageRoute(
                                                   builder: (context) =>
                                                       OfferDetailsScreen(
-                                                        offer.id!,
+                                                        ScreenNames.offerListScreen,
+                                                        offer.id!
                                                       ),
                                                 ),
                                               );

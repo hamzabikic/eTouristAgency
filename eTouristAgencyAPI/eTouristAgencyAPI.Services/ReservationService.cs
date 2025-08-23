@@ -128,7 +128,6 @@ namespace eTouristAgencyAPI.Services
                                  .ThenInclude(x => x.RoomType)
                                  .Include(x => x.OfferDiscount).ThenInclude(x => x.DiscountType)
                                  .Include(x => x.Passengers.OrderBy(x => x.DisplayOrderWithinReservation))
-                                 .Include(x => x.ReservationPayments.OrderBy(x => x.DisplayOrderWithinReservation))
                                  .Include(x => x.ReservationStatus)
                                  .Include(x => x.User);
 
@@ -141,7 +140,6 @@ namespace eTouristAgencyAPI.Services
                                  .ThenInclude(x => x.RoomType)
                                  .Include(x => x.OfferDiscount).ThenInclude(x => x.DiscountType)
                                  .Include(x => x.Passengers.OrderBy(x => x.DisplayOrderWithinReservation))
-                                 .Include(x => x.ReservationPayments.OrderBy(x => x.DisplayOrderWithinReservation))
                                  .Include(x => x.ReservationStatus)
                                  .Include(x => x.User);
 
@@ -153,6 +151,11 @@ namespace eTouristAgencyAPI.Services
             if (searchModel.ReservationStatusId != null)
             {
                 queryable = queryable.Where(x => x.ReservationStatusId == searchModel.ReservationStatusId);
+            }
+
+            if (!string.IsNullOrEmpty(searchModel.ReservationNoSearchText))
+            {
+                queryable = queryable.Where(x=> x.ReservationNo.ToString() == searchModel.ReservationNoSearchText);
             }
 
             queryable = queryable.OrderByDescending(x => x.CreatedOn);
@@ -174,7 +177,16 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Reservation with provided id is not avalible for this user.");
             }
 
-            return await base.GetByIdAsync(id);
+            var reservationResponse = await base.GetByIdAsync(id);
+
+            reservationResponse.ReservationPayments = await _dbContext.ReservationPayments.Where(x => x.ReservationId == id)
+                                                                                          .OrderBy(x=> x.DisplayOrderWithinReservation)
+                                                                                          .Select(x => new ReservationPaymentResponse
+                                                                                          {
+                                                                                              Id = x.Id
+                                                                                          }).ToListAsync();
+
+            return reservationResponse;
         }
 
         public async Task AddPaymentAsync(Guid reservationId, UpdateReservationStatusRequest request)
@@ -239,6 +251,20 @@ namespace eTouristAgencyAPI.Services
                 ListOfRecords = _mapper.Map<List<MyReservationResponse>>(listOfRecords),
                 TotalPages = totalPages
             };
+        }
+
+        public async Task<ReservationPayment> GetReservationPaymentByReservationPaymentIdAsync(Guid reservationPaymentId)
+        {
+            var reservationPayment = await _dbContext.ReservationPayments.Include(x => x.Reservation).FirstOrDefaultAsync(x => x.Id == reservationPaymentId);
+
+            if (reservationPayment == null)
+            {
+                throw new Exception("Reservation payment document with provided id is not found.");
+            }
+
+            if (!_userContextService.UserHasRole(Roles.Admin) && reservationPayment.Reservation.UserId != _userId) throw new Exception("You are not authorized to access this resource.");
+
+            return reservationPayment;
         }
     }
 }

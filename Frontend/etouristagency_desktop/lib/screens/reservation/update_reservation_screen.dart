@@ -3,12 +3,15 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:etouristagency_desktop/consts/app_colors.dart';
+import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
 import 'package:etouristagency_desktop/helpers/format_helper.dart';
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_desktop/models/offer/offer.dart';
 import 'package:etouristagency_desktop/models/reservation/reservation.dart';
+import 'package:etouristagency_desktop/models/reservation/reservation_payment_info.dart';
 import 'package:etouristagency_desktop/providers/entity_code_value_provider.dart';
+import 'package:etouristagency_desktop/providers/offer_provider.dart';
 import 'package:etouristagency_desktop/providers/reservation_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/add_update_offer_screen.dart';
@@ -34,35 +37,37 @@ class UpdateReservationScreen extends StatefulWidget {
 class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
   Reservation? reservation;
   List<EntityCodeValue>? reservationStatusList;
+  Uint8List? photo;
+  List<ReservationPaymentInfo> reservationPayments = [];
   late final ReservationProvider reservationProvider;
+  late final OfferProvider offerProvider;
   late final EntityCodeValueProvider entityCodeValueProvider;
   ScrollController horizontalScrollController = ScrollController();
   final GlobalKey<FormBuilderState> formBuilderKey =
       GlobalKey<FormBuilderState>();
-  Map<String, dynamic> reservationData = {
-    "paidAmount": 0,
-    "reservationStatusId": "",
-  };
 
   @override
   void initState() {
     reservationProvider = ReservationProvider();
+    offerProvider = OfferProvider();
     entityCodeValueProvider = EntityCodeValueProvider();
     fetchReservationData();
     fetchReservationStatusData();
+    loadPhoto();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return MasterScreen(
+      ScreenNames.offerScreen,
       reservation != null
           ? SingleChildScrollView(
               child: Stack(
                 children: [
                   Positioned(
-                    top:8,
-                    left:16,
+                    top: 8,
+                    left: 16,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -121,15 +126,17 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                       Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Image.memory(
-                                            base64Decode(
-                                              widget
-                                                  .offer
-                                                  .offerImage!
-                                                  .imageBytes!,
-                                            ),
-                                            width: 250,
-                                          ),
+                                          photo == null
+                                              ? Icon(
+                                                  Icons.image,
+                                                  size: 250,
+                                                  color: AppColors.primary,
+                                                )
+                                              : Image.memory(
+                                                  photo!,
+                                                  height: 200,
+                                                  width: 250,
+                                                ),
                                         ],
                                       ),
                                       Column(
@@ -388,8 +395,8 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                     ],
                                   ),
                                   FormBuilder(
-                                    initialValue: reservationData,
                                     key: formBuilderKey,
+                                    initialValue: reservation!.toJson(),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -574,10 +581,11 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                   SizedBox(height: 10),
                                   SizedBox(
                                     width: double.infinity,
-                                    child: Wrap(
+                                    child: reservationPayments.isNotEmpty ? Wrap(
                                       spacing: 20,
+                                      runSpacing: 10,
                                       children: getReservationPaymentList(),
-                                    ),
+                                    ) : Text("Trenutno nema dostavljenih dokaza o uplati."),
                                   ),
                                 ],
                               ),
@@ -600,10 +608,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
   Future fetchReservationData() async {
     reservation = await reservationProvider.getById(widget.reservationId);
 
-    reservationData["paidAmount"] = FormatHelper.formatNumber(
-      reservation!.paidAmount!,
-    );
-    reservationData["reservationStatusId"] = reservation!.reservationStatusId;
+    await loadReservationPayments();
 
     setState(() {});
   }
@@ -636,13 +641,11 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
   List<Widget> getReservationPaymentList() {
     List<Widget> list = [];
 
-    if (reservation == null ||
-        reservation!.reservationPayments == null ||
-        reservation!.reservationPayments!.isEmpty) {
+    if (reservationPayments.isEmpty) {
       return list;
     }
 
-    for (var item in reservation!.reservationPayments!) {
+    for (var item in reservationPayments) {
       list.add(
         InkWell(
           child: Column(
@@ -658,7 +661,10 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
             ],
           ),
           onTap: () async {
-            await openFile(item.documentBytes!, item.documentName!);
+            await openFile(
+              base64Encode(item.documentBytes!),
+              item.documentName!,
+            );
           },
         ),
       );
@@ -703,6 +709,36 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
       DialogHelper.openDialog(context, ex.toString(), () {
         Navigator.of(context).pop();
       });
+    }
+  }
+
+  Future loadPhoto() async {
+    try {
+      var offerImageInfo = await offerProvider.getOfferImage(widget.offer.id!);
+      photo = offerImageInfo.imageBytes;
+
+      setState(() {});
+    } on Exception catch (ex) {}
+    ;
+  }
+
+  Future loadReservationPayments() async {
+    if (reservation == null ||
+        reservation!.reservationPayments == null ||
+        reservation!.reservationPayments!.isEmpty)
+      return;
+
+    for (var item in reservation!.reservationPayments!) {
+      var reservationPaymentInfo = await reservationProvider.getPaymentDocument(
+        item.id!,
+      );
+
+      reservationPayments.add(
+        ReservationPaymentInfo(
+          reservationPaymentInfo.documentBytes,
+          reservationPaymentInfo.documentName,
+        ),
+      );
     }
   }
 }

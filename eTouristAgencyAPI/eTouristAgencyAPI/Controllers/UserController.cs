@@ -24,7 +24,7 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [AllowAnonymous]
-        public override Task<ActionResult<UserResponse>> Add([FromBody] AddUserRequest insertModel)
+        public override Task<ActionResult> Add([FromBody] AddUserRequest insertModel)
         {
             return base.Add(insertModel);
         }

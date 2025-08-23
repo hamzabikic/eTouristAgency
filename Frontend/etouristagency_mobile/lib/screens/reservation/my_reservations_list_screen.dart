@@ -5,7 +5,7 @@ import 'package:etouristagency_mobile/consts/app_constants.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/models/paginated_list.dart';
 import 'package:etouristagency_mobile/models/reservation/my_reservation.dart';
-import 'package:etouristagency_mobile/models/reservation/reservation.dart';
+import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/providers/reservation_provider.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/add_update_reservation_screen.dart';
@@ -20,8 +20,9 @@ class MyReservationsListScreen extends StatefulWidget {
 }
 
 class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   late final ReservationProvider reservationProvider;
+  late final OfferProvider offerProvider;
   PaginatedList<MyReservation>? paginatedList;
   bool _isLoadingMore = false;
   Map<String, dynamic> queryStrings = {"page": 1, "recordsPerPage": 5};
@@ -29,6 +30,7 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
   @override
   void initState() {
     reservationProvider = ReservationProvider();
+    offerProvider = OfferProvider();
     _scrollController.addListener(_onScroll);
     fetchData();
     super.initState();
@@ -78,23 +80,10 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        reservation.room!.offer!.offerImage != null
-                            ? Image.memory(
-                                base64Decode(
-                                  reservation
-                                      .room!
-                                      .offer!
-                                      .offerImage!
-                                      .imageBytes!,
-                                ),
+                        Image.network("${offerProvider.controllerUrl}/${reservation.room!.offerId!}/image",
                                 height: 200,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
-                              )
-                            : SizedBox(
-                                height: 200,
-                                width: double.infinity,
-                                child: Placeholder(),
                               ),
                         SizedBox(height: 10),
                         Text(

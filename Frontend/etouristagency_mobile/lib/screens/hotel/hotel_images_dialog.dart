@@ -51,10 +51,8 @@ class _HotelImageDialogState extends State<HotelImageDialog> {
                                   backgroundDecoration: BoxDecoration(
                                     color: AppColors.lighterBlue,
                                   ),
-                                  imageProvider: MemoryImage(
-                                    base64Decode(
-                                      hotel!.hotelImages![index].imageBytes!,
-                                    ),
+                                  imageProvider: NetworkImage(
+                                    "${hotelProvider.controllerUrl}/${hotel!.hotelImages![index].id}/image"
                                   ),
                                 ),
                               ),

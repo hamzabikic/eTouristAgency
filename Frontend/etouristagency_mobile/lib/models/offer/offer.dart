@@ -1,9 +1,5 @@
-import 'package:etouristagency_mobile/consts/app_constants.dart';
-import 'package:etouristagency_mobile/helpers/format_helper.dart';
 import 'package:etouristagency_mobile/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_mobile/models/hotel/hotel.dart';
-import 'package:etouristagency_mobile/models/offer/offer_document.dart';
-import 'package:etouristagency_mobile/models/offer/offer_image.dart';
 import 'package:etouristagency_mobile/models/offer_discount/offer_discount.dart';
 import 'package:etouristagency_mobile/models/room/room.dart';
 import 'package:intl/intl.dart';
@@ -31,8 +27,6 @@ class Offer {
   EntityCodeValue? offerStatus;
   List<OfferDiscount>? offerDiscounts;
   List<Room>? rooms;
-  OfferDocument? offerDocument;
-  OfferImage? offerImage;
 
   Offer(
     this.id,
@@ -53,8 +47,6 @@ class Offer {
     this.offerStatus,
     this.offerDiscounts,
     this.rooms,
-    this.offerDocument,
-    this.offerImage,
     this.isFirstMinuteDiscountActive,
     this.isLastMinuteDiscountActive,
     this.minimumPricePerPerson,
@@ -70,16 +62,20 @@ class Offer {
 
   String get formatedEndDateTime => DateFormat('dd.MM.yyyy HH:mm').format(tripEndDate!);
 
+  String get formatedFirstPaymentDeadline => DateFormat('dd.MM.yyyy').format(firstPaymentDeadline!);
+
+  String get formatedLastPaymentDeadline => DateFormat('dd.MM.yyyy').format(lastPaymentDeadline!);
+
   factory Offer.fromJson(Map<String, dynamic> json) {
     return Offer(
       json["id"],
-      DateTime.parse(json["tripStartDate"]),
-      DateTime.parse(json["tripEndDate"]),
+      json["tripStartDate"] !=null ? DateTime.parse(json["tripStartDate"]) : null,
+      json["tripEndDate"] != null ? DateTime.parse(json["tripEndDate"]) : null,
       json["numberOfNights"],
       json["carriers"],
       json["description"],
-      DateTime.parse(json["firstPaymentDeadline"]),
-      DateTime.parse(json["lastPaymentDeadline"]),
+      json["firstPaymentDeadline"]!=null ? DateTime.parse(json["firstPaymentDeadline"]) : null,
+      json["lastPaymentDeadline"] !=null ? DateTime.parse(json["lastPaymentDeadline"]) : null,
       json["offerNo"],
       json["departurePlace"],
       json["hotelId"],
@@ -99,12 +95,6 @@ class Offer {
           : null,
       json["rooms"] != null
           ? (json["rooms"] as List).map((x) => Room.fromJson(x)).toList()
-          : null,
-      json["offerDocument"] != null
-          ? OfferDocument.fromJson(json["offerDocument"])
-          : null,
-      json["offerImage"] != null
-          ? OfferImage.fromJson(json["offerImage"])
           : null,
       json["isFirstMinuteDiscountActive"],
       json["isLastMinuteDiscountActive"],

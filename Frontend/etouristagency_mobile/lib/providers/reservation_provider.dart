@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:etouristagency_mobile/models/paginated_list.dart';
 import 'package:etouristagency_mobile/models/reservation/my_reservation.dart';
 import 'package:etouristagency_mobile/models/reservation/reservation.dart';
+import 'package:etouristagency_mobile/models/reservation/reservation_payment_info.dart';
 import 'package:etouristagency_mobile/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -57,5 +58,28 @@ class ReservationProvider extends BaseProvider<Reservation> {
         "Dogodila se greška prilikom otkazivanja rezervacije: ${response.body}",
       );
     }
+  }
+
+  Future<ReservationPaymentInfo> getReservationPaymentDocument(
+    String reservationPaymentId,
+  ) async {
+    var url = Uri.parse(
+      "${controllerUrl}/${reservationPaymentId}/payment-document",
+    );
+
+    var response = await http.get(
+      url,
+      headers: {"Authorization": (await authService.getBasicKey())!},
+    );
+
+    if (response.statusCode != 200)
+      throw Exception(
+        "Dogodila se greška prilikom preuzimanja dokumenta: ${response.body}",
+      );
+
+    return ReservationPaymentInfo(
+      response.bodyBytes,
+      response.headers["documentname"],
+    );
   }
 }

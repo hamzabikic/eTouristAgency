@@ -1,6 +1,5 @@
 import 'package:etouristagency_mobile/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_mobile/models/hotel/hotel.dart';
-import 'package:etouristagency_mobile/models/offer/offer_image.dart';
 import 'package:etouristagency_mobile/models/room_type/room_type.dart';
 import 'package:intl/intl.dart';
 
@@ -118,7 +117,6 @@ class MyOffer {
   String? boardTypeId;
   EntityCodeValue? boardType;
   Hotel? hotel;
-  OfferImage? offerImage;
 
   String get formattedStartDate =>
       DateFormat('dd.MM.yyyy').format(tripStartDate!);
@@ -141,7 +139,6 @@ class MyOffer {
     this.boardTypeId,
     this.boardType,
     this.hotel,
-    this.offerImage,
   );
 
   factory MyOffer.fromJson(Map<String, dynamic> json) {
@@ -168,10 +165,7 @@ class MyOffer {
       json["boardType"] != null
           ? EntityCodeValue.fromJson(json["boardType"])
           : null,
-      json["hotel"] != null ? Hotel.fromJson(json["hotel"]) : null,
-      json["offerImage"] != null
-          ? OfferImage.fromJson(json["offerImage"])
-          : null,
+      json["hotel"] != null ? Hotel.fromJson(json["hotel"]) : null
     );
   }
 }

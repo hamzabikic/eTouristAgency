@@ -19,13 +19,13 @@ namespace eTouristAgencyAPI.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        public override Task<ActionResult<OfferResponse>> Add([FromBody] AddOfferRequest insertModel)
+        public override Task<ActionResult> Add([FromBody] AddOfferRequest insertModel)
         {
             return base.Add(insertModel);
         }
 
         [Authorize(Roles = Roles.Admin)]
-        public override Task<ActionResult<OfferResponse>> Update(Guid id, [FromBody] UpdateOfferRequest updateModel)
+        public override Task<ActionResult> Update(Guid id, [FromBody] UpdateOfferRequest updateModel)
         {
             return base.Update(id, updateModel);
         }
@@ -60,13 +60,32 @@ namespace eTouristAgencyAPI.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}/image")]
         public async Task<ActionResult> GetImage(Guid id)
         {
             try
             {
-                var offerImage = await _offerService.GetImageAsync(id);
-                return File(offerImage, "application/octet-stream");
+                var offerImage = await _offerService.GetImageByIdAsync(id);
+
+                Response.Headers.Add("ImageName", offerImage.ImageName);
+                return File(offerImage.ImageBytes, "application/octet-stream", offerImage.ImageName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("{id}/document")]
+        public async Task<ActionResult> GetDocument(Guid id)
+        {
+            try
+            {
+                var offerDocument = await _offerService.GetDocumentByIdAsync(id);
+
+                Response.Headers.Add("DocumentName", offerDocument.DocumentName);
+                return File(offerDocument.DocumentBytes, "application/octet-stream", offerDocument.DocumentName);
             }
             catch (Exception ex)
             {

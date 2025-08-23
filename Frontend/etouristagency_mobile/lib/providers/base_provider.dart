@@ -58,10 +58,7 @@ abstract class BaseProvider<TResponseModel> {
     return jsonDecode(response.body);
   }
 
-  Future<TResponseModel> update(
-    String id,
-    Map<String, dynamic> updateModel,
-  ) async {
+  Future update(String id, Map<String, dynamic> updateModel) async {
     var url = Uri.parse("${controllerUrl}/${id}");
     var response = await http.put(
       url,
@@ -75,11 +72,9 @@ abstract class BaseProvider<TResponseModel> {
     if (response.statusCode != 200) {
       throw Exception("Dogodila se greska: ${response.body}");
     }
-
-    return jsonToModel(jsonDecode(response.body));
   }
 
-  Future<TResponseModel> add(Map<String, dynamic> insertModel) async {
+  Future add(Map<String, dynamic> insertModel) async {
     Uri url = Uri.parse(controllerUrl);
 
     var response = await http.post(
@@ -91,20 +86,14 @@ abstract class BaseProvider<TResponseModel> {
       },
     );
 
-    if (response.statusCode == 200) {
-      if (!response.body.isEmpty) {
-        return jsonToModel(jsonDecode(response.body));
-      } else {
-        return jsonToModel({});
-      }
+    if (response.statusCode != 200) {
+      throw Exception("Dogodila se greška: ${response.body}");
     }
-
-    throw Exception("Dogodila se greška: ${response.body}");
   }
 
   String getQueryStrings(Map<String, dynamic> filters) {
     String queryStrings = "";
-    
+
     for (var item in filters.keys) {
       queryStrings += "$item=${filters[item]}&";
     }
