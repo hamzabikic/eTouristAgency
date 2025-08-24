@@ -7,6 +7,7 @@ import 'package:etouristagency_mobile/screens/forgot_password_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/registration_screen.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -167,15 +168,31 @@ class _LoginScreenState extends State<LoginScreen> {
         throw Exception("Uneseno korisničko ime ili lozinka su netačni.");
       }
 
+      await setFirebaseConfig();
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => AccountScreen()),
       );
     } on Exception catch (e) {
       operationErrorMessage = e.toString();
-      
+
       await authService.clearCredentials();
-      setState(() {
-      });
+      setState(() {});
     }
+  }
+
+  Future setFirebaseConfig() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    await userProvider.updateFirebaseToken({"firebaseToken": token});
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      if (!(await authService.isLoged())) return;
+
+      await userProvider.updateFirebaseToken({"firebaseToken": newToken});
+    });
+
+    FirebaseMessaging.onMessage.listen((message) {});
+
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {});
   }
 }

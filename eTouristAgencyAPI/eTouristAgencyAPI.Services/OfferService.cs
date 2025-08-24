@@ -1,4 +1,5 @@
-﻿using eTouristAgencyAPI.Models.RequestModels.Offer;
+﻿using EasyNetQ;
+using eTouristAgencyAPI.Models.RequestModels.Offer;
 using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.ResponseModels.Offer;
 using eTouristAgencyAPI.Models.SearchModels;
@@ -6,8 +7,10 @@ using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
+using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace eTouristAgencyAPI.Services
 {
@@ -15,18 +18,28 @@ namespace eTouristAgencyAPI.Services
     {
         private readonly BaseOfferStatusService _baseOfferStatusService;
         private readonly IUserContextService _userContextService;
+        private readonly IOfferContentBasedService _offerContentBasedService;
+        private readonly IEmailContentService _emailContentService;
 
-        public OfferService(eTouristAgencyDbContext dbContext, IMapper mapper, BaseOfferStatusService baseOfferStatusService, IUserContextService userContextService) : base(dbContext, mapper)
+        public OfferService(eTouristAgencyDbContext dbContext,
+                            IMapper mapper,
+                            BaseOfferStatusService baseOfferStatusService,
+                            IOfferContentBasedService offerContentBasedService,
+                            IEmailContentService emailContentService,
+                            IUserContextService userContextService) : base(dbContext, mapper)
         {
             _baseOfferStatusService = baseOfferStatusService;
             _userContextService = userContextService;
+            _offerContentBasedService = offerContentBasedService;
+            _emailContentService = emailContentService;
         }
 
         public override async Task<OfferResponse> AddAsync(AddOfferRequest insertModel)
         {
             var service = await _baseOfferStatusService.GetServiceAsync();
+            var offerResponse = await service.AddAsync(insertModel);
 
-            return await service.AddAsync(insertModel);
+            return offerResponse;
         }
 
         public override async Task<OfferResponse> UpdateAsync(Guid id, UpdateOfferRequest updateModel)
@@ -49,6 +62,48 @@ namespace eTouristAgencyAPI.Services
             var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
 
             await service.ActivateAsync(id);
+            await SendOfferNotificationsAsync(offer.Id);
+        }
+
+        private async Task SendOfferNotificationsAsync(Guid offerId)
+        {
+            var offer = await _dbContext.Offers.Include(x => x.BoardType)
+                                               .Include(x => x.Hotel.City.Country)
+                                               .Include(x => x.Rooms)
+                                               .Include(x => x.OfferDiscounts)
+                                               .Include(x => x.OfferImage)
+                                               .FirstAsync(x => x.Id == offerId);
+
+            var recipients = await _offerContentBasedService.GetUsersForOfferAsync(offer);
+
+            var emailNotificationTitle = await _emailContentService.GetOfferRecommendationTitleAsync(offer);
+            var emailNotificationText = await _emailContentService.GetOfferRecommendationTextAsync(offer);
+            var emailNotification = new RabbitMQEmailNotification
+            {
+                Title = emailNotificationTitle,
+                Html = emailNotificationText,
+                AdditionalImage = offer.OfferImage?.ImageBytes,
+                Recipients = recipients.Select(x => x.Email).ToList()
+            };
+
+            var recipientsWithToken = recipients.Where(x => x.FirebaseToken != null).ToList();
+
+            var notificationTitle = "Napravili smo ponudu samo za Vas!";
+            var notificationText = "Kliknite ovdje za više detalja.";
+
+            var firebaseNotification = new RabbitMQFirebaseNotification
+            {
+                FirebaseTokens = recipientsWithToken.Select(x => x.FirebaseToken).ToList(),
+                Title = notificationTitle,
+                Text = notificationText
+            };
+
+            var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
+            bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+            {
+                EmailNotification = emailNotification,
+                FirebaseNotification = firebaseNotification
+            }));
         }
 
         public async Task DeactivateAsync(Guid id)
@@ -78,8 +133,8 @@ namespace eTouristAgencyAPI.Services
         {
             var offer = await _dbContext.Offers.FindAsync(id);
 
-            if (offer == null || (!_userContextService.UserHasRole(Roles.Admin) && 
-                                  offer.OfferStatusId != AppConstants.FixedOfferStatusActive && 
+            if (offer == null || (!_userContextService.UserHasRole(Roles.Admin) &&
+                                  offer.OfferStatusId != AppConstants.FixedOfferStatusActive &&
                                   offer.OfferStatusId != AppConstants.FixedOfferStatusInactive))
             {
                 throw new Exception("Offer with provided id is not found.");
@@ -201,7 +256,7 @@ namespace eTouristAgencyAPI.Services
 
             dbModel.MinimumPricePerPerson = minPricePerPerson - minPricePerPerson * (discount / 100);
             var quantity = dbModel.Rooms.Sum(x => x.Quantity * x.RoomType.RoomCapacity);
-            var reservedQuantity = dbModel.Rooms.Where(x => x.Reservations.Any()).Sum(x => x.Reservations.Count(x=> x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) * x.RoomType.RoomCapacity);
+            var reservedQuantity = dbModel.Rooms.Where(x => x.Reservations.Any()).Sum(x => x.Reservations.Count(x => x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) * x.RoomType.RoomCapacity);
 
             dbModel.RemainingSpots = quantity - reservedQuantity;
 

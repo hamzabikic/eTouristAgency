@@ -114,6 +114,15 @@ namespace eTouristAgencyAPI.Services
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task UpdateFirebaseTokenAsync(UpdateFirebaseTokenRequest request)
+        {
+            var user = await _dbContext.Users.FindAsync(_userId ?? Guid.Empty);
+
+            user.FirebaseToken = request.FirebaseToken;
+
+            await _dbContext.SaveChangesAsync();
+        }
+
         private async Task<bool> UsernameExistsAsync(string username)
         {
             return await _dbContext.Users.AnyAsync(x => x.Username == username);

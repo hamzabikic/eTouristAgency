@@ -240,6 +240,9 @@ class _AccountScreenState extends State<AccountScreen> {
                       ElevatedButton(
                         child: Text("Odjavi se"),
                         onPressed: () async {
+                          await userProvider.updateFirebaseToken({
+                            "firebaseToken": null,
+                          });
                           await authService.clearCredentials();
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
@@ -251,8 +254,8 @@ class _AccountScreenState extends State<AccountScreen> {
                       SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: deactivateAccount,
-                        child: Text("Deaktiviraj nalog")
-                      )
+                        child: Text("Deaktiviraj nalog"),
+                      ),
                     ],
                   )
                 : DialogHelper.openSpinner(context, "Dohvatam podatke..."),
@@ -295,7 +298,10 @@ class _AccountScreenState extends State<AccountScreen> {
     try {
       var response = await userProvider.update(user!.id!, insertModel);
       await authService.clearCredentials();
-      await authService.storeCredentials(insertModel["username"], insertModel["password"]);
+      await authService.storeCredentials(
+        insertModel["username"],
+        insertModel["password"],
+      );
       await fetchUserData();
 
       DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
@@ -429,7 +435,9 @@ class _AccountScreenState extends State<AccountScreen> {
           "Uspješno deaktiviran korisnički nalog",
           () {
             Navigator.of(context).pop();
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>LoginScreen()));
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
           },
         );
       },

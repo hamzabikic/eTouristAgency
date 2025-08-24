@@ -14,7 +14,12 @@ namespace eTouristAgencyAPI.Services.IoC
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IRoleService, RoleService>();
             services.AddTransient<ISmtpService, SmtpService>();
+            services.AddTransient<IUserTagService, UserTagService>();
+            services.AddTransient<IOfferContentBasedService, OfferContentBasedService>();
+            services.AddTransient<IEmailContentService, EmailContentService>();
+            services.AddTransient<IEmailNotificationService, EmailNotificationService>();
             services.AddTransient<IVerificationCodeService, VerificationCodeService>();
+            services.AddTransient<IFirebaseNotificationService, FirebaseNotificationService>();
             services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<ICityService, CityService>();
             services.AddTransient<IHotelImageService, HotelImageService>();
@@ -39,6 +44,7 @@ namespace eTouristAgencyAPI.Services.IoC
         public static IServiceCollection AddConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<SmtpConfig>(configuration.GetSection("SmtpConfig"));
+            services.Configure<FirebaseConfig>(configuration.GetSection("FirebaseConfig"));
 
             return services;
         }

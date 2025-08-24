@@ -54,6 +54,8 @@ public partial class eTouristAgencyDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserTag> UserTags { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=localhost;Database=eTouristAgencyDB;User Id=sa;Password=admin123;TrustServerCertificate=True");
@@ -430,6 +432,18 @@ public partial class eTouristAgencyDbContext : DbContext
                         j.HasKey("UserId", "RoleId").HasName("PK__UserRole__AF2760ADD5D51AE1");
                         j.ToTable("UserRole");
                     });
+        });
+
+        modelBuilder.Entity<UserTag>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserTag__3214EC076AFBE017");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserTags)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserTag__UserId__1B9317B3");
         });
 
         OnModelCreatingPartial(modelBuilder);

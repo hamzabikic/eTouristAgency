@@ -1,25 +1,30 @@
 ﻿using System.Diagnostics;
+using EasyNetQ;
 using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Enums;
 using eTouristAgencyAPI.Services.Helpers;
 using eTouristAgencyAPI.Services.Interfaces;
+using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace eTouristAgencyAPI.Services
 {
     public class VerificationCodeService : IVerificationCodeService
     {
         private readonly eTouristAgencyDbContext _dbContext;
-        private readonly ISmtpService _smtpService;
+        private readonly IEmailContentService _emailContentService;
 
         private readonly Guid? _userId;
 
-        public VerificationCodeService(eTouristAgencyDbContext dbContext, IUserContextService userContextService, ISmtpService smtpService)
+        public VerificationCodeService(eTouristAgencyDbContext dbContext,
+                                       IUserContextService userContextService,
+                                       IEmailContentService emailContentService)
         {
             _dbContext = dbContext;
-            _smtpService = smtpService;
+            _emailContentService = emailContentService;
 
             _userId = userContextService.GetUserId();
         }
@@ -49,7 +54,7 @@ namespace eTouristAgencyAPI.Services
             await _dbContext.AddAsync(emailVerification);
             await _dbContext.SaveChangesAsync();
 
-            await SendVerificationCodeToEmailAsync(verificationType, emailVerification.VerificationKey, user.Email);
+            await SendVerificationCodeToEmailAsync(user, verificationType, emailVerification.VerificationKey, user.Email);
         }
 
         public async Task DeactivateVerificationCodeAsync(string verificationKey, Guid userId, EmailVerificationType verificationType)
@@ -68,20 +73,48 @@ namespace eTouristAgencyAPI.Services
 
         public async Task<bool> PasswordVerificationCodeExists(string verificationKey)
         {
-            return await _dbContext.EmailVerifications.Include(x=> x.User).AnyAsync(x => x.VerificationKey == verificationKey && 
+            return await _dbContext.EmailVerifications.Include(x => x.User).AnyAsync(x => x.VerificationKey == verificationKey &&
                                                                                          x.ValidTo > DateTime.Now &&
                                                                                          x.EmailVerificationTypeId == AppConstants.FixedEmailVerificationTypeForResetPassword);
         }
 
-        private async Task SendVerificationCodeToEmailAsync(EmailVerificationType verificationType, string verificationKey, string email)
+        private async Task SendVerificationCodeToEmailAsync(User user, EmailVerificationType verificationType, string verificationKey, string email)
         {
             switch (verificationType)
             {
                 case EmailVerificationType.EmailVerification:
-                    await _smtpService.SendAsync("Verifikacijski kod", $"Vaš verifikacijski kod je : <b>{verificationKey}</b>", email);
+                    var notificationTitle = await _emailContentService.GetEmailVerificationTitleAsync();
+                    var notificationText = await _emailContentService.GetEmailVerificationTextAsync(user.FirstName, user.LastName, verificationKey);
+                    var emailNotification = new RabbitMQEmailNotification
+                    {
+                        Title = notificationTitle,
+                        Html = notificationText,
+                        Recipients = [email]
+                    };
+
+                    var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
+                    bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+                    {
+                        EmailNotification = emailNotification
+                    }));
+
                     break;
                 case EmailVerificationType.ResetPassword:
-                    await _smtpService.SendAsync("Verifikacijski kod", $"Vaš verifikacijski kod je : <b>{verificationKey}</b>", email);
+                    notificationTitle = await _emailContentService.GetResetPasswordTitleAsync();
+                    notificationText = await _emailContentService.GetResetPasswordTextAsync(user.FirstName, user.LastName, verificationKey);
+                    emailNotification = new RabbitMQEmailNotification
+                    {
+                        Title = notificationTitle,
+                        Html = notificationText,
+                        Recipients = [email]
+                    };
+
+                    bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
+                    bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+                    {
+                        EmailNotification = emailNotification
+                    }));
+
                     break;
                 default:
                     throw new Exception("Verification type is not valid.");

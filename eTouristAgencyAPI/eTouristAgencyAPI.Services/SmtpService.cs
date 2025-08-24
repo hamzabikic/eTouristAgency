@@ -15,7 +15,7 @@ namespace eTouristAgencyAPI.Services
             _smtpConfig = smtpConfig.Value;
         }
 
-        public async Task SendAsync(string subject, string body, params string[] recepients)
+        public async Task SendAsync(string subject, AlternateView body, params string[] recepients)
         {
             var smtpClient = new SmtpClient(_smtpConfig.Host)
             {
@@ -27,15 +27,21 @@ namespace eTouristAgencyAPI.Services
             var mailMessage = new MailMessage();
             mailMessage.From = new MailAddress("eTouristAgency@gmail.com", "eTouristAgency");
             mailMessage.Subject = subject;
-            mailMessage.Body = body;
             mailMessage.IsBodyHtml = true;
+            mailMessage.AlternateViews.Add(body);
 
             foreach (var recepient in recepients)
             {
                 mailMessage.To.Add(new MailAddress(recepient));
             }
 
-            await smtpClient.SendMailAsync(mailMessage);
+            try
+            {
+                await smtpClient.SendMailAsync(mailMessage);
+            }catch(Exception ex)
+            {
+
+            }
         }
     }
 }
