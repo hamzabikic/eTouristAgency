@@ -9,7 +9,7 @@ services:
       - SA_PASSWORD=admin123
       - MSSQL_PID=Developer
     ports:
-      - "1433:1433"
+      - "1434:1433"  # Host port promijenjen da ne kolidira sa lokalnim SQL Server-om
     expose:
       - "1433"
     networks:
@@ -40,6 +40,8 @@ services:
     depends_on:
       - etouristagency-sql
       - etouristagency-rabbitmq
+    environment:
+      - ConnectionStrings__DbConnection=Server=etouristagency-sql,1433;Database=IB210098;User Id=sa;Password=admin123;TrustServerCertificate=True;
 
   etouristagency-notifications:
     build:
