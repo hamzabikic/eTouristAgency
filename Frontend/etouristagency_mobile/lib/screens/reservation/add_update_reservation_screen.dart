@@ -16,6 +16,7 @@ import 'package:etouristagency_mobile/models/room/room.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/providers/reservation_provider.dart';
+import 'package:etouristagency_mobile/providers/reservation_review_provider.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/hotel/hotel_images_dialog.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
@@ -24,6 +25,7 @@ import 'package:etouristagency_mobile/screens/reservation/my_reservations_list_s
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
@@ -65,17 +67,24 @@ class _AddUpdateReservationScreenState
   List<ReservationPaymentInfo> addedPayments = [];
   bool _isProcessStarted = false;
   bool _isEditingEnabled = true;
+  bool _isReviewEnabled = true;
+  late final ReservationReviewProvider reservationReviewProvider;
+  Map<String, dynamic> reviewRequestModel = {};
 
   @override
   void initState() {
     if (widget.reservationId == null) {
       addNewPassenger();
+      _isReviewEnabled = false;
     }
     userProvider = UserProvider();
     offerProvider = OfferProvider();
     reservationProvider = ReservationProvider();
+    reservationReviewProvider = ReservationReviewProvider();
     fetchOfferData();
     fetchReservationData();
+    fetchReview();
+    verifyUser();
     super.initState();
   }
 
@@ -194,14 +203,18 @@ class _AddUpdateReservationScreenState
                                 fontSize: 15,
                               ),
                             ),
-                            (offer!.offerStatusId!.toLowerCase() == AppConstants.inactiveOfferGuid.toLowerCase())? Text(
-                              "Ova ponuda je otkazana!",
-                              style: TextStyle(
-                                color: AppColors.darkRed,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ) : SizedBox(),
+                            (offer!.offerStatusId!.toLowerCase() ==
+                                    AppConstants.inactiveOfferGuid
+                                        .toLowerCase())
+                                ? Text(
+                                    "Ova ponuda je otkazana!",
+                                    style: TextStyle(
+                                      color: AppColors.darkRed,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  )
+                                : SizedBox(),
                             reservation != null
                                 ? Text(
                                     "ID rezervacije: ${reservation!.reservationNo}",
@@ -347,6 +360,29 @@ class _AddUpdateReservationScreenState
                               ],
                             ),
                           ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      "Opis putovanja",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Card(
+                        color: AppColors.lighterBlue,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [Text(offer!.description!)],
+                          ),
                         ),
                       ),
                     ),
@@ -501,6 +537,16 @@ class _AddUpdateReservationScreenState
                             : SizedBox(),
                       ],
                     ),
+                    _isReviewEnabled
+                        ? Row(
+                            children: [
+                              ElevatedButton(
+                                child: Text("Ostavi recenziju"),
+                                onPressed: openReservationReviewDialog,
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
                   ],
                 ),
               ),
@@ -521,11 +567,21 @@ class _AddUpdateReservationScreenState
       offerDocumentInfo = await offerProvider.getOfferDocument(widget.offerId);
     } on Exception catch (ex) {}
 
+    final now = DateUtils.dateOnly(DateTime.now());
+    final deadline = DateUtils.dateOnly(offer!.lastPaymentDeadline!);
+    final tripEnd = DateUtils.dateOnly(offer!.tripEndDate!);
+
     if (offer!.offerStatusId!.toLowerCase() ==
-        AppConstants.inactiveOfferGuid.toLowerCase()) {
+            AppConstants.inactiveOfferGuid.toLowerCase() ||
+        deadline.isBefore(now)) {
       _isEditingEnabled = false;
     }
 
+    if (offer!.offerStatusId!.toLowerCase() ==
+            AppConstants.inactiveOfferGuid.toLowerCase() ||
+        now.isBefore(tripEnd)) {
+      _isReviewEnabled = false;
+    }
     setState(() {});
   }
 
@@ -746,6 +802,7 @@ class _AddUpdateReservationScreenState
 
     if (!user.isVerified!) {
       _isEditingEnabled = false;
+      _isReviewEnabled = false;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -790,6 +847,7 @@ class _AddUpdateReservationScreenState
     if (reservation!.reservationStatusId!.toLowerCase() ==
         AppConstants.reservationCancelledGuid.toLowerCase()) {
       _isEditingEnabled = false;
+      _isReviewEnabled = false;
     }
 
     setState(() {});
@@ -963,5 +1021,141 @@ class _AddUpdateReservationScreenState
         });
       },
     );
+  }
+
+  void openReservationReviewDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        var errorMessage = "";
+
+        return StatefulBuilder(
+          builder: (context, setStateDialog) => Dialog(
+            child: IntrinsicHeight(
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  children: [
+                    Text(
+                      "Recenzija",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    errorMessage.isNotEmpty
+                        ? Text(
+                            errorMessage,
+                            style: TextStyle(color: AppColors.darkRed),
+                          )
+                        : SizedBox(),
+                    SizedBox(height: 10),
+                    Text(
+                      "Ocjena za smještaj",
+                      style: TextStyle(color: AppColors.primary),
+                    ),
+                    RatingBar.builder(
+                      initialRating: 0,
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: false,
+                      itemCount: 5,
+                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                      itemBuilder: (context, _) =>
+                          Icon(Icons.star, color: Colors.amber),
+                      onRatingUpdate: (rating) {
+                        reviewRequestModel["accommodationRating"] = rating
+                            .toInt();
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Ocjena za uslugu",
+                      style: TextStyle(color: AppColors.primary),
+                    ),
+                    RatingBar.builder(
+                      initialRating: 0,
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: false,
+                      itemCount: 5,
+                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                      itemBuilder: (context, _) =>
+                          Icon(Icons.star, color: Colors.amber),
+                      onRatingUpdate: (rating) {
+                        reviewRequestModel["serviceRating"] = rating.toInt();
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: "Ukratko opišite Vaše iskustvo",
+                      ),
+                      minLines: 5,
+                      maxLines: 5,
+                      onChanged: (value) {
+                        reviewRequestModel["description"] = value;
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      child: Text("Pošalji"),
+                      onPressed: () async {
+                        if (reviewRequestModel["accommodationRating"] == null ||
+                            reviewRequestModel["serviceRating"] == null ||
+                            reviewRequestModel["description"] == null) {
+                          setStateDialog(() {
+                            errorMessage = "Sva polja su obavezna.";
+                          });
+
+                          return;
+                        } else {
+                          errorMessage = "";
+                        }
+
+                        reviewRequestModel["id"] = reservation!.id!;
+
+                        await reservationReviewProvider.add(reviewRequestModel);
+                        DialogHelper.openDialog(
+                          context,
+                          "Uspješno ste poslali recenziju",
+                          () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    AddUpdateReservationScreen(
+                                      widget.offerId,
+                                      widget.roomId,
+                                      widget.reservationId,
+                                    ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future fetchReview() async {
+    if (widget.reservationId == null) return;
+
+    try {
+      var review = await reservationReviewProvider.getById(
+        widget.reservationId!,
+      );
+      _isReviewEnabled = false;
+    } on Exception catch (ex) {}
   }
 }

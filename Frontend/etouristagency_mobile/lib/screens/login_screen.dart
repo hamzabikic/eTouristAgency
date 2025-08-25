@@ -198,15 +198,41 @@ class _LoginScreenState extends State<LoginScreen> {
     await userProvider.updateFirebaseToken({"firebaseToken": token});
 
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-      if (!(await authService.isLoged())) return;
+      var authServ = AuthService();
+      if (!(await authServ.isLoged())) {
+        return;
+      }
 
-      await userProvider.updateFirebaseToken({"firebaseToken": newToken});
+      var userProv = UserProvider();
+      await userProv.updateFirebaseToken({"firebaseToken": newToken});
     });
 
     FirebaseMessaging.onMessage.listen((message) {});
 
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      navigateOnNotification(message);
+      final data = message.data;
+      final screenName = data['ScreenName'];
+      final offerId = data['OfferId'];
+      final roomId = data['RoomId'];
+      final reservationId = data['ReservationId'];
+
+      if (screenName == ScreenNames.offerDetailsScreen) {
+        navigatorKey.currentState?.pushReplacement(
+          MaterialPageRoute(
+            builder: (context) =>
+                OfferDetailsScreen(ScreenNames.offerListScreen, offerId),
+          ),
+        );
+      }
+
+      if (screenName == ScreenNames.addUpdateReservationScreen) {
+        navigatorKey.currentState?.pushReplacement(
+          MaterialPageRoute(
+            builder: (context) =>
+                AddUpdateReservationScreen(offerId, roomId, reservationId),
+          ),
+        );
+      }
     });
   }
 

@@ -10,12 +10,15 @@ import 'package:etouristagency_desktop/models/entity_code_value/entity_code_valu
 import 'package:etouristagency_desktop/models/offer/offer.dart';
 import 'package:etouristagency_desktop/models/reservation/reservation.dart';
 import 'package:etouristagency_desktop/models/reservation/reservation_payment_info.dart';
+import 'package:etouristagency_desktop/models/reservation_review/reservation_review.dart';
 import 'package:etouristagency_desktop/providers/entity_code_value_provider.dart';
 import 'package:etouristagency_desktop/providers/offer_provider.dart';
 import 'package:etouristagency_desktop/providers/reservation_provider.dart';
+import 'package:etouristagency_desktop/providers/reservation_review_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/add_update_offer_screen.dart';
 import 'package:etouristagency_desktop/screens/reservation/reservation_list_screen.dart';
+import 'package:etouristagency_desktop/screens/reservation_review/reservation_review_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -42,18 +45,22 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
   late final ReservationProvider reservationProvider;
   late final OfferProvider offerProvider;
   late final EntityCodeValueProvider entityCodeValueProvider;
+  late final ReservationReviewProvider reservationReviewProvider;
   ScrollController horizontalScrollController = ScrollController();
   final GlobalKey<FormBuilderState> formBuilderKey =
       GlobalKey<FormBuilderState>();
+  ReservationReview? reservationReview;
 
   @override
   void initState() {
     reservationProvider = ReservationProvider();
     offerProvider = OfferProvider();
     entityCodeValueProvider = EntityCodeValueProvider();
+    reservationReviewProvider = ReservationReviewProvider();
     fetchReservationData();
     fetchReservationStatusData();
     loadPhoto();
+    fetchReservationReview();
     super.initState();
   }
 
@@ -404,6 +411,8 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                         SizedBox(
                                           width: 300,
                                           child: FormBuilderTextField(
+                                            enabled: widget.offer
+                                                .isReservationAndOfferEditEnabled(),
                                             inputFormatters: <TextInputFormatter>[
                                               FilteringTextInputFormatter.allow(
                                                 RegExp(r'^\d+\.?\d{0,2}'),
@@ -431,6 +440,8 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                         SizedBox(
                                           width: 300,
                                           child: FormBuilderDropdown(
+                                            enabled: widget.offer
+                                                .isReservationAndOfferEditEnabled(),
                                             items:
                                                 getReservationStatusDropdownItems(),
                                             style: TextStyle(
@@ -457,12 +468,24 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                   ),
                                   SizedBox(height: 20),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      ElevatedButton(
-                                        child: Text("Sačuvaj promjene"),
-                                        onPressed: saveChanges,
-                                      ),
+                                      reservationReview != null
+                                          ? ElevatedButton(
+                                              child: Text(
+                                                "Pregledaj recenziju",
+                                              ),
+                                              onPressed:
+                                                  openReservationReviewDialog,
+                                            )
+                                          : SizedBox(),
+                                      widget.offer.isReservationAndOfferEditEnabled()
+                                          ? ElevatedButton(
+                                              child: Text("Sačuvaj promjene"),
+                                              onPressed: saveChanges,
+                                            )
+                                          : SizedBox(),
                                     ],
                                   ),
                                   SizedBox(height: 10),
@@ -581,11 +604,16 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                   SizedBox(height: 10),
                                   SizedBox(
                                     width: double.infinity,
-                                    child: reservationPayments.isNotEmpty ? Wrap(
-                                      spacing: 20,
-                                      runSpacing: 10,
-                                      children: getReservationPaymentList(),
-                                    ) : Text("Trenutno nema dostavljenih dokaza o uplati."),
+                                    child: reservationPayments.isNotEmpty
+                                        ? Wrap(
+                                            spacing: 20,
+                                            runSpacing: 10,
+                                            children:
+                                                getReservationPaymentList(),
+                                          )
+                                        : Text(
+                                            "Trenutno nema dostavljenih dokaza o uplati.",
+                                          ),
                                   ),
                                 ],
                               ),
@@ -740,5 +768,24 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
         ),
       );
     }
+  }
+
+  Future fetchReservationReview() async {
+    try {
+      reservationReview = await reservationReviewProvider.getById(
+        widget.reservationId,
+      );
+    } on Exception catch (ex) {
+      reservationReview = null;
+    }
+
+    setState(() {});
+  }
+
+  void openReservationReviewDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => ReservationReviewDialog(reservationReview!),
+    );
   }
 }

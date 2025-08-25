@@ -1,4 +1,5 @@
 using eTouristAgencyAPI.Authentication;
+using eTouristAgencyAPI.InitialData;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.IoC;
 using Mapster;
@@ -64,14 +65,19 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<eTouristAgencyDbContext>();
+    db.Database.Migrate();
+    DatabaseSeeder.SeedDatabase(db);
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-//app.UseHttpsRedirection();
 
 app.UseCors();
 

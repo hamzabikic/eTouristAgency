@@ -11,6 +11,7 @@ import 'package:etouristagency_desktop/providers/reservation_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_desktop/screens/reservation/update_reservation_screen.dart';
+import 'package:etouristagency_desktop/screens/reservation_review/reservation_review_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
@@ -212,7 +213,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                                             );
                                           },
                                         ),
-                                      ),
+                                      )
                                     ],
                                   ),
                                 )

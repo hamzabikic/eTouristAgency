@@ -59,6 +59,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   late final bool isInactiveStatus;
   String photoErrorMessage = "";
   bool _isProcessing = false;
+  String globalErrorMessage = "";
 
   @override
   void initState() {
@@ -86,9 +87,11 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
         ? widget.offer!.offerStatusId?.toLowerCase() ==
               AppConstants.draftOfferGuid.toLowerCase()
         : true;
-    isInactiveStatus =
-        widget.offer?.offerStatusId?.toLowerCase() ==
-        AppConstants.inactiveOfferGuid.toLowerCase();
+    isInactiveStatus = widget.offer != null
+        ? widget.offer?.offerStatusId?.toLowerCase() ==
+                  AppConstants.inactiveOfferGuid.toLowerCase() ||
+              widget.offer?.isReservationAndOfferEditEnabled() == false
+        : true;
     super.initState();
   }
 
@@ -137,6 +140,17 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                           ),
                         ),
                         SizedBox(height: 10),
+                        SizedBox(
+                          width: 700,
+                          child: Center(
+                            child: Text(
+                              globalErrorMessage,
+                              softWrap: true,
+                              maxLines: null,
+                              style: TextStyle(color: AppColors.darkRed),
+                            ),
+                          ),
+                        ),
                         FormBuilder(
                           initialValue: widget.offer?.toJson() ?? {},
                           key: formBuilderKey,
@@ -440,7 +454,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                               ),
                                             )
                                           : SizedBox(height: 40),
-                                      SizedBox(height: 40),
+                                      SizedBox(height: 55),
                                       !isInactiveStatus
                                           ? ElevatedButton(
                                               onPressed: uploadDocument,
@@ -448,7 +462,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                 children: [
                                                   Icon(Icons.upload, size: 15),
                                                   SizedBox(width: 10),
-                                                  Text("Učitaj dokument"),
+                                                  Text("Učitaj dokument (PDF)"),
                                                 ],
                                               ),
                                             )
@@ -583,8 +597,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              widget.offer?.offerStatusId?.toLowerCase() ==
-                                      AppConstants.draftOfferGuid.toLowerCase()
+                              (widget.offer?.offerStatusId?.toLowerCase() ==
+                                      AppConstants.draftOfferGuid.toLowerCase() && !isInactiveStatus)
                                   ? ElevatedButton(
                                       onPressed: () async {
                                         await activateOffer();
@@ -592,8 +606,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                       child: Text("Aktiviraj ponudu"),
                                     )
                                   : SizedBox(),
-                              widget.offer?.offerStatusId?.toLowerCase() ==
-                                      AppConstants.activeOfferGuid.toLowerCase()
+                              (widget.offer?.offerStatusId?.toLowerCase() ==
+                                      AppConstants.activeOfferGuid.toLowerCase() && !isInactiveStatus)
                                   ? ElevatedButton(
                                       onPressed: () async {
                                         await deactivateOffer();
@@ -660,7 +674,10 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   }
 
   Future uploadDocument() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
 
     if (result == null || result.files.single.path == null) {
       document = null;
@@ -670,7 +687,15 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
     }
 
     File file = File(result.files.single.path!);
-    var documentBytes = file.readAsBytesSync();
+
+    if (!file.path.toLowerCase().endsWith('.pdf')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Dokument mora biti u PDF formatu.")),
+      );
+      return;
+    }
+
+    var documentBytes = await file.readAsBytes();
     document = documentBytes;
     documentName = result.files.first.name;
 
@@ -678,7 +703,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   }
 
   Future uploadPhoto() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+    );
 
     if (result == null || result.files.single.path == null) {
       photo = null;
@@ -688,7 +715,25 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
     }
 
     File file = File(result.files.single.path!);
-    var photoBytes = file.readAsBytesSync();
+
+    final validImageExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.bmp',
+      '.webp',
+    ];
+    if (!validImageExtensions.any(
+      (ext) => file.path.toLowerCase().endsWith(ext),
+    )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Odabrani fajl mora biti slika.")),
+      );
+      return;
+    }
+
+    var photoBytes = await file.readAsBytes();
     photo = photoBytes;
     photoName = result.files.first.name;
 
@@ -1002,9 +1047,16 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                           icon: Icon(Icons.delete),
                           color: AppColors.darkRed,
                           onPressed: () {
+                            if (offerDiscounts[i].discountTypeId
+                                    ?.toUpperCase() ==
+                                AppConstants.lastMinuteDiscountGuid) {
+                              isLastMinuteEnabled = true;
+                            } else {
+                              isFirstMinuteEnabled = true;
+                            }
+
                             formBuilderDiscountsKey.remove(globalKey);
                             offerDiscounts.remove(offerDiscounts[i]);
-
                             setState(() {});
                           },
                         )
@@ -1183,6 +1235,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   }
 
   bool validateOfferForm() {
+    globalErrorMessage = "";
     bool isValidForm = true;
 
     if (photo == null || photoName == null) {
@@ -1206,6 +1259,48 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
       if (!x.currentState!.validate()) {
         isValidForm = false;
       }
+
+      var currentValues = x.currentState!.instantValue;
+
+      if ((currentValues["validFrom"] as DateTime).isAfter(
+        currentValues["validTo"] as DateTime,
+      )) {
+        globalErrorMessage += "Neispravno uneseni datumi u popustima.\n";
+        isValidForm = false;
+      }
+    }
+
+    var currentValues = formBuilderKey.currentState!.instantValue;
+
+    if ((currentValues["tripStartDate"] as DateTime).isAfter(
+      currentValues["tripEndDate"] as DateTime,
+    )) {
+      globalErrorMessage += "Datum povratka mora biti nakon datuma polaska.\n";
+      isValidForm = false;
+    }
+
+    if ((currentValues["firstPaymentDeadline"] as DateTime).isAfter(
+      currentValues["tripStartDate"] as DateTime,
+    )) {
+      globalErrorMessage +=
+          "Krajnji datum za uplatu prve rate mora biti prije datuma polaska.\n";
+      isValidForm = false;
+    }
+
+    if ((currentValues["lastPaymentDeadline"] as DateTime).isAfter(
+      currentValues["tripStartDate"] as DateTime,
+    )) {
+      globalErrorMessage +=
+          "Krajnji datum za uplatu zadnje rate mora biti prije datuma polaska.\n";
+      isValidForm = false;
+    }
+
+    if ((currentValues["firstPaymentDeadline"] as DateTime).isAfter(
+      currentValues["lastPaymentDeadline"] as DateTime,
+    )) {
+      globalErrorMessage +=
+          "Krajnji datum za uplatu zadnje rate mora biti nakon krajnjeg datuma za uplatu prve rate.\n";
+      isValidForm = false;
     }
 
     setState(() {});

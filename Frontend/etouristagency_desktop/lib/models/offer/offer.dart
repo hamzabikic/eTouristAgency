@@ -2,6 +2,7 @@ import 'package:etouristagency_desktop/models/entity_code_value/entity_code_valu
 import 'package:etouristagency_desktop/models/hotel/hotel.dart';
 import 'package:etouristagency_desktop/models/offer_discount/offer_discount.dart';
 import 'package:etouristagency_desktop/models/room/room.dart';
+import 'package:flutter/material.dart';
 
 class Offer {
   String? id;
@@ -23,6 +24,20 @@ class Offer {
   List<OfferDiscount>? offerDiscounts;
   List<Room>? rooms;
 
+  bool isReviewsButtonEnabled() {
+    final now = DateUtils.dateOnly(DateTime.now());
+    final endDate = DateUtils.dateOnly(tripEndDate!);
+
+    return endDate.isBefore(now) || endDate.isAtSameMomentAs(now);
+  }
+
+  bool isReservationAndOfferEditEnabled() {
+    final now = DateUtils.dateOnly(DateTime.now());
+    final startDate = DateUtils.dateOnly(tripStartDate!);
+
+    return now.isBefore(startDate);
+  }
+
   Offer(
     this.id,
     this.tripStartDate,
@@ -41,7 +56,7 @@ class Offer {
     this.hotel,
     this.offerStatus,
     this.offerDiscounts,
-    this.rooms
+    this.rooms,
   );
 
   factory Offer.fromJson(Map<String, dynamic> json) {
@@ -73,7 +88,7 @@ class Offer {
           : null,
       json["rooms"] != null
           ? (json["rooms"] as List).map((x) => Room.fromJson(x)).toList()
-          : null
+          : null,
     );
   }
 

@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  etouristagency-sql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=admin123
+      - MSSQL_PID=Developer
+    ports:
+      - "1434:1433"  # Host port promijenjen da ne kolidira sa lokalnim SQL Server-om
+    expose:
+      - "1433"
+    networks:
+      - etouristnet
+
+  etouristagency-rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      - "5672:5672"     # RabbitMQ broker port
+      - "15672:15672"   # RabbitMQ management UI
+    networks:
+      - etouristnet
+
+  etouristagency-api:
+    build:
+      context: .
+    container_name: etouristagency-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"    # HTTPS
+      - "5001:5001"    # HTTP
+    networks:
+      - etouristnet
+    depends_on:
+      - etouristagency-sql
+      - etouristagency-rabbitmq
+    environment:
+      - ConnectionStrings__DbConnection=Server=etouristagency-sql,1433;Database=IB210098;User Id=sa;Password=admin123;TrustServerCertificate=True;
+
+  etouristagency-notifications:
+    build:
+      context: .
+    container_name: etouristagency-notifications
+    restart: unless-stopped
+    command: ["dotnet", "Notifications/eTouristAgencyAPI.Notifications.dll"]
+    networks:
+      - etouristnet
+    depends_on:
+      - etouristagency-api
+      - etouristagency-rabbitmq
+
+networks:
+  etouristnet:
+    driver: bridge
