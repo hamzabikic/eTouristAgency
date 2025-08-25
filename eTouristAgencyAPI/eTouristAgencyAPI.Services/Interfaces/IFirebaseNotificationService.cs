@@ -1,7 +1,9 @@
-﻿namespace eTouristAgencyAPI.Services.Interfaces
+﻿using eTouristAgencyAPI.Services.Messaging.Firebase;
+
+namespace eTouristAgencyAPI.Services.Interfaces
 {
     public interface IFirebaseNotificationService
     {
-        Task SendNotificationAsync(string deviceToken, string title, string body);
+        Task SendNotificationAsync(string deviceToken, string title, string body, FirebaseNotificationData data);
     }
 }

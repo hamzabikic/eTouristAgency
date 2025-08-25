@@ -23,6 +23,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       TextEditingController();
   final formbuilderKey = GlobalKey<FormBuilderState>();
   late final UserProvider userProvider;
+  bool isProcessing = false;
 
   @override
   void initState() {
@@ -120,8 +121,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         ),
                         SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: resetPassword,
-                          child: Text("Potvrdi"),
+                          onPressed: !isProcessing ? resetPassword : null,
+                          child: !isProcessing
+                              ? Text("Potvrdi")
+                              : SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: Transform.scale(
+                                    scale: 0.6,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -156,6 +168,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     if (!isFormValid) return;
 
+    isProcessing = true;
+    setState(() {});
+
     var resetPasswordRequest = {
       "password": newPasswordEditingController.text,
       "verificationKey": widget._verificationKey,
@@ -176,5 +191,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         Navigator.of(context).pop();
       }, type: DialogType.error);
     }
+
+    isProcessing = false;
+    setState(() {});
   }
 }

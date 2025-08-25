@@ -9,6 +9,7 @@ import 'package:etouristagency_desktop/providers/hotel_provider.dart';
 import 'package:etouristagency_desktop/screens/hotel/add_update_hotel_screen.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class HotelListScreen extends StatefulWidget {
   const HotelListScreen({super.key});
@@ -70,7 +71,9 @@ class _HotelListScreenState extends State<HotelListScreen> {
                             children: [
                               SizedBox(
                                 width: 250,
-                                child: TextField(
+                                child: FormBuilderTextField(
+                                  name: "",
+                                  initialValue: queryStrings["searchText"],
                                   decoration: InputDecoration(
                                     helperText: "Naziv hotela",
                                     hintText: "Pretraga",
@@ -94,7 +97,7 @@ class _HotelListScreenState extends State<HotelListScreen> {
                                     Icons.location_city,
                                     color: AppColors.primary,
                                   ),
-                                  value: "",
+                                  value: queryStrings["cityId"],
                                   items: getCityDropdownItems(),
                                   onChanged: (value) async {
                                     queryStrings["cityId"] = value;
@@ -227,8 +230,10 @@ class _HotelListScreenState extends State<HotelListScreen> {
   }
 
   Future fetchHotelData() async {
-    paginatedList = await hotelProvider.getAll(queryStrings);
+    paginatedList = null;
+    setState((){});
 
+    paginatedList = await hotelProvider.getAll(queryStrings);
     setState(() {});
   }
 

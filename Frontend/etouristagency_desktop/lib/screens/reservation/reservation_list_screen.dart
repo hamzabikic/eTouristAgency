@@ -12,6 +12,7 @@ import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_desktop/screens/reservation/update_reservation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class ReservationListScreen extends StatefulWidget {
   final Offer offer;
@@ -75,7 +76,6 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                           ],
                         ),
                         SizedBox(height: 20),
-                        paginatedList!.listOfRecords!.isNotEmpty ?
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -84,7 +84,9 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                               children: [
                                 SizedBox(
                                   width: 250,
-                                  child: TextField(
+                                  child: FormBuilderTextField(
+                                    name:"",
+                                    initialValue: queryStrings["reservationNoSearchText"],
                                     decoration: InputDecoration(
                                       labelText: "Pretraga",
                                       helperText: "Broj rezervacije",
@@ -109,7 +111,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                                         color: AppColors.primary,
                                       ),
                                     ),
-                                    value: "",
+                                    value: queryStrings["reservationStatusId"],
                                     items: getReservationStatusDropdownItems(),
                                     onChanged: (value) async {
                                       queryStrings["reservationStatusId"] =
@@ -122,7 +124,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                               ],
                             ),
                           ],
-                        ) : SizedBox(),
+                        ),
                       ],
                     ),
                   ),
@@ -230,8 +232,10 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
   }
 
   Future fetchData() async {
-    paginatedList = await reservationProvider.getAll(queryStrings);
+    paginatedList = null;
+    setState(() {});
 
+    paginatedList = await reservationProvider.getAll(queryStrings);
     setState(() {});
   }
 

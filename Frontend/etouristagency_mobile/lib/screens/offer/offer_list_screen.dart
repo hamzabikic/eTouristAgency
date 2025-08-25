@@ -30,7 +30,11 @@ class _OfferListScreenState extends State<OfferListScreen> {
   PaginatedList<Offer>? paginatedList;
   List<Country>? countries;
   List<EntityCodeValue>? boardTypes;
-  Map<String, dynamic> queryStrings = {"page": 1, "recordsPerPage": 5, "isBookableNow": true};
+  Map<String, dynamic> queryStrings = {
+    "page": 1,
+    "recordsPerPage": 5,
+    "isBookableNow": true,
+  };
   bool isFiltersWidgetOpen = false;
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
@@ -81,34 +85,45 @@ class _OfferListScreenState extends State<OfferListScreen> {
                         },
                       ),
                       Expanded(
-                        child: ListView.separated(
-                          controller: _scrollController,
-                          itemCount:
-                              paginatedList!.listOfRecords.length +
-                              (_isLoadingMore ? 1 : 0),
-                          padding: EdgeInsetsGeometry.only(
-                            left: 30.0,
-                            right: 30.0,
-                            top: 16.0,
-                            bottom: 16.0,
-                          ),
-                          separatorBuilder: (context, index) =>
-                              SizedBox(height: 15),
-                          itemBuilder: (context, index) {
-                            if (index == paginatedList!.listOfRecords.length) {
-                              return DialogHelper.openSpinner(context, "");
-                            }
+                        child: paginatedList!.listOfRecords.isNotEmpty
+                            ? ListView.separated(
+                                controller: _scrollController,
+                                itemCount:
+                                    paginatedList!.listOfRecords.length +
+                                    (_isLoadingMore ? 1 : 0),
+                                padding: EdgeInsetsGeometry.only(
+                                  left: 30.0,
+                                  right: 30.0,
+                                  top: 16.0,
+                                  bottom: 16.0,
+                                ),
+                                separatorBuilder: (context, index) =>
+                                    SizedBox(height: 15),
+                                itemBuilder: (context, index) {
+                                  if (index ==
+                                      paginatedList!.listOfRecords.length) {
+                                    return SizedBox(
+                                      height: 100,
+                                      child: DialogHelper.openSpinner(
+                                        context,
+                                        "",
+                                      ),
+                                    );
+                                  }
 
-                            var offer = paginatedList!.listOfRecords[index];
+                                  var offer =
+                                      paginatedList!.listOfRecords[index];
 
-                            return Card(
-                              color: AppColors.lighterBlue,
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  children: [Stack(
+                                  return Card(
+                                    color: AppColors.lighterBlue,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        children: [
+                                          Stack(
                                             children: [
-                                              Image.network("${offerProvider.controllerUrl}/${offer.id}/image",
+                                              Image.network(
+                                                "${offerProvider.controllerUrl}/${offer.id}/image",
                                                 height: 200,
                                                 width: double.infinity,
                                                 fit: BoxFit.cover,
@@ -172,98 +187,114 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                           ),
                                                         ),
                                                       ),
-                                                    ) : SizedBox(),
+                                                    )
+                                                  : SizedBox(),
                                             ],
                                           ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      offer.hotel!.name ?? "",
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: getStarIconsOnHotel(
-                                        offer.hotel!.starRating!,
-                                      ),
-                                    ),
-                                    Text(
-                                      "${offer.hotel!.city!.name}, ${offer.hotel!.city!.country!.name}",
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      "${offer.formattedStartDate} - ${offer.formattedEndDate}",
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                    Text(
-                                      offer.boardType!.name!,
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      "Već od ${FormatHelper.formatNumber(offer.minimumPricePerPerson!)} KM",
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Preostalo još ${offer.remainingSpots!} mjesta",
-                                      style: TextStyle(
-                                        color: offer.remainingSpots! > 10
-                                            ? const Color.fromARGB(
-                                                255,
-                                                76,
-                                                175,
-                                                79,
-                                              )
-                                            : AppColors.darkRed,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    SizedBox(height: 5),
-                                    ElevatedButton(
-                                      onPressed: offer.remainingSpots! < 1
-                                          ? null
-                                          : () {
-                                              Navigator.of(
-                                                context,
-                                              ).pushReplacement(
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      OfferDetailsScreen(
-                                                        ScreenNames.offerListScreen,
-                                                        offer.id!
+                                          SizedBox(height: 10),
+                                          Text(
+                                            offer.hotel!.name ?? "",
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 17,
+                                            ),
+                                          ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: getStarIconsOnHotel(
+                                              offer.hotel!.starRating!,
+                                            ),
+                                          ),
+                                          Text(
+                                            "${offer.hotel!.city!.name}, ${offer.hotel!.city!.country!.name}",
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            "${offer.formattedStartDate} - ${offer.formattedEndDate}",
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 17,
+                                            ),
+                                          ),
+                                          Text(
+                                            offer.boardType!.name!,
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            "Već od ${FormatHelper.formatNumber(offer.minimumPricePerPerson!)} KM",
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 17,
+                                            ),
+                                          ),
+                                          Text(
+                                            "Preostalo još ${offer.remainingSpots!} mjesta",
+                                            style: TextStyle(
+                                              color: offer.remainingSpots! > 10
+                                                  ? const Color.fromARGB(
+                                                      255,
+                                                      76,
+                                                      175,
+                                                      79,
+                                                    )
+                                                  : AppColors.darkRed,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          SizedBox(height: 5),
+                                          ElevatedButton(
+                                            onPressed: offer.remainingSpots! < 1
+                                                ? null
+                                                : () {
+                                                    Navigator.of(
+                                                      context,
+                                                    ).pushReplacement(
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            OfferDetailsScreen(
+                                                              ScreenNames
+                                                                  .offerListScreen,
+                                                              offer.id!,
+                                                            ),
                                                       ),
-                                                ),
-                                              );
-                                            },
-                                      child: Text("Pregledaj i rezerviši"),
+                                                    );
+                                                  },
+                                            child: Text(
+                                              "Pregledaj i rezerviši",
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text("🙁", style: TextStyle(fontSize: 40)),
+                                    Text(
+                                      "Nema dostupnih ponuda.",
+                                      style: TextStyle(fontSize: 15),
                                     ),
                                   ],
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                              )
                       ),
                     ],
                   ),
@@ -451,7 +482,6 @@ class _OfferListScreenState extends State<OfferListScreen> {
     setState(() {});
 
     paginatedList = await offerProvider.getAll(queryStrings);
-
     setState(() {});
   }
 

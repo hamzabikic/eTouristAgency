@@ -12,6 +12,7 @@ import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/add_update_offer_screen.dart';
 import 'package:etouristagency_desktop/screens/reservation/reservation_list_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class OfferListScreen extends StatefulWidget {
   const OfferListScreen({super.key});
@@ -75,7 +76,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                             children: [
                               SizedBox(
                                 width: 250,
-                                child: TextField(
+                                child: FormBuilderTextField(
+                                  name: "",
+                                  initialValue: queryStrings["offerNo"],
                                   onSubmitted: (value) async {
                                     queryStrings["offerNo"] = value;
                                     queryStrings["page"] = 1;
@@ -98,7 +101,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     Icons.map,
                                     color: AppColors.primary,
                                   ),
-                                  value: "",
+                                  value: queryStrings["countryId"],
                                   items: getCountryDropdownItems(),
                                   onChanged: (value) async {
                                     queryStrings["countryId"] = value;
@@ -114,7 +117,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     Icons.check_circle,
                                     color: AppColors.primary,
                                   ),
-                                  value: "",
+                                  value: queryStrings["offerStatusId"],
                                   items: getOfferStatusDropdownItems(),
                                   onChanged: (value) async {
                                     queryStrings["offerStatusId"] = value;
@@ -370,8 +373,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
   }
 
   Future fetchOfferData() async {
-    paginatedList = await offerProvider.getAll(queryStrings);
+    paginatedList = null;
+    setState(() {});
 
+    paginatedList = await offerProvider.getAll(queryStrings);
     setState(() {});
   }
 

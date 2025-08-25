@@ -1,4 +1,5 @@
-﻿using eTouristAgencyAPI.Models.RequestModels.User;
+﻿using EasyNetQ;
+using eTouristAgencyAPI.Models.RequestModels.User;
 using eTouristAgencyAPI.Models.ResponseModels.User;
 using eTouristAgencyAPI.Models.SearchModels;
 using eTouristAgencyAPI.Services.Constants;
@@ -7,15 +8,18 @@ using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Enums;
 using eTouristAgencyAPI.Services.Helpers;
 using eTouristAgencyAPI.Services.Interfaces;
+using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace eTouristAgencyAPI.Services
 {
     public class UserService : CRUDService<User, UserResponse, UserSearchModel, AddUserRequest, UpdateUserRequest>, IUserService
     {
         private readonly IVerificationCodeService _verificationCodeService;
+        private readonly IEmailContentService _emailContentService;
 
         private readonly bool _isAdmin;
         private readonly Guid? _userId;
@@ -23,9 +27,11 @@ namespace eTouristAgencyAPI.Services
         public UserService(eTouristAgencyDbContext dbContext,
                            IMapper mapper,
                            IUserContextService userContextService,
-                           IVerificationCodeService verificationCodeService) : base(dbContext, mapper)
+                           IVerificationCodeService verificationCodeService,
+                           IEmailContentService emailContentService) : base(dbContext, mapper)
         {
             _verificationCodeService = verificationCodeService;
+            _emailContentService = emailContentService;
 
             _isAdmin = userContextService.UserHasRole(Roles.Admin);
             _userId = userContextService.GetUserId();
@@ -62,9 +68,25 @@ namespace eTouristAgencyAPI.Services
             if (user == null) throw new Exception("User with provided id is not found.");
             if (!user.Roles.Any(x => x.Id == AppConstants.FixedRoleClientId)) throw new Exception("Reset password is only allowed for client users.");
 
+            var generatedPassword = PasswordGenerator.GeneratePassword();
             var passwordHasher = new PasswordHasher<User>();
-            user.PasswordHash = passwordHasher.HashPassword(user, PasswordGenerator.GeneratePassword());
+            user.PasswordHash = passwordHasher.HashPassword(user, generatedPassword);
             await _dbContext.SaveChangesAsync();
+
+            var emailTitle = await _emailContentService.GetGeneratedPasswordTitleAsync();
+            var emailText = await _emailContentService.GetGeneratedPasswordTextAsync(generatedPassword);
+            var emailNotification = new RabbitMQEmailNotification
+            {
+                Title = emailTitle,
+                Html = emailText,
+                Recipients = [user.Email]
+            };
+
+            var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
+            bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+            {
+                EmailNotification = emailNotification
+            }));
         }
 
         public async Task ResetPasswordAsync(ResetPasswordRequest request)
@@ -193,11 +215,6 @@ namespace eTouristAgencyAPI.Services
             if (searchModel.RoleId != null)
             {
                 queryable = queryable.Where(x => x.Roles.Any(y => y.Id == searchModel.RoleId));
-            }
-
-            if (searchModel.IsActive != null)
-            {
-                queryable = queryable.Where(x => x.IsActive == searchModel.IsActive); ;
             }
 
             queryable = queryable.OrderByDescending(x => x.CreatedOn);

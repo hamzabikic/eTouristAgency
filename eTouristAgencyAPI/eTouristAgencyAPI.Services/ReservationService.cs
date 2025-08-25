@@ -7,6 +7,7 @@ using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
+using eTouristAgencyAPI.Services.Messaging.Firebase;
 using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -236,12 +237,14 @@ namespace eTouristAgencyAPI.Services
 
             await _dbContext.SaveChangesAsync();
 
-            reservation = await _dbContext.Reservations.Include(x => x.User).Include(x => x.ReservationStatus).FirstAsync(x => x.Id == reservationId);
+            reservation = await _dbContext.Reservations.Include(x => x.User).Include(x => x.ReservationStatus).Include(x => x.Room).FirstAsync(x => x.Id == reservationId);
             await SendReservationStatusChangeNotificationsAsync(reservation);
         }
 
         private async Task SendReservationStatusChangeNotificationsAsync(Reservation reservation)
         {
+            if (!reservation.User.IsActive) return;
+
             var emailTitle = await _emailContentService.GetReservationStatusChangeTitleAsync();
             var emailText = await _emailContentService.GetReservationStatusChangeTextAsync(reservation);
             var emailNotification = new RabbitMQEmailNotification
@@ -262,7 +265,14 @@ namespace eTouristAgencyAPI.Services
                 {
                     FirebaseTokens = [reservation.User.FirebaseToken],
                     Title = notificationTitle,
-                    Text = notificationText
+                    Text = notificationText,
+                    Data = new FirebaseNotificationData
+                    {
+                        ScreenName = MobileAppScreenNames.AddUpdateReservationScreen,
+                        ReservationId = reservation.Id,
+                        OfferId = reservation.Room.OfferId,
+                        RoomId = reservation.RoomId
+                    }
                 };
             }
 
@@ -294,6 +304,7 @@ namespace eTouristAgencyAPI.Services
             }
 
             reservation.ReservationStatusId = AppConstants.FixedReservationStatusCancelled;
+            reservation.CancellationDate = DateTime.Now;
 
             await _dbContext.SaveChangesAsync();
         }

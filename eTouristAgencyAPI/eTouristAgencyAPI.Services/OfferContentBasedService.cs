@@ -21,8 +21,9 @@ namespace eTouristAgencyAPI.Services
             var cityId = offer.Hotel.CityId.ToString();
             var countryId = offer.Hotel.City.CountryId.ToString();
 
-            var userTags = await _dbContext.UserTags.Include(x => x.User).Where(x => x.CreatedOn > DateTime.Now.AddYears(-1) &&
-                                                                                    (x.Tag == boardTypeId ||
+            var userTags = await _dbContext.UserTags.Include(x => x.User).Where(x => x.User.IsActive &&
+                                                                                     x.CreatedOn > DateTime.Now.AddYears(-1) &&
+                                                                                     (x.Tag == boardTypeId ||
                                                                                      x.Tag == hotelId ||
                                                                                      x.Tag == cityId ||
                                                                                      x.Tag == countryId)).ToListAsync();

@@ -7,6 +7,7 @@ using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
+using eTouristAgencyAPI.Services.Messaging.Firebase;
 using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -95,7 +96,12 @@ namespace eTouristAgencyAPI.Services
             {
                 FirebaseTokens = recipientsWithToken.Select(x => x.FirebaseToken).ToList(),
                 Title = notificationTitle,
-                Text = notificationText
+                Text = notificationText,
+                Data = new FirebaseNotificationData
+                {
+                    ScreenName = MobileAppScreenNames.OfferDetailsScreen,
+                    OfferId = offerId
+                }
             };
 
             var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");

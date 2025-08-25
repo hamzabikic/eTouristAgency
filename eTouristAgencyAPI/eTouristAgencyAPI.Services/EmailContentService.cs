@@ -117,7 +117,7 @@ namespace eTouristAgencyAPI.Services
             using var textReader = new StreamReader(textStream);
             string text = await textReader.ReadToEndAsync();
 
-            var pricePerPerson = offer.Rooms.Min(x=> x.PricePerPerson);
+            var pricePerPerson = offer.Rooms.Min(x => x.PricePerPerson);
             var offerDiscount = offer.OfferDiscounts.FirstOrDefault(x => x.DiscountTypeId == AppConstants.FixedOfferDiscountTypeFirstMinute);
             var discount = offerDiscount?.Discount ?? 0;
             var minPrice = pricePerPerson - (pricePerPerson * (discount / 100));
@@ -129,6 +129,32 @@ namespace eTouristAgencyAPI.Services
             text = text.Replace("{OfferDateTo}", offer.TripEndDate.ToString("dd.MM.yyyy"));
             text = text.Replace("{OfferPrice}", minPrice.ToString("N2"));
             text = text.Replace("{ShortDescription}", offer.Description);
+
+            return text;
+        }
+
+        public async Task<string> GetGeneratedPasswordTitleAsync()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var htmlResourceName = $"{PATH_TO_DIRECTORY}.generatedPasswordTitle.html";
+
+            using var textStream = assembly.GetManifestResourceStream(htmlResourceName);
+            using var textReader = new StreamReader(textStream);
+            string text = await textReader.ReadToEndAsync();
+
+            return text;
+        }
+
+        public async Task<string> GetGeneratedPasswordTextAsync(string generatedPassword)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var htmlResourceName = $"{PATH_TO_DIRECTORY}.generatedPasswordText.html";
+
+            using var textStream = assembly.GetManifestResourceStream(htmlResourceName);
+            using var textReader = new StreamReader(textStream);
+            string text = await textReader.ReadToEndAsync();
+
+            text = text.Replace("{Password}", generatedPassword);
 
             return text;
         }

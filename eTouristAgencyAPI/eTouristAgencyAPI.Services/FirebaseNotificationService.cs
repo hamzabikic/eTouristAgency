@@ -3,8 +3,8 @@ using System.Text;
 using System.Text.Json;
 using eTouristAgencyAPI.Services.Configuration;
 using eTouristAgencyAPI.Services.Interfaces;
+using eTouristAgencyAPI.Services.Messaging.Firebase;
 using Google.Apis.Auth.OAuth2;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace eTouristAgencyAPI.Services
@@ -26,7 +26,7 @@ namespace eTouristAgencyAPI.Services
             return await credential.UnderlyingCredential.GetAccessTokenForRequestAsync();
         }
 
-        public async Task SendNotificationAsync(string deviceToken, string title, string body)
+        public async Task SendNotificationAsync(string deviceToken, string title, string body, FirebaseNotificationData data)
         {
             var accessToken = await GetAccessTokenAsync();
 
@@ -42,7 +42,8 @@ namespace eTouristAgencyAPI.Services
                     {
                         title,
                         body
-                    }
+                    },
+                    data
                 }
             };
 

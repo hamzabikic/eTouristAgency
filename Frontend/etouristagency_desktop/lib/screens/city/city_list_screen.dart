@@ -11,6 +11,7 @@ import 'package:etouristagency_desktop/providers/country_provider.dart';
 import 'package:etouristagency_desktop/screens/city/add_update_city_dialog.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class CityListScreen extends StatefulWidget {
   const CityListScreen({super.key});
@@ -72,7 +73,9 @@ class _CityListScreenState extends State<CityListScreen> {
                               children: [
                                 SizedBox(
                                   width: 250,
-                                  child: TextField(
+                                  child: FormBuilderTextField(
+                                    name: "",
+                                    initialValue: queryStrings["searchText"],
                                     decoration: InputDecoration(
                                       labelText: "Pretraga",
                                       helperText: "Naziv grada",
@@ -186,8 +189,10 @@ class _CityListScreenState extends State<CityListScreen> {
   }
 
   Future fetchData() async {
-    paginatedList = await cityProvider.getAll(queryStrings);
+    paginatedList = null;
+    setState((){});
 
+    paginatedList = await cityProvider.getAll(queryStrings);
     setState(() {});
   }
 

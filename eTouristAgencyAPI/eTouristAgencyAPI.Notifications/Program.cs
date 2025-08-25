@@ -1,4 +1,5 @@
 ﻿using EasyNetQ;
+using eTouristAgencyAPI.Notifications;
 using eTouristAgencyAPI.Services;
 using eTouristAgencyAPI.Services.Configuration;
 using eTouristAgencyAPI.Services.Interfaces;
@@ -29,22 +30,51 @@ var firebaseNotificationService = host.Services.GetRequiredService<IFirebaseNoti
 
 var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
 
-bus.PubSub.Subscribe<string>("Notification", async msg => {
-    var rabbitMQNotification = JsonConvert.DeserializeObject<RabbitMQNotification>(msg);
-
-    if (rabbitMQNotification.EmailNotification != null)
+bus.PubSub.Subscribe<string>("Notification", async msg =>
+{
+    try
     {
-        var emailNotification = rabbitMQNotification.EmailNotification;
-        await emailNotificationService.SendEmailNotificationAsync(emailNotification.Title, emailNotification.Html, emailNotification.AdditionalImage, emailNotification.Recipients.ToArray());
-    }
+        var rabbitMQNotification = JsonConvert.DeserializeObject<RabbitMQNotification>(msg);
 
-    if(rabbitMQNotification.FirebaseNotification != null)
-    {
-        var firebaseNotification = rabbitMQNotification.FirebaseNotification;
-        foreach(var firebaseToken in firebaseNotification.FirebaseTokens)
+        if (rabbitMQNotification.EmailNotification != null)
         {
-            await firebaseNotificationService.SendNotificationAsync(firebaseToken, firebaseNotification.Title, firebaseNotification.Text);
+            var emailNotification = rabbitMQNotification.EmailNotification;
+
+            foreach (var recipient in emailNotification.Recipients)
+            {
+                try
+                {
+                    await emailNotificationService.SendEmailNotificationAsync(emailNotification.Title, emailNotification.Html, emailNotification.AdditionalImage, recipient);
+                    await CustomLogger.LogInfo($"Succesfully sent email notification with title '{emailNotification.Title}' to: {recipient}");
+                }
+                catch (Exception ex)
+                {
+                    await CustomLogger.LogError($"Error while sending email notification with title '{emailNotification.Title}' to: {recipient} - {ex.Message}");
+                }
+            }
         }
+
+        if (rabbitMQNotification.FirebaseNotification != null)
+        {
+            var firebaseNotification = rabbitMQNotification.FirebaseNotification;
+
+            foreach (var firebaseToken in firebaseNotification.FirebaseTokens)
+            {
+                try
+                {
+                    await firebaseNotificationService.SendNotificationAsync(firebaseToken, firebaseNotification.Title, firebaseNotification.Text, firebaseNotification.Data);
+                    await CustomLogger.LogInfo($"Succesfully sent firebase notification with title '{firebaseNotification.Title}' to: {firebaseToken}");
+                }
+                catch(Exception ex)
+                {
+                    await CustomLogger.LogError($"Error while sending firebase notification with title '{firebaseNotification.Title}' to: {firebaseToken} - {ex.Message}");
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        await CustomLogger.LogError($"Error while sending notifications: {ex.Message}");
     }
 });
 

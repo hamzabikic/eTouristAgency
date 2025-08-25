@@ -28,7 +28,8 @@ class _AccountScreenState extends State<AccountScreen> {
   String? operationErrorMessage;
   bool usernameIsValid = true;
   bool emailIsValid = true;
-  bool buttonEnabled = true;
+  bool _isProcessing = false;
+  bool _isVerificationCalled = false;
 
   @override
   void initState() {
@@ -113,14 +114,14 @@ class _AccountScreenState extends State<AccountScreen> {
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
                                     ),
-                                    FormBuilderValidators.conditional(
-                                      (value) {
-                                        return !usernameIsValid;
-                                      },
-                                      (value) {
+                                    (value) {
+                                      if (usernameIsValid ||
+                                          value == user!.username) {
+                                        return null;
+                                      } else {
                                         return "Uneseno korisničko ime se već koristi.";
-                                      },
-                                    ),
+                                      }
+                                    },
                                   ]),
                                 ),
                                 FormBuilderTextField(
@@ -150,23 +151,37 @@ class _AccountScreenState extends State<AccountScreen> {
                                       errorText:
                                           "Email unesen u neispravnom formatu.",
                                     ),
-                                    FormBuilderValidators.conditional(
-                                      (value) {
-                                        return !emailIsValid;
-                                      },
-                                      (value) {
+                                    (value) {
+                                      if (emailIsValid ||
+                                          value == user!.email) {
+                                        return null;
+                                      } else {
                                         return "Uneseni email se već koristi.";
-                                      },
-                                    ),
+                                      }
+                                    },
                                   ]),
                                 ),
                                 user!.isVerified!
                                     ? SizedBox()
                                     : ElevatedButton(
-                                        onPressed: () async {
-                                          await verify();
-                                        },
-                                        child: Text("Verifikuj"),
+                                        onPressed: !_isVerificationCalled
+                                            ? () async {
+                                                await verify();
+                                              }
+                                            : null,
+                                        child: !_isVerificationCalled
+                                            ? Text("Verifikuj")
+                                            : SizedBox(
+                                                height: 20,
+                                                width: 20,
+                                                child: Transform.scale(
+                                                  scale: 0.6,
+                                                  child:
+                                                      const CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
+                                                ),
+                                              ),
                                       ),
                                 FormBuilderTextField(
                                   name: "phoneNumber",
@@ -225,10 +240,22 @@ class _AccountScreenState extends State<AccountScreen> {
                                 SizedBox(height: 20),
                                 Center(
                                   child: ElevatedButton(
-                                    onPressed: buttonEnabled
+                                    onPressed: !_isProcessing
                                         ? updateUser
-                                        : () {},
-                                    child: Text("Sačuvaj promjene"),
+                                        : null,
+                                    child: !_isProcessing
+                                        ? Text("Sačuvaj promjene")
+                                        : SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: Transform.scale(
+                                              scale: 0.6,
+                                              child:
+                                                  const CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                  ),
+                                            ),
+                                          ),
                                   ),
                                 ),
                               ],
@@ -266,28 +293,17 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future updateUser() async {
-    buttonEnabled = false;
-    setState(() {});
-
-    emailIsValid = true;
-    if (updateUserFormBuilder.currentState!.fields["email"]!.value !=
-        user!.email) {
-      await validateEmail();
-    }
-
-    usernameIsValid = true;
-    if (updateUserFormBuilder.currentState!.fields["username"]!.value !=
-        user!.username) {
-      await validateUsername();
-    }
+    await validateEmail();
+    await validateUsername();
 
     bool isValid = updateUserFormBuilder.currentState!.validate();
 
     if (!isValid) {
-      buttonEnabled = true;
-      setState(() {});
       return;
     }
+
+    _isProcessing = true;
+    setState(() {});
 
     updateUserFormBuilder.currentState!.save();
     var insertModel = Map<String, dynamic>.from(
@@ -312,7 +328,7 @@ class _AccountScreenState extends State<AccountScreen> {
       setState(() {});
     }
 
-    buttonEnabled = true;
+    _isProcessing = false;
     setState(() {});
     return;
   }
@@ -349,76 +365,117 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future verify() async {
     try {
+      _isVerificationCalled = true;
+      setState(() {});
+
       await verificationCodeProvider.addEmailVerification();
       openVerificationDialog();
     } on Exception catch (ex) {
       DialogHelper.openDialog(context, ex.toString(), () {
         Navigator.of(context).pop();
       }, type: DialogType.error);
-      return;
     }
+
+    _isVerificationCalled = false;
+    setState(() {});
   }
 
   void openVerificationDialog() {
+    verificationCodeController.text = "";
+
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        child: SizedBox(
-          height: 300,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Verifikacija email naloga",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.blueGrey,
-                  ),
-                ),
-                SizedBox(height: 50),
-                Text(
-                  "Verifikacijski kod je poslan na Vašu email adresu. Ovdje ga unesite.",
-                  style: TextStyle(color: Colors.blueGrey),
-                  textAlign: TextAlign.center,
-                ),
-                TextField(
-                  controller: verificationCodeController,
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(labelText: "Verifikacijski kod"),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      await userProvider.verify(
-                        verificationCodeController.text,
-                      );
-                      DialogHelper.openDialog(
-                        context,
-                        "Uspješna verifikacije email naloga",
-                        () {
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                        },
-                      );
+      builder: (context) {
+        var isVerificationInProcess = false;
 
-                      await fetchUserData();
-                    } on Exception catch (ex) {
-                      DialogHelper.openDialog(context, ex.toString(), () {
-                        Navigator.of(context).pop();
-                      }, type: DialogType.error);
-                    }
-                  },
-                  child: Text("Potvrdi"),
+        return StatefulBuilder(
+          builder: (context, setStateDialog) => Dialog(
+            child: SizedBox(
+              height: 300,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Verifikacija email naloga",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    SizedBox(height: 50),
+                    Text(
+                      "Verifikacijski kod je poslan na Vašu email adresu. Ovdje ga unesite.",
+                      style: TextStyle(color: Colors.blueGrey),
+                      textAlign: TextAlign.center,
+                    ),
+                    TextField(
+                      controller: verificationCodeController,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        labelText: "Verifikacijski kod",
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: !isVerificationInProcess
+                          ? () async {
+                              try {
+                                setStateDialog(() {
+                                  isVerificationInProcess = true;
+                                });
+
+                                await userProvider.verify(
+                                  verificationCodeController.text,
+                                );
+                                DialogHelper.openDialog(
+                                  context,
+                                  "Uspješna verifikacije email naloga",
+                                  () {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pop();
+                                  },
+                                );
+
+                                await fetchUserData();
+                              } on Exception catch (ex) {
+                                DialogHelper.openDialog(
+                                  context,
+                                  ex.toString(),
+                                  () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  type: DialogType.error,
+                                );
+                              }
+
+                              setStateDialog(() {
+                                isVerificationInProcess = false;
+                              });
+                            }
+                          : null,
+                      child: !isVerificationInProcess
+                          ? Text("Potvrdi")
+                          : SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: Transform.scale(
+                                scale: 0.6,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -429,11 +486,12 @@ class _AccountScreenState extends State<AccountScreen> {
       "Ovom akcijom ćete trajno obrisati korisnički nalog i isti će postati nepovratan.",
       () async {
         await userProvider.deactivate(user!.id!);
+        await authService.clearCredentials();
         Navigator.of(context).pop();
         DialogHelper.openDialog(
           context,
           "Uspješno deaktiviran korisnički nalog",
-          () {
+          () async {
             Navigator.of(context).pop();
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => LoginScreen()),

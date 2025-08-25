@@ -1,11 +1,17 @@
+import 'dart:developer';
+
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/consts/roles.dart';
+import 'package:etouristagency_mobile/consts/screen_names.dart';
+import 'package:etouristagency_mobile/main.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/account_screen.dart';
 import 'package:etouristagency_mobile/screens/forgot_password_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/registration_screen.dart';
+import 'package:etouristagency_mobile/screens/reservation/add_update_reservation_screen.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +19,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final RemoteMessage? remoteMessage;
+  const LoginScreen({this.remoteMessage, super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -33,6 +40,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (isLoggedIn) {
+        if (remoteMessage != null) {
+          navigateOnNotification(widget.remoteMessage);
+          return;
+        }
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (builder) => OfferListScreen()),
         );
@@ -193,6 +205,34 @@ class _LoginScreenState extends State<LoginScreen> {
 
     FirebaseMessaging.onMessage.listen((message) {});
 
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {});
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      navigateOnNotification(message);
+    });
+  }
+
+  void navigateOnNotification(message) {
+    final data = message.data;
+    final screenName = data['ScreenName'];
+    final offerId = data['OfferId'];
+    final roomId = data['RoomId'];
+    final reservationId = data['ReservationId'];
+
+    if (screenName == ScreenNames.offerDetailsScreen) {
+      navigatorKey.currentState?.pushReplacement(
+        MaterialPageRoute(
+          builder: (context) =>
+              OfferDetailsScreen(ScreenNames.offerListScreen, offerId),
+        ),
+      );
+    }
+
+    if (screenName == ScreenNames.addUpdateReservationScreen) {
+      navigatorKey.currentState?.pushReplacement(
+        MaterialPageRoute(
+          builder: (context) =>
+              AddUpdateReservationScreen(offerId, roomId, reservationId),
+        ),
+      );
+    }
   }
 }

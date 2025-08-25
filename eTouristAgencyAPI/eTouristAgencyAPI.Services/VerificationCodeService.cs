@@ -37,7 +37,7 @@ namespace eTouristAgencyAPI.Services
                                                                                             x.EmailVerificationTypeId == AppConstants.EmailVerificationTypes[verificationType] &&
                                                                                             x.ValidFrom > DateTime.Now.AddDays(-1));
 
-            if (countOfRecordsLastDay > 4) throw new Exception("You can send verification code only 5 times in last 24 hours.");
+            if (countOfRecordsLastDay > 4) throw new Exception("Ovu akciju je moguće uraditi maksimalno 5 puta u okviru 24 sata.");
 
             await DeactivateVerificationCodesAsync(verificationType, user.Id);
 
@@ -64,7 +64,7 @@ namespace eTouristAgencyAPI.Services
                                                                                                 x.EmailVerificationTypeId == AppConstants.EmailVerificationTypes[verificationType] &&
                                                                                                 x.ValidTo > DateTime.Now);
 
-            if (verificationCode == null) throw new Exception("Verification code is not valid.");
+            if (verificationCode == null) throw new Exception("Verifikacijski kod nije validan ili je istekao.");
 
             verificationCode.ValidTo = DateTime.Now;
 
@@ -74,8 +74,8 @@ namespace eTouristAgencyAPI.Services
         public async Task<bool> PasswordVerificationCodeExists(string verificationKey)
         {
             return await _dbContext.EmailVerifications.Include(x => x.User).AnyAsync(x => x.VerificationKey == verificationKey &&
-                                                                                         x.ValidTo > DateTime.Now &&
-                                                                                         x.EmailVerificationTypeId == AppConstants.FixedEmailVerificationTypeForResetPassword);
+                                                                                          x.ValidTo > DateTime.Now &&
+                                                                                          x.EmailVerificationTypeId == AppConstants.FixedEmailVerificationTypeForResetPassword);
         }
 
         private async Task SendVerificationCodeToEmailAsync(User user, EmailVerificationType verificationType, string verificationKey, string email)
@@ -136,7 +136,7 @@ namespace eTouristAgencyAPI.Services
                 case EmailVerificationType.ResetPassword:
                     user = await _dbContext.Users.FirstOrDefaultAsync(x => x.IsActive && x.Email == email);
 
-                    if (user == null) throw new Exception("User with provided email is not found.");
+                    if (user == null) throw new Exception("Nije pronađen korisnik sa unesenim e-mail nalogom.");
 
                     return user;
                 default:

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using eTouristAgencyAPI.Services.Messaging.Firebase;
 
 namespace eTouristAgencyAPI.Services.Messaging.RabbitMQ
 {
@@ -10,6 +6,7 @@ namespace eTouristAgencyAPI.Services.Messaging.RabbitMQ
     {
         public string Title { get; set; }
         public string Text { get; set; }
+        public FirebaseNotificationData Data { get; set; }
         public List<string> FirebaseTokens { get; set; }
     }
 }

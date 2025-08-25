@@ -51,131 +51,149 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
     return MasterScreen(
       "Moja putovanja",
       paginatedList != null
-          ? ListView.separated(
-              controller: _scrollController,
-              itemCount:
-                  paginatedList!.listOfRecords.length +
-                  (_isLoadingMore ? 1 : 0),
-              padding: EdgeInsetsGeometry.only(
-                left: 46.0,
-                right: 46.0,
-                top: 16.0,
-                bottom: 16.0,
-              ),
-              separatorBuilder: (context, index) => SizedBox(height: 15),
-              itemBuilder: (context, index) {
-                if (index == paginatedList!.listOfRecords.length) {
-                  return DialogHelper.openSpinner(context, "");
-                }
+          ? paginatedList!.listOfRecords.isNotEmpty
+                ? ListView.separated(
+                    controller: _scrollController,
+                    itemCount:
+                        paginatedList!.listOfRecords.length +
+                        (_isLoadingMore ? 1 : 0),
+                    padding: EdgeInsetsGeometry.only(
+                      left: 46.0,
+                      right: 46.0,
+                      top: 16.0,
+                      bottom: 16.0,
+                    ),
+                    separatorBuilder: (context, index) => SizedBox(height: 15),
+                    itemBuilder: (context, index) {
+                      if (index == paginatedList!.listOfRecords.length) {
+                        return SizedBox(
+                          height: 100,
+                          child: DialogHelper.openSpinner(context, ""),
+                        );
+                      }
 
-                var reservation = paginatedList!.listOfRecords[index];
+                      var reservation = paginatedList!.listOfRecords[index];
 
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 4,
-                  color: AppColors.lighterBlue,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        Image.network("${offerProvider.controllerUrl}/${reservation.room!.offerId!}/image",
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
+                        color: AppColors.lighterBlue,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              Image.network(
+                                "${offerProvider.controllerUrl}/${reservation.room!.offerId!}/image",
                                 height: 200,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                               ),
-                        SizedBox(height: 10),
-                        Text(
-                          "#${reservation.reservationNo ?? ""}",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          reservation.room!.offer!.hotel!.name ?? "",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: getStarIconsOnHotel(
-                            reservation.room!.offer!.hotel!.starRating!,
-                          ),
-                        ),
-                        Text(
-                          "${reservation.room!.offer!.hotel!.city!.name}, ${reservation.room!.offer!.hotel!.city!.country!.name}",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          "${reservation.room!.offer!.formattedStartDate} - ${reservation.room!.offer!.formattedEndDate}",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                        ),
-                        Text(
-                          reservation.room!.offer!.boardType!.name ?? "",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          "Status",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                        Text(
-                          reservation.reservationStatus!.name ?? "",
-                          style: TextStyle(
-                            color: getColorForReservationStatus(
-                              reservation.reservationStatusId!.toUpperCase(),
-                            ),
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                            fontSize: 15,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        ElevatedButton(
-                          child: Text("Detalji"),
-                          onPressed: () {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    AddUpdateReservationScreen(
-                                      reservation.room!.offerId!,
-                                      reservation.roomId!,
-                                      reservation.id,
-                                    ),
+                              SizedBox(height: 10),
+                              Text(
+                                "#${reservation.reservationNo ?? ""}",
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
                               ),
-                            );
-                          },
+                              SizedBox(height: 5),
+                              Text(
+                                reservation.room!.offer!.hotel!.name ?? "",
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: getStarIconsOnHotel(
+                                  reservation.room!.offer!.hotel!.starRating!,
+                                ),
+                              ),
+                              Text(
+                                "${reservation.room!.offer!.hotel!.city!.name}, ${reservation.room!.offer!.hotel!.city!.country!.name}",
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                "${reservation.room!.offer!.formattedStartDate} - ${reservation.room!.offer!.formattedEndDate}",
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
+                              ),
+                              Text(
+                                reservation.room!.offer!.boardType!.name ?? "",
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                "Status",
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                reservation.reservationStatus!.name ?? "",
+                                style: TextStyle(
+                                  color: getColorForReservationStatus(
+                                    reservation.reservationStatusId!
+                                        .toUpperCase(),
+                                  ),
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              ElevatedButton(
+                                child: Text("Detalji"),
+                                onPressed: () {
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AddUpdateReservationScreen(
+                                            reservation.room!.offerId!,
+                                            reservation.roomId!,
+                                            reservation.id,
+                                          ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text("🙁", style: TextStyle(fontSize: 40)),
+                        Text(
+                          "Još uvijek nemate kreiranih rezervacija.",
+                          style: TextStyle(fontSize: 15),
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
-            )
+                  )
           : DialogHelper.openSpinner(context, "Učitavam putovanja..."),
     );
   }

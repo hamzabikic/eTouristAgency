@@ -13,8 +13,10 @@ import 'package:etouristagency_mobile/models/offer/offer_image_info.dart';
 import 'package:etouristagency_mobile/models/reservation/reservation.dart';
 import 'package:etouristagency_mobile/models/reservation/reservation_payment_info.dart';
 import 'package:etouristagency_mobile/models/room/room.dart';
+import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/providers/reservation_provider.dart';
+import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/hotel/hotel_images_dialog.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
@@ -56,6 +58,7 @@ class _AddUpdateReservationScreenState
   final List<GlobalKey<FormBuilderState>> formBuilderKeys = [];
   final TextEditingController noteEditingController = TextEditingController();
   late final ReservationProvider reservationProvider;
+  late final UserProvider userProvider;
   Reservation? reservation;
   List<Map<String, dynamic>> initialValues = [];
   List<ReservationPaymentInfo> loadedPayments = [];
@@ -68,6 +71,7 @@ class _AddUpdateReservationScreenState
     if (widget.reservationId == null) {
       addNewPassenger();
     }
+    userProvider = UserProvider();
     offerProvider = OfferProvider();
     reservationProvider = ReservationProvider();
     fetchOfferData();
@@ -82,7 +86,10 @@ class _AddUpdateReservationScreenState
       onClickMethod: () {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => OfferDetailsScreen(widget.previousScreenName ?? "", widget.offerId),
+            builder: (context) => OfferDetailsScreen(
+              widget.previousScreenName ?? "",
+              widget.offerId,
+            ),
           ),
         );
       },
@@ -187,6 +194,14 @@ class _AddUpdateReservationScreenState
                                 fontSize: 15,
                               ),
                             ),
+                            (offer!.offerStatusId!.toLowerCase() == AppConstants.inactiveOfferGuid.toLowerCase())? Text(
+                              "Ova ponuda je otkazana!",
+                              style: TextStyle(
+                                color: AppColors.darkRed,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ) : SizedBox(),
                             reservation != null
                                 ? Text(
                                     "ID rezervacije: ${reservation!.reservationNo}",
@@ -506,6 +521,11 @@ class _AddUpdateReservationScreenState
       offerDocumentInfo = await offerProvider.getOfferDocument(widget.offerId);
     } on Exception catch (ex) {}
 
+    if (offer!.offerStatusId!.toLowerCase() ==
+        AppConstants.inactiveOfferGuid.toLowerCase()) {
+      _isEditingEnabled = false;
+    }
+
     setState(() {});
   }
 
@@ -721,6 +741,24 @@ class _AddUpdateReservationScreenState
     }
   }
 
+  Future verifyUser() async {
+    var user = User.fromJson(await userProvider.getMe());
+
+    if (!user.isVerified!) {
+      _isEditingEnabled = false;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Da biste mogli uređivati podatke o rezervaciji, Vaš e-mail nalog mora biti verifikovan.",
+          ),
+        ),
+      );
+    }
+
+    setState(() {});
+  }
+
   bool validatePassengers() {
     bool isValid = true;
 
@@ -749,9 +787,10 @@ class _AddUpdateReservationScreenState
 
     await loadReservationPayments();
 
-    _isEditingEnabled =
-        reservation!.reservationStatusId!.toLowerCase() !=
-        AppConstants.reservationCancelledGuid.toLowerCase();
+    if (reservation!.reservationStatusId!.toLowerCase() ==
+        AppConstants.reservationCancelledGuid.toLowerCase()) {
+      _isEditingEnabled = false;
+    }
 
     setState(() {});
   }

@@ -12,5 +12,7 @@ namespace eTouristAgencyAPI.Services.Interfaces
         Task<string> GetResetPasswordTextAsync(string firstName, string lastName, string verificationKey);
         Task<string> GetOfferRecommendationTitleAsync(Offer offer);
         Task<string> GetOfferRecommendationTextAsync(Offer offer);
+        Task<string> GetGeneratedPasswordTitleAsync();
+        Task<string> GetGeneratedPasswordTextAsync(string generatedPassword);
     }
 }
