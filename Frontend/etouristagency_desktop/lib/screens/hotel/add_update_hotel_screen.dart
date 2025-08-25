@@ -245,7 +245,25 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
     }
 
     File file = File(result.files.single.path!);
-    var photoBytes = file.readAsBytesSync();
+
+    final validImageExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.bmp',
+      '.webp',
+    ];
+    if (!validImageExtensions.any(
+      (ext) => file.path.toLowerCase().endsWith(ext),
+    )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Odabrani fajl mora biti slika.")),
+      );
+      return;
+    }
+
+    var photoBytes = await file.readAsBytes();
     String fileName = result.files.single.name;
 
     if (images != null) {
@@ -296,15 +314,24 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
   }
 
   Future loadHotelImages() async {
-    if(widget.hotel== null || widget.hotel!.hotelImages == null || widget.hotel!.hotelImages!.isEmpty) return;
+    if (widget.hotel == null ||
+        widget.hotel!.hotelImages == null ||
+        widget.hotel!.hotelImages!.isEmpty)
+      return;
     images = [];
 
-    for(var item in widget.hotel!.hotelImages!){
+    for (var item in widget.hotel!.hotelImages!) {
       var hotelImageInfo = await hotelProvider.getHotelImage(item.id!);
 
-      images!.add(HotelImageInfo(item.id, hotelImageInfo.imageBytes, hotelImageInfo.imageName));
+      images!.add(
+        HotelImageInfo(
+          item.id,
+          hotelImageInfo.imageBytes,
+          hotelImageInfo.imageName,
+        ),
+      );
     }
 
-    setState((){});
+    setState(() {});
   }
 }

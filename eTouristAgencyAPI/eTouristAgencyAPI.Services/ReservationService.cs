@@ -114,6 +114,11 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("You provided number of passengers higher than room capacity");
             }
 
+            if (DateTime.Now.Date > dbModel.Room.Offer.LastPaymentDeadline.Date || dbModel.Room.Offer.OfferStatusId != AppConstants.FixedOfferStatusActive)
+            {
+                throw new Exception("Currently it is not possible to update this record.");
+            }
+
             var numberOfKids = updateModel.PassengerList.Where(x => x.DateOfBirth > DateTime.Now.AddYears(-18)).Count();
             var discountPercent = dbModel.OfferDiscount == null ? 0 : dbModel.OfferDiscount.Discount / 100;
             var kidsDiscountPercent = dbModel.Room.ChildDiscount / 100;
@@ -153,8 +158,8 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task<IQueryable<Reservation>> BeforeFetchRecordAsync(IQueryable<Reservation> queryable)
         {
-            queryable = queryable.Include(x => x.Room)
-                                 .ThenInclude(x => x.RoomType)
+            queryable = queryable.Include(x => x.Room.Offer)
+                                 .Include(x => x.Room.RoomType)
                                  .Include(x => x.OfferDiscount).ThenInclude(x => x.DiscountType)
                                  .Include(x => x.Passengers.OrderBy(x => x.DisplayOrderWithinReservation))
                                  .Include(x => x.ReservationStatus)
@@ -220,7 +225,7 @@ namespace eTouristAgencyAPI.Services
 
         public async Task AddPaymentAsync(Guid reservationId, UpdateReservationStatusRequest request)
         {
-            var reservation = await _dbContext.Reservations.Include(x => x.User).Include(x => x.ReservationStatus).FirstOrDefaultAsync(x => x.Id == reservationId);
+            var reservation = await _dbContext.Reservations.Include(x=> x.Room.Offer).FirstOrDefaultAsync(x => x.Id == reservationId);
 
             if (reservation == null)
             {
@@ -229,7 +234,12 @@ namespace eTouristAgencyAPI.Services
 
             if (reservation.ReservationStatusId == AppConstants.FixedReservationStatusCancelled)
             {
-                throw new Exception("You cannot change reservation status on cancelled reservation.");
+                throw new Exception("You cannot update  reservation on cancelled reservation.");
+            }
+
+            if(reservation.Room.Offer.TripStartDate.Date <= DateTime.Now.Date)
+            {
+                throw new Exception("Currentry, you cannot update reservation.");
             }
 
             reservation.ReservationStatusId = request.ReservationStatusId;
@@ -286,7 +296,7 @@ namespace eTouristAgencyAPI.Services
 
         public async Task CancelReservationAsync(Guid reservationId)
         {
-            var reservation = await _dbContext.Reservations.FindAsync(reservationId);
+            var reservation = await _dbContext.Reservations.Include(x => x.Room.Offer).FirstOrDefaultAsync(x => x.Id == reservationId);
 
             if (reservation == null)
             {
@@ -301,6 +311,16 @@ namespace eTouristAgencyAPI.Services
             if (!(await _dbContext.Users.FindAsync(_userId)).IsVerified)
             {
                 throw new Exception("You have to verify your e-mail for this action.");
+            }
+
+            if (reservation.Room.Offer.OfferStatusId == AppConstants.FixedOfferStatusInactive)
+            {
+                throw new Exception("You cannot cancel reservation on inactive offer.");
+            }
+
+            if(reservation.Room.Offer.LastPaymentDeadline.Date < DateTime.Now.Date)
+            {
+                throw new Exception("Currentry it is not possible to cancel this reservation.");
             }
 
             reservation.ReservationStatusId = AppConstants.FixedReservationStatusCancelled;

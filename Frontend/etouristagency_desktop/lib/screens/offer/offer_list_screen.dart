@@ -11,6 +11,7 @@ import 'package:etouristagency_desktop/providers/offer_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/add_update_offer_screen.dart';
 import 'package:etouristagency_desktop/screens/reservation/reservation_list_screen.dart';
+import 'package:etouristagency_desktop/screens/reservation_review/reservation_review_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
@@ -188,6 +189,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                               DataColumn(label: Text("Prevoznici")),
                               DataColumn(label: SizedBox()),
                               DataColumn(label: SizedBox()),
+                              DataColumn(label: SizedBox()),
                             ],
                             rows: paginatedList!.listOfRecords!
                                 .map(
@@ -241,9 +243,33 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                         ElevatedButton(
                                           child: Text("Rezervacije"),
                                           onPressed: () {
-                                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> ReservationListScreen(x)));
+                                            Navigator.of(
+                                              context,
+                                            ).pushReplacement(
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ReservationListScreen(x),
+                                              ),
+                                            );
                                           },
                                         ),
+                                      ),
+                                       DataCell(
+                                        x.isReviewsButtonEnabled() ? ElevatedButton(
+                                          child: Text("Recenzije"),
+                                          onPressed: () {
+                                            Navigator.of(
+                                              context,
+                                            ).pushReplacement(
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ReservationReviewListScreen(
+                                                      x,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                        ) : SizedBox(),
                                       ),
                                     ],
                                   ),

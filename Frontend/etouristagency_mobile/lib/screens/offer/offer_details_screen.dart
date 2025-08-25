@@ -189,6 +189,29 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 20),
+                    Text(
+                      "Opis putovanja",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Card(
+                        color: AppColors.lighterBlue,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [Text(offer!.description!)],
+                          ),
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 10),
                     Text(
                       "Odaberite sobu...",

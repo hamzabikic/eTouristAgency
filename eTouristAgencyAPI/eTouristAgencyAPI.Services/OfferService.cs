@@ -49,6 +49,8 @@ namespace eTouristAgencyAPI.Services
 
             if (offer == null) throw new Exception("Offer with provided id is not found.");
 
+            if (offer.TripStartDate.Date <= DateTime.Now.Date) throw new Exception("Currently, you cannot update offer.");
+
             var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
 
             return await service.UpdateAsync(id, updateModel);
@@ -59,6 +61,8 @@ namespace eTouristAgencyAPI.Services
             var offer = await _dbContext.Offers.FindAsync(id);
 
             if (offer == null) throw new Exception("Offer with provided id is not found.");
+
+            if (offer.TripStartDate.Date <= DateTime.Now.Date) throw new Exception("Currently, you cannot update offer status.");
 
             var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
 
@@ -117,6 +121,8 @@ namespace eTouristAgencyAPI.Services
             var offer = await _dbContext.Offers.FindAsync(id);
 
             if (offer == null) throw new Exception("Offer with provided id is not found.");
+
+            if (offer.TripStartDate.Date <= DateTime.Now.Date) throw new Exception("Currently, you cannot update offer status.");
 
             var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
 
