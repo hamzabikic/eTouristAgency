@@ -12,6 +12,7 @@ import 'package:etouristagency_desktop/screens/user/add_update_user_dialog.dart'
 import 'package:etouristagency_desktop/screens/user/update_client_user.dialog.dart';
 import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});
@@ -72,7 +73,9 @@ class _UserListScreenState extends State<UserListScreen> {
                             children: [
                               SizedBox(
                                 width: 250,
-                                child: TextField(
+                                child: FormBuilderTextField(
+                                  name:"",
+                                  initialValue: queryStrings["searchText"],
                                   onSubmitted: (value) async {
                                     queryStrings["searchText"] = value;
                                     await fetchUserData();
@@ -95,42 +98,14 @@ class _UserListScreenState extends State<UserListScreen> {
                                     Icons.person,
                                     color: AppColors.primary,
                                   ),
-                                  value: "",
+                                  value: queryStrings["roleId"],
                                   items: getDropdownItemList(),
                                   onChanged: (value) async {
                                     queryStrings["roleId"] = value;
                                     await fetchUserData();
                                   },
                                 ),
-                              ),
-                              SizedBox(
-                                width: 250,
-                                child: DropdownButtonFormField(
-                                  icon: Icon(
-                                    Icons.check_circle,
-                                    color: AppColors.primary,
-                                  ),
-                                  value: "",
-                                  items: [
-                                    DropdownMenuItem(
-                                      value: "",
-                                      child: Text("-- Status --"),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: "true",
-                                      child: Text("Aktivan"),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: "false",
-                                      child: Text("Neaktivan"),
-                                    ),
-                                  ],
-                                  onChanged: (value) async {
-                                    queryStrings["isActive"] = value;
-                                    await fetchUserData();
-                                  },
-                                ),
-                              ),
+                              )
                             ],
                           ),
                         ),
@@ -257,8 +232,10 @@ class _UserListScreenState extends State<UserListScreen> {
   }
 
   Future fetchUserData() async {
-    paginatedList = await userProvider.getAll(queryStrings);
+    paginatedList = null;
+    setState(() {});
 
+    paginatedList = await userProvider.getAll(queryStrings);
     setState(() {});
   }
 

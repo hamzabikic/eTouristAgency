@@ -99,14 +99,14 @@ class _AccountScreenState extends State<AccountScreen> {
                                 FormBuilderValidators.required(
                                   errorText: "Ovo polje je obavezno.",
                                 ),
-                                FormBuilderValidators.conditional(
-                                  (value) {
-                                    return !usernameIsValid;
-                                  },
-                                  (value) {
-                                    return "Uneseno korisničko ime se već koristi.";
-                                  },
-                                ),
+                                (value) {
+                                  if (user!.username == value ||
+                                      usernameIsValid) {
+                                    return null;
+                                  } else {
+                                    "Uneseno korisničko ime se već koristi.";
+                                  }
+                                },
                               ]),
                             ),
                             FormBuilderTextField(
@@ -120,14 +120,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                   errorText:
                                       "Email unesen u neispravnom formatu.",
                                 ),
-                                FormBuilderValidators.conditional(
-                                  (value) {
-                                    return !emailIsValid;
-                                  },
-                                  (value) {
+                                (value) {
+                                  if (value == user!.email || emailIsValid) {
+                                    return null;
+                                  } else {
                                     return "Uneseni email se već koristi.";
-                                  },
-                                ),
+                                  }
+                                },
                               ]),
                             ),
                             FormBuilderTextField(
@@ -186,7 +185,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             ElevatedButton(
                               onPressed: buttonEnabled ? updateUser : () {},
                               child: Text("Sačuvaj promjene"),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -202,16 +201,8 @@ class _AccountScreenState extends State<AccountScreen> {
   Future updateUser() async {
     buttonEnabled = false;
     setState(() {});
-
-    if (updateUserFormBuilder.currentState!.fields["email"]!.value !=
-        user!.email) {
-      await validateEmail();
-    }
-
-    if (updateUserFormBuilder.currentState!.fields["username"]!.value !=
-        user!.username) {
-      await validateUsername();
-    }
+    await validateEmail();
+    await validateUsername();
 
     bool isValid = updateUserFormBuilder.currentState!.validate();
 
@@ -229,7 +220,10 @@ class _AccountScreenState extends State<AccountScreen> {
 
     try {
       var response = await userProvider.update(user!.id!, insertModel);
-      await authService.storeCredentials(insertModel["username"], insertModel["password"]);
+      await authService.storeCredentials(
+        insertModel["username"],
+        insertModel["password"],
+      );
       await fetchUserData();
 
       DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {

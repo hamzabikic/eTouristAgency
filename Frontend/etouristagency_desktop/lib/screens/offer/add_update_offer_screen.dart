@@ -58,6 +58,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   late final bool isRoomUpdateEnabled;
   late final bool isInactiveStatus;
   String photoErrorMessage = "";
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -603,14 +604,33 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                               SizedBox(width: 20),
                               !isInactiveStatus
                                   ? ElevatedButton(
-                                      onPressed: () async {
-                                        await addOffer();
-                                      },
-                                      child: Text(
-                                        widget.offer == null
-                                            ? "Sačuvaj kao skicu"
-                                            : "Sačuvaj promjene",
-                                      ),
+                                      onPressed: _isProcessing
+                                          ? null
+                                          : () async {
+                                              await addOffer();
+                                            },
+                                      child: !_isProcessing
+                                          ? Text(
+                                              widget.offer == null
+                                                  ? "Sačuvaj kao skicu"
+                                                  : "Sačuvaj promjene",
+                                            )
+                                          : Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: SizedBox(
+                                                height: 20,
+                                                width: 20,
+                                                child: Transform.scale(
+                                                  scale: 0.6,
+                                                  child:
+                                                      const CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
                                     )
                                   : SizedBox(),
                             ],
@@ -1069,6 +1089,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
       return;
     }
 
+    _isProcessing = true;
+    setState(() {});
+
     formBuilderKey.currentState!.save();
 
     List<Map<String, dynamic>> roomJsons = [];
@@ -1154,6 +1177,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
         );
       }
     }
+
+    _isProcessing = false;
+    setState(() {});
   }
 
   bool validateOfferForm() {
@@ -1182,7 +1208,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
       }
     }
 
-    setState((){});
+    setState(() {});
 
     return isValidForm;
   }

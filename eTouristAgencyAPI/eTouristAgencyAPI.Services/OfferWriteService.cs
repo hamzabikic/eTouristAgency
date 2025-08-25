@@ -16,8 +16,8 @@ namespace eTouristAgencyAPI.Services
         private readonly Guid? _userId;
 
         public OfferWriteService(eTouristAgencyDbContext dbContext,
-                                IMapper mapper,
-                                IUserContextService userContextService) : base(dbContext, mapper)
+                                 IMapper mapper,
+                                 IUserContextService userContextService) : base(dbContext, mapper)
         {
             _userId = userContextService.GetUserId();
         }

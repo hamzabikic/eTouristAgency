@@ -27,13 +27,7 @@ class UserProvider extends BaseProvider<User> {
     var url = Uri.parse(
       "${super.controllerUrl}/Exists?email=${email}&username=${username}",
     );
-    var response = await http.get(
-      url,
-      headers: {
-        "Authorization": (await authService.getBasicKey())!,
-        "accept": "text/plain",
-      },
-    );
+    var response = await http.get(url, headers: {"accept": "text/plain"});
 
     if (response.statusCode != 200) throw Exception(response.body);
 
@@ -80,6 +74,38 @@ class UserProvider extends BaseProvider<User> {
     );
 
     if (response.statusCode != 200) throw Exception(response.body);
+  }
+
+  Future updateFirebaseToken(Map<String, dynamic> json) async {
+    var url = Uri.parse("${controllerUrl}/firebase-token");
+
+    var response = await http.patch(
+      url,
+      body: jsonEncode(json),
+      headers: {
+        "Authorization": (await authService.getBasicKey())!,
+        "Content-Type": "application/json",
+      },
+    );
+
+    if (response.statusCode != 200) throw Exception(response.body);
+  }
+
+  @override
+  Future add(Map<String, dynamic> insertModel) async {
+    var url = Uri.parse("${controllerUrl}");
+
+    var response = await http.post(
+      url,
+      body: jsonEncode(insertModel),
+      headers: {"Content-Type": "application/json"},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Dogodila se greška prilikom registracije: ${response.body}",
+      );
+    }
   }
 
   @override

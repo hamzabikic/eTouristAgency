@@ -43,6 +43,9 @@ public partial class User
 
     public bool IsVerified { get; set; }
 
+    [StringLength(255)]
+    public string? FirebaseToken { get; set; }
+
     [InverseProperty("CreatedByNavigation")]
     public virtual ICollection<City> CityCreatedByNavigations { get; set; } = new List<City>();
 
@@ -138,6 +141,9 @@ public partial class User
 
     [InverseProperty("ModifiedByNavigation")]
     public virtual ICollection<RoomType> RoomTypeModifiedByNavigations { get; set; } = new List<RoomType>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserTag> UserTags { get; set; } = new List<UserTag>();
 
     [ForeignKey("UserId")]
     [InverseProperty("Users")]

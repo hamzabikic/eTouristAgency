@@ -8,6 +8,7 @@ import 'package:etouristagency_desktop/screens/city/add_update_city_dialog.dart'
 import 'package:etouristagency_desktop/screens/country/add_update_country_dialog.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class CountryListScreen extends StatefulWidget {
   const CountryListScreen({super.key});
@@ -65,7 +66,9 @@ class _CountryListScreenState extends State<CountryListScreen> {
                                 children: [
                                   SizedBox(
                                     width: 250,
-                                    child: TextField(
+                                    child: FormBuilderTextField(
+                                      name: "",
+                                      initialValue: queryStrings["searchText"],
                                       decoration: InputDecoration(
                                         labelText: "Pretraga",
                                         helperText: "Naziv države",
@@ -162,8 +165,10 @@ class _CountryListScreenState extends State<CountryListScreen> {
   }
 
   Future fetchData() async {
-    paginatedList = await countryProvider.getAll(queryStrings);
+    paginatedList = null;
+    setState((){});
 
+    paginatedList = await countryProvider.getAll(queryStrings);
     setState(() {});
   }
 

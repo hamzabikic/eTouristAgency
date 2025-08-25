@@ -69,7 +69,7 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                     separatorBuilder: (context, index) => SizedBox(height: 15),
                     itemBuilder: (context, index) {
                       if (index == paginatedList!.listOfRecords.length) {
-                        return DialogHelper.openSpinner(context, "");
+                        return SizedBox(height: 100, child: DialogHelper.openSpinner(context, ""));
                       }
 
                       var offer = paginatedList!.listOfRecords[index];

@@ -95,14 +95,13 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                           FormBuilderValidators.required(
                             errorText: "Ovo polje je obavezno.",
                           ),
-                          FormBuilderValidators.conditional(
-                            (value) {
-                              return !usernameIsValid;
-                            },
-                            (value) {
+                          (value) {
+                            if (value == widget.user?.username || usernameIsValid) {
+                              return null;
+                            } else {
                               return "Uneseno korisničko ime se već koristi.";
-                            },
-                          ),
+                            }
+                          },
                         ]),
                       ),
                       FormBuilderTextField(
@@ -115,14 +114,13 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                           FormBuilderValidators.email(
                             errorText: "Email unesen u neispravnom formatu.",
                           ),
-                          FormBuilderValidators.conditional(
-                            (value) {
-                              return !emailIsValid;
-                            },
-                            (value) {
+                          (value) {
+                            if (value == widget.user?.email || emailIsValid) {
+                              return null;
+                            } else {
                               return "Uneseni email se već koristi.";
-                            },
-                          ),
+                            }
+                          },
                         ]),
                       ),
                       FormBuilderTextField(
@@ -188,10 +186,12 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                             )
                           : SizedBox(),
                       SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: deactivateAccount,
-                        child: Text("Deaktiviraj nalog"),
-                      ),
+                      widget.user != null
+                          ? ElevatedButton(
+                              onPressed: deactivateAccount,
+                              child: Text("Deaktiviraj nalog"),
+                            )
+                          : SizedBox(),
                       SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: buttonEnabled ? addUpdateUser : () {},
@@ -309,11 +309,17 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
       () async {
         await userProvider.deactivate(widget.user!.id!);
         Navigator.of(context).pop();
-        DialogHelper.openDialog(context, "Uspješno deaktiviran korisnički nalog", (){
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> UserListScreen()));
-        });
+        DialogHelper.openDialog(
+          context,
+          "Uspješno deaktiviran korisnički nalog",
+          () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => UserListScreen()),
+            );
+          },
+        );
       },
     );
   }

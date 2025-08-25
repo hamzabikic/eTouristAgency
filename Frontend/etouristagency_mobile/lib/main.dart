@@ -1,9 +1,32 @@
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/screens/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+RemoteMessage? remoteMessage;
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  RemoteMessage? message = await FirebaseMessaging.instance.getInitialMessage();
+  if (message != null) {
+    _handleNotification(message);
+  }
+
   runApp(const MyApp());
+}
+
+void _handleNotification(RemoteMessage message) {
+  remoteMessage = message;
 }
 
 class MyApp extends StatelessWidget {
@@ -13,6 +36,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -32,7 +56,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
       ),
-      home: LoginScreen(),
+      home: LoginScreen(remoteMessage: remoteMessage),
     );
   }
 }

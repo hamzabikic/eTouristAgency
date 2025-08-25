@@ -13,7 +13,7 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
-  bool buttonEnabled = true;
+  bool _isProcessing = false;
   bool emailIsValid = true;
   bool usernameIsValid = true;
   String? operationErrorMessage;
@@ -114,7 +114,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               errorText: "Email unesen u neispravnom formatu.",
                             ),
                             (value) {
-                              if (!usernameIsValid) {
+                              if (!emailIsValid) {
                                 return "Uneseni email se već koristi.";
                               } else {
                                 return null;
@@ -176,8 +176,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: buttonEnabled ? registration : () {},
-                          child: Text("Registruj se"),
+                          onPressed: !_isProcessing ? registration : null,
+                          child: !_isProcessing
+                              ? Text("Registruj se")
+                              : SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: Transform.scale(
+                                    scale: 0.6,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -207,17 +218,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future registration() async {
-    buttonEnabled = false;
-    setState(() {});
     await validateEmail();
     await validateUsername();
     bool isValid = formBuilderKey.currentState!.validate();
 
     if (!isValid) {
-      buttonEnabled = true;
       setState(() {});
       return;
     }
+
+    _isProcessing = true;
+    setState((){});
 
     formBuilderKey.currentState!.save();
     var inserModel = formBuilderKey.currentState!.value;
@@ -252,7 +263,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       setState(() {});
     }
 
-    buttonEnabled = true;
+    _isProcessing = false;
     setState(() {});
     return;
   }

@@ -19,6 +19,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   late final VerificationCodeProvider verificationCodeProvider;
   String? operationErrorMessage;
   String? dialogOperationErrorMessage;
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -74,8 +75,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: sendResetPasswordVerificationCode,
-                        child: Text("Pošalji zahtjev"),
+                        onPressed: !_isProcessing
+                            ? sendResetPasswordVerificationCode
+                            : null,
+                        child: !_isProcessing
+                            ? Text("Pošalji zahtjev")
+                            : SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: Transform.scale(
+                                  scale: 0.6,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -111,6 +125,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
+    _isProcessing = true;
+    setState(() {});
+
     try {
       await verificationCodeProvider.addResetPasswordVerification(
         emailEditingController.text,
@@ -121,88 +138,129 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       operationErrorMessage = ex.toString();
     }
 
+    _isProcessing = false;
     setState(() {});
   }
 
   void openVerificationDialog() {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        child: SizedBox(
-          height: 300,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Zahtjev za promjenu lozinke",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.blueGrey,
-                  ),
-                ),
-                SizedBox(height: 50),
-                dialogOperationErrorMessage != null
-                    ? Text(
-                        dialogOperationErrorMessage!,
-                        style: TextStyle(color: AppColors.darkRed),
-                      )
-                    : Text(
-                        "Verifikacijski kod je poslan na Vašu email adresu. Ovdje ga unesite.",
-                        style: TextStyle(color: Colors.blueGrey),
-                        textAlign: TextAlign.center,
+      builder: (context) {
+        String? localErrorMessage = dialogOperationErrorMessage;
+        bool isActionInProcess = false;
+        return StatefulBuilder(
+          builder: (context, setStateDialog) => Dialog(
+            child: SizedBox(
+              height: 300,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Zahtjev za promjenu lozinke",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blueGrey,
                       ),
-                TextField(
-                  controller: verificationCodeEditingController,
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(labelText: "Verifikacijski kod"),
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (verificationCodeEditingController.text.isEmpty) {
-                      dialogOperationErrorMessage =
-                          "Polje za unos verifikacijskog koda je obavezan.";
-
-                      setState(() {});
-                    }
-                    try {
-                      var verificationKeyExists = await verificationCodeProvider
-                          .resetPasswordVerificationCodeExists(
-                            verificationCodeEditingController.text,
-                          );
-
-                      if (!verificationKeyExists) {
-                        dialogOperationErrorMessage =
-                            "Uneseni verifikacijski kod nije validan.";
-                        setState(() {});
-                        return;
-                      }
-
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => ResetPasswordScreen(
-                            emailEditingController.text,
-                            verificationCodeEditingController.text,
+                    ),
+                    SizedBox(height: 50),
+                    localErrorMessage != null
+                        ? Text(
+                            localErrorMessage!,
+                            style: TextStyle(color: AppColors.darkRed),
+                          )
+                        : Text(
+                            "Verifikacijski kod je poslan na Vašu email adresu. Ovdje ga unesite.",
+                            style: TextStyle(color: Colors.blueGrey),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                      );
-                    } on Exception catch (ex) {
-                      DialogHelper.openDialog(context, ex.toString(), () {
-                        Navigator.of(context).pop();
-                      }, type: DialogType.error);
-                    }
-                  },
-                  child: Text("Potvrdi"),
+                    TextField(
+                      controller: verificationCodeEditingController,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        labelText: "Verifikacijski kod",
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: !isActionInProcess
+                          ? () async {
+                              if (verificationCodeEditingController
+                                  .text
+                                  .isEmpty) {
+                                setStateDialog(() {
+                                  localErrorMessage =
+                                      "Polje za unos verifikacijskog koda je obavezan.";
+                                });
+                                return;
+                              }
+
+                              setStateDialog(() {
+                                isActionInProcess = true;
+                              });
+
+                              try {
+                                var exists = await verificationCodeProvider
+                                    .resetPasswordVerificationCodeExists(
+                                      verificationCodeEditingController.text,
+                                    );
+
+                                if (!exists) {
+                                  setStateDialog(() {
+                                    isActionInProcess = false;
+                                    localErrorMessage =
+                                        "Uneseni verifikacijski kod nije validan.";
+                                  });
+                                  return;
+                                }
+
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) => ResetPasswordScreen(
+                                      emailEditingController.text,
+                                      verificationCodeEditingController.text,
+                                    ),
+                                  ),
+                                );
+                              } on Exception catch (ex) {
+                                DialogHelper.openDialog(
+                                  context,
+                                  ex.toString(),
+                                  () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  type: DialogType.error,
+                                );
+
+                                setStateDialog(() {
+                                  isActionInProcess = false;
+                                });
+                              }
+                            }
+                          : null,
+                      child: isActionInProcess
+                          ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: Transform.scale(
+                                scale: 0.6,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : Text("Potvrdi"),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

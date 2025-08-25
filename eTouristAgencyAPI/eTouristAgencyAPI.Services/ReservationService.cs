@@ -1,4 +1,5 @@
-﻿using eTouristAgencyAPI.Models.RequestModels.Reservation;
+﻿using EasyNetQ;
+using eTouristAgencyAPI.Models.RequestModels.Reservation;
 using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.ResponseModels.Reservation;
 using eTouristAgencyAPI.Models.SearchModels;
@@ -6,8 +7,11 @@ using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
+using eTouristAgencyAPI.Services.Messaging.Firebase;
+using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace eTouristAgencyAPI.Services
 {
@@ -15,20 +19,31 @@ namespace eTouristAgencyAPI.Services
     {
         private readonly IPassengerService _passengerService;
         private readonly IUserContextService _userContextService;
+        private readonly IEmailContentService _emailContentService;
+        private readonly IUserTagService _userTagService;
         private readonly Guid? _userId;
 
         public ReservationService(eTouristAgencyDbContext dbContext,
                                   IMapper mapper,
                                   IUserContextService userContextService,
-                                  IPassengerService passengerService) : base(dbContext, mapper)
+                                  IPassengerService passengerService,
+                                  IEmailContentService emailContentService,
+                                  IUserTagService userTagService) : base(dbContext, mapper)
         {
             _userId = userContextService.GetUserId();
             _userContextService = userContextService;
             _passengerService = passengerService;
+            _emailContentService = emailContentService;
+            _userTagService = userTagService;
         }
 
         protected override async Task BeforeInsertAsync(AddReservationRequest insertModel, Reservation dbModel)
         {
+            if (!(await _dbContext.Users.FindAsync(_userId)).IsVerified)
+            {
+                throw new Exception("You have to verify your e-mail for this action.");
+            }
+
             if (!insertModel.PassengerList.Any()) throw new Exception("You did not provide passengers.");
 
             var room = await _dbContext.Rooms.Include(x => x.RoomType)
@@ -52,6 +67,8 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Room with provided id is already included in other reservation");
             }
 
+            if (insertModel.PassengerList.Count > room.RoomType.RoomCapacity) throw new Exception("You provided number of passengers higher than room capacity");
+
             var numberOfKids = insertModel.PassengerList.Where(x => x.DateOfBirth > DateTime.Now.AddYears(-18)).Count();
             var discount = room.Offer.OfferDiscounts.Where(x => x.ValidFrom.Date <= DateTime.Now.Date && DateTime.Now.Date <= x.ValidTo.Date).FirstOrDefault();
             var discountPercent = discount == null ? 0 : discount.Discount / 100;
@@ -74,6 +91,8 @@ namespace eTouristAgencyAPI.Services
             var reservationResponse = await base.AddAsync(insertModel);
             reservationResponse.Passengers = await _passengerService.AddByReservationIdAsync(reservationResponse.Id, insertModel.PassengerList);
 
+            await _userTagService.AddTagsByUserIdAsync(reservationResponse.Room.OfferId, _userId ?? Guid.Empty);
+
             return reservationResponse;
         }
 
@@ -81,9 +100,19 @@ namespace eTouristAgencyAPI.Services
         {
             if (dbModel.UserId != _userId) throw new Exception("You can only edit reservations created by yourself.");
 
+            if (!(await _dbContext.Users.FindAsync(_userId)).IsVerified)
+            {
+                throw new Exception("You have to verify your e-mail for this action.");
+            }
+
             if (dbModel.ReservationStatusId == AppConstants.FixedReservationStatusCancelled) throw new Exception("You cannot update cancelled reservation.");
 
             if (!updateModel.PassengerList.Any()) throw new Exception("You did not provide passengers.");
+
+            if (updateModel.PassengerList.Count > dbModel.Room.RoomType.RoomCapacity)
+            {
+                throw new Exception("You provided number of passengers higher than room capacity");
+            }
 
             var numberOfKids = updateModel.PassengerList.Where(x => x.DateOfBirth > DateTime.Now.AddYears(-18)).Count();
             var discountPercent = dbModel.OfferDiscount == null ? 0 : dbModel.OfferDiscount.Discount / 100;
@@ -155,7 +184,7 @@ namespace eTouristAgencyAPI.Services
 
             if (!string.IsNullOrEmpty(searchModel.ReservationNoSearchText))
             {
-                queryable = queryable.Where(x=> x.ReservationNo.ToString() == searchModel.ReservationNoSearchText);
+                queryable = queryable.Where(x => x.ReservationNo.ToString() == searchModel.ReservationNoSearchText);
             }
 
             queryable = queryable.OrderByDescending(x => x.CreatedOn);
@@ -180,7 +209,7 @@ namespace eTouristAgencyAPI.Services
             var reservationResponse = await base.GetByIdAsync(id);
 
             reservationResponse.ReservationPayments = await _dbContext.ReservationPayments.Where(x => x.ReservationId == id)
-                                                                                          .OrderBy(x=> x.DisplayOrderWithinReservation)
+                                                                                          .OrderBy(x => x.DisplayOrderWithinReservation)
                                                                                           .Select(x => new ReservationPaymentResponse
                                                                                           {
                                                                                               Id = x.Id
@@ -191,7 +220,7 @@ namespace eTouristAgencyAPI.Services
 
         public async Task AddPaymentAsync(Guid reservationId, UpdateReservationStatusRequest request)
         {
-            var reservation = await _dbContext.Reservations.FindAsync(reservationId);
+            var reservation = await _dbContext.Reservations.Include(x => x.User).Include(x => x.ReservationStatus).FirstOrDefaultAsync(x => x.Id == reservationId);
 
             if (reservation == null)
             {
@@ -207,6 +236,52 @@ namespace eTouristAgencyAPI.Services
             reservation.PaidAmount = request.PaidAmount;
 
             await _dbContext.SaveChangesAsync();
+
+            reservation = await _dbContext.Reservations.Include(x => x.User).Include(x => x.ReservationStatus).Include(x => x.Room).FirstAsync(x => x.Id == reservationId);
+            await SendReservationStatusChangeNotificationsAsync(reservation);
+        }
+
+        private async Task SendReservationStatusChangeNotificationsAsync(Reservation reservation)
+        {
+            if (!reservation.User.IsActive) return;
+
+            var emailTitle = await _emailContentService.GetReservationStatusChangeTitleAsync();
+            var emailText = await _emailContentService.GetReservationStatusChangeTextAsync(reservation);
+            var emailNotification = new RabbitMQEmailNotification
+            {
+                Title = emailTitle,
+                Html = emailText,
+                Recipients = [reservation.User.Email]
+            };
+
+            RabbitMQFirebaseNotification firebaseNotification = null;
+
+            if (reservation.User.FirebaseToken != null)
+            {
+                var notificationTitle = "Promjena statusa rezervacije";
+                var notificationText = $"Status Vaše rezervacije sa brojem {reservation.ReservationNo} je promijenjen. Kliknite ovdje za više detalja.";
+
+                firebaseNotification = new RabbitMQFirebaseNotification
+                {
+                    FirebaseTokens = [reservation.User.FirebaseToken],
+                    Title = notificationTitle,
+                    Text = notificationText,
+                    Data = new FirebaseNotificationData
+                    {
+                        ScreenName = MobileAppScreenNames.AddUpdateReservationScreen,
+                        ReservationId = reservation.Id,
+                        OfferId = reservation.Room.OfferId,
+                        RoomId = reservation.RoomId
+                    }
+                };
+            }
+
+            var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
+            bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+            {
+                FirebaseNotification = firebaseNotification,
+                EmailNotification = emailNotification
+            }));
         }
 
         public async Task CancelReservationAsync(Guid reservationId)
@@ -223,7 +298,13 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("You cannot cancel the reservation with the provided ID.");
             }
 
+            if (!(await _dbContext.Users.FindAsync(_userId)).IsVerified)
+            {
+                throw new Exception("You have to verify your e-mail for this action.");
+            }
+
             reservation.ReservationStatusId = AppConstants.FixedReservationStatusCancelled;
+            reservation.CancellationDate = DateTime.Now;
 
             await _dbContext.SaveChangesAsync();
         }
