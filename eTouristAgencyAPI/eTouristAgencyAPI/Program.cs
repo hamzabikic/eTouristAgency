@@ -68,7 +68,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<eTouristAgencyDbContext>();
-    //db.Database.Migrate();
+    db.Database.Migrate();
     DatabaseSeeder.SeedDatabase(db);
 }
 
