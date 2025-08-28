@@ -176,7 +176,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                                   MaterialPageRoute(
                                                     builder: (context) =>
                                                         AddUpdateOfferScreen(
-                                                          offer: widget.offer,
+                                                          offerId: widget.offer.id,
                                                         ),
                                                   ),
                                                 );
@@ -411,8 +411,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                         SizedBox(
                                           width: 300,
                                           child: FormBuilderTextField(
-                                            enabled: widget.offer
-                                                .isReservationAndOfferEditEnabled(),
+                                            enabled: reservation!.isEditable!,
                                             inputFormatters: <TextInputFormatter>[
                                               FilteringTextInputFormatter.allow(
                                                 RegExp(r'^\d+\.?\d{0,2}'),
@@ -440,8 +439,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                         SizedBox(
                                           width: 300,
                                           child: FormBuilderDropdown(
-                                            enabled: widget.offer
-                                                .isReservationAndOfferEditEnabled(),
+                                            enabled: reservation!.isEditable!,
                                             items:
                                                 getReservationStatusDropdownItems(),
                                             style: TextStyle(
@@ -480,7 +478,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                                   openReservationReviewDialog,
                                             )
                                           : SizedBox(),
-                                      widget.offer.isReservationAndOfferEditEnabled()
+                                      reservation!.isEditable!
                                           ? ElevatedButton(
                                               child: Text("Sačuvaj promjene"),
                                               onPressed: saveChanges,

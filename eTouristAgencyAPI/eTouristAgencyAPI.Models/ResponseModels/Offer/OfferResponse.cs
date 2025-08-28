@@ -41,6 +41,10 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Offer
 
         public int RemainingSpots { get; set; }
 
+        public bool IsEditable { get; set; }
+
+        public bool IsReviewable { get; set; }
+
         public EntityCodeValueResponse BoardType { get; set; }
 
         public HotelResponse Hotel { get; set; }

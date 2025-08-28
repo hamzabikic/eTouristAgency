@@ -1,11 +1,17 @@
 import 'package:etouristagency_mobile/consts/app_colors.dart';
+import 'package:etouristagency_mobile/consts/screen_names.dart';
+import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/login_screen.dart';
+import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
+import 'package:etouristagency_mobile/screens/reservation/add_update_reservation_screen.dart';
+import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 RemoteMessage? remoteMessage;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+bool isFirebaseInitialized = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,14 +25,12 @@ void main() async {
 
   RemoteMessage? message = await FirebaseMessaging.instance.getInitialMessage();
   if (message != null) {
-    _handleNotification(message);
+    remoteMessage = message;
   }
 
-  runApp(const MyApp());
-}
+  await initializeFirebase();
 
-void _handleNotification(RemoteMessage message) {
-  remoteMessage = message;
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -56,7 +60,61 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
       ),
-      home: LoginScreen(remoteMessage: remoteMessage),
+      home: LoginScreen(),
+    );
+  }
+}
+
+Future initializeFirebase() async {
+  var authService = AuthService();
+
+  if (!(await authService.isLoged())) {
+    return;
+  }
+
+  var userProvider = UserProvider();
+  String? token = await FirebaseMessaging.instance.getToken();
+  await userProvider.updateFirebaseToken({"firebaseToken": token});
+
+  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+    var authServ = AuthService();
+    if (!(await authServ.isLoged())) {
+      return;
+    }
+
+    var userProv = UserProvider();
+    await userProv.updateFirebaseToken({"firebaseToken": newToken});
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    navigateOnNotification(message);
+  });
+
+  isFirebaseInitialized = true;
+}
+
+void navigateOnNotification(message) {
+  final data = message.data;
+  final screenName = data['ScreenName'];
+  final offerId = data['OfferId'];
+  final roomId = data['RoomId'];
+  final reservationId = data['ReservationId'];
+
+  if (screenName == ScreenNames.offerDetailsScreen) {
+    navigatorKey.currentState?.pushReplacement(
+      MaterialPageRoute(
+        builder: (context) =>
+            OfferDetailsScreen(ScreenNames.offerListScreen, offerId),
+      ),
+    );
+  }
+
+  if (screenName == ScreenNames.addUpdateReservationScreen) {
+    navigatorKey.currentState?.pushReplacement(
+      MaterialPageRoute(
+        builder: (context) =>
+            AddUpdateReservationScreen(offerId, roomId, reservationId),
+      ),
     );
   }
 }

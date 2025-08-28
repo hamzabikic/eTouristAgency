@@ -7,10 +7,8 @@ class OfferDiscount {
   DateTime? validFrom;
   DateTime? validTo;
   EntityCodeValue? discountType;
-
-  bool isUpdateEnabled() {
-    return DateTime.now().isBefore(validFrom ?? DateTime.now());
-  }
+  bool? isEditable;
+  bool? isRemovable;
 
   OfferDiscount({
     this.id,
@@ -19,6 +17,8 @@ class OfferDiscount {
     this.validFrom,
     this.validTo,
     this.discountType,
+    this.isEditable,
+    this.isRemovable
   });
 
   factory OfferDiscount.fromJson(Map<String, dynamic> json) {
@@ -31,6 +31,8 @@ class OfferDiscount {
       discountType: json["discountType"] != null
           ? EntityCodeValue.fromJson(json["discountType"])
           : null,
+      isEditable: json["isEditable"],
+      isRemovable: json["isRemovable"]
     );
   }
 

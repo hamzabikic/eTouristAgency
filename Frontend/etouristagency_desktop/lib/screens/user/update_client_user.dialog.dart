@@ -14,6 +14,8 @@ class UpdateClientUserDialog extends StatefulWidget {
 
 class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
   late final UserProvider userProvider;
+  bool _isVerificationInProcess = false;
+  bool _isResetPasswordInProcess = false;
 
   @override
   void initState() {
@@ -52,13 +54,41 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () async {
-                        await userProvider.resetPassword(widget._user.id!);
-                        DialogHelper.openDialog(context, "Uspješno resetovanje lozinke", (){
-                          Navigator.of(context).pop();
-                        });
-                      },
-                      child: Text("Resetuj lozinku"),
+                      onPressed: !_isResetPasswordInProcess
+                          ? () async {
+                              _isResetPasswordInProcess = true;
+                              setState(() {});
+
+                              await userProvider.resetPassword(
+                                widget._user.id!,
+                              );
+                              DialogHelper.openDialog(
+                                context,
+                                "Uspješno resetovanje lozinke",
+                                () {
+                                  Navigator.of(context).pop();
+                                },
+                              );
+
+                              _isResetPasswordInProcess = false;
+                              setState(() {});
+                            }
+                          : null,
+                      child: !_isResetPasswordInProcess
+                          ? Text("Resetuj lozinku")
+                          : Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: Transform.scale(
+                                  scale: 0.6,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
                     ),
                     SizedBox(height: 20),
                     TextField(
@@ -80,18 +110,40 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
                     SizedBox(height: 20),
                     !widget._user.isVerified!
                         ? ElevatedButton(
-                            onPressed: () async {
-                              await userProvider.verify(widget._user.id!);
-                              await updateUserData();
-                              DialogHelper.openDialog(
-                                context,
-                                "Uspješna verifikacija korisnika",
-                                () {
-                                  Navigator.of(context).pop();
-                                },
-                              );
-                            },
-                            child: Text("Verifikuj email"),
+                            onPressed: !_isVerificationInProcess
+                                ? () async {
+                                    _isVerificationInProcess = true;
+                                    setState(() {});
+
+                                    await userProvider.verify(widget._user.id!);
+                                    await updateUserData();
+                                    DialogHelper.openDialog(
+                                      context,
+                                      "Uspješna verifikacija korisnika",
+                                      () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    );
+
+                                    _isVerificationInProcess = false;
+                                    setState(() {});
+                                  }
+                                : null,
+                            child: !_isVerificationInProcess
+                                ? Text("Verifikuj email")
+                                : Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: Transform.scale(
+                                        scale: 0.6,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                           )
                         : SizedBox(),
                   ],

@@ -187,6 +187,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                               DataColumn(label: Text("Hotel")),
                               DataColumn(label: Text("Broj noći")),
                               DataColumn(label: Text("Prevoznici")),
+                              DataColumn(label: Text("Status")),
+                              DataColumn(label: Text("Preostalo mjesta")),
                               DataColumn(label: SizedBox()),
                               DataColumn(label: SizedBox()),
                               DataColumn(label: SizedBox()),
@@ -220,6 +222,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                         ),
                                       ),
                                       DataCell(Text(x.carriers ?? "")),
+                                      DataCell(Text(x.offerStatus?.name ?? "")),
+                                      DataCell(Text(x.remainingSpots?.toString() ?? "")),
                                       DataCell(
                                         ElevatedButton(
                                           child: Text("Uredi"),
@@ -232,7 +236,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                               MaterialPageRoute(
                                                 builder: (context) =>
                                                     AddUpdateOfferScreen(
-                                                      offer: offer,
+                                                      offerId: offer.id,
                                                     ),
                                               ),
                                             );
@@ -255,7 +259,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                         ),
                                       ),
                                        DataCell(
-                                        x.isReviewsButtonEnabled() ? ElevatedButton(
+                                        x.isReviewable! ? ElevatedButton(
                                           child: Text("Recenzije"),
                                           onPressed: () {
                                             Navigator.of(

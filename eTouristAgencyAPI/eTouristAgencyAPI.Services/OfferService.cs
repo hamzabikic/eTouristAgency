@@ -1,8 +1,8 @@
 ﻿using EasyNetQ;
 using eTouristAgencyAPI.Models.RequestModels.Offer;
-using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.ResponseModels.Offer;
 using eTouristAgencyAPI.Models.SearchModels;
+using eTouristAgencyAPI.Services.Configuration;
 using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
@@ -11,6 +11,7 @@ using eTouristAgencyAPI.Services.Messaging.Firebase;
 using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace eTouristAgencyAPI.Services
@@ -21,18 +22,21 @@ namespace eTouristAgencyAPI.Services
         private readonly IUserContextService _userContextService;
         private readonly IOfferContentBasedService _offerContentBasedService;
         private readonly IEmailContentService _emailContentService;
+        private readonly IBus _bus;
 
         public OfferService(eTouristAgencyDbContext dbContext,
                             IMapper mapper,
                             BaseOfferStatusService baseOfferStatusService,
                             IOfferContentBasedService offerContentBasedService,
                             IEmailContentService emailContentService,
-                            IUserContextService userContextService) : base(dbContext, mapper)
+                            IUserContextService userContextService,
+                            IBus bus) : base(dbContext, mapper)
         {
             _baseOfferStatusService = baseOfferStatusService;
             _userContextService = userContextService;
             _offerContentBasedService = offerContentBasedService;
             _emailContentService = emailContentService;
+            _bus = bus;
         }
 
         public override async Task<OfferResponse> AddAsync(AddOfferRequest insertModel)
@@ -49,8 +53,6 @@ namespace eTouristAgencyAPI.Services
 
             if (offer == null) throw new Exception("Offer with provided id is not found.");
 
-            if (offer.TripStartDate.Date <= DateTime.Now.Date) throw new Exception("Currently, you cannot update offer.");
-
             var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
 
             return await service.UpdateAsync(id, updateModel);
@@ -61,8 +63,6 @@ namespace eTouristAgencyAPI.Services
             var offer = await _dbContext.Offers.FindAsync(id);
 
             if (offer == null) throw new Exception("Offer with provided id is not found.");
-
-            if (offer.TripStartDate.Date <= DateTime.Now.Date) throw new Exception("Currently, you cannot update offer status.");
 
             var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
 
@@ -108,8 +108,7 @@ namespace eTouristAgencyAPI.Services
                 }
             };
 
-            var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
-            bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+            _bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
             {
                 EmailNotification = emailNotification,
                 FirebaseNotification = firebaseNotification
@@ -121,8 +120,6 @@ namespace eTouristAgencyAPI.Services
             var offer = await _dbContext.Offers.FindAsync(id);
 
             if (offer == null) throw new Exception("Offer with provided id is not found.");
-
-            if (offer.TripStartDate.Date <= DateTime.Now.Date) throw new Exception("Currently, you cannot update offer status.");
 
             var service = await _baseOfferStatusService.GetServiceAsync(offer.OfferStatusId);
 
@@ -146,8 +143,7 @@ namespace eTouristAgencyAPI.Services
             var offer = await _dbContext.Offers.FindAsync(id);
 
             if (offer == null || (!_userContextService.UserHasRole(Roles.Admin) &&
-                                  offer.OfferStatusId != AppConstants.FixedOfferStatusActive &&
-                                  offer.OfferStatusId != AppConstants.FixedOfferStatusInactive))
+                                  offer.OfferStatusId == AppConstants.FixedOfferStatusDraft))
             {
                 throw new Exception("Offer with provided id is not found.");
             }
@@ -259,18 +255,28 @@ namespace eTouristAgencyAPI.Services
         {
             var firstMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeFirstMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
             var lastMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
-            var discount = firstMinuteDiscount?.Discount ?? lastMinuteDiscount?.Discount ?? 0;
-
             dbModel.IsLastMinuteDiscountActive = lastMinuteDiscount != null;
             dbModel.IsFirstMinuteDiscountActive = firstMinuteDiscount != null;
-
+            
+            var discount = firstMinuteDiscount?.Discount ?? lastMinuteDiscount?.Discount ?? 0;
             var minPricePerPerson = dbModel.Rooms.Min(y => y.PricePerPerson);
-
             dbModel.MinimumPricePerPerson = minPricePerPerson - minPricePerPerson * (discount / 100);
-            var quantity = dbModel.Rooms.Sum(x => x.Quantity * x.RoomType.RoomCapacity);
-            var reservedQuantity = dbModel.Rooms.Where(x => x.Reservations.Any()).Sum(x => x.Reservations.Count(x => x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) * x.RoomType.RoomCapacity);
 
+            var quantity = dbModel.Rooms.Sum(x => x.Quantity * x.RoomType.RoomCapacity);
+            var reservedQuantity = dbModel.Rooms.Where(x => x.Reservations.Any()).Sum(x => x.Reservations.Count(x => !AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(x.ReservationStatusId)) * x.RoomType.RoomCapacity);
             dbModel.RemainingSpots = quantity - reservedQuantity;
+
+            dbModel.IsEditable = dbModel.OfferStatusId != AppConstants.FixedOfferStatusInactive &&
+                                 dbModel.TripStartDate.Date > DateTime.Now.Date;
+
+            dbModel.IsReviewable = dbModel.OfferStatusId != AppConstants.FixedOfferStatusInactive &&
+                                   dbModel.TripEndDate.Date <= DateTime.Now.Date;
+
+            foreach(var disc in dbModel.OfferDiscounts)
+            {
+                disc.IsEditable = dbModel.IsEditable && disc.ValidTo.Date >= DateTime.Now.Date;
+                disc.IsRemovable = dbModel.IsEditable && disc.ValidFrom.Date > DateTime.Now.Date;
+            }
 
             foreach (var item in dbModel.Rooms)
             {

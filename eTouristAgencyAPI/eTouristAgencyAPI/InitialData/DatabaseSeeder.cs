@@ -8,6 +8,70 @@ namespace eTouristAgencyAPI.InitialData
     {
         static public void SeedDatabase(eTouristAgencyDbContext db)
         {
+            // --- Roles ---
+            if (!db.Roles.Any())
+            {
+                db.Roles.AddRange(
+                    new Role { Id = Guid.Parse("ecc8e410-5e61-493e-a99e-51ade8e1aa1d"), Name = "Admin" },
+                    new Role { Id = Guid.Parse("f193f30a-7406-4e10-b226-dde0ee5f5e57"), Name = "Client" }
+                );
+                db.SaveChanges();
+            }
+
+            // --- Users ---
+            if (!db.Users.Any())
+            {
+                PasswordHasher<User> passwordHasher = new PasswordHasher<User>();
+
+                var oldUser = new User
+                {
+                    Id = new Guid("AE8F4CC0-6E84-41CC-B34A-A5AE8221E785"),
+                    FirstName = "Hamza",
+                    LastName = "Bikić",
+                    Username = "Hamza",
+                    PhoneNumber = "066261961",
+                    Email = "hamza.bikic@edu.fit.ba",
+                    IsActive = true,
+                    IsVerified = true,
+                    Roles = db.Roles.Where(x => x.Name == "Admin").ToList()
+                };
+
+                oldUser.PasswordHash = passwordHasher.HashPassword(oldUser, "hamza123");
+
+                var userDesktop = new User
+                {
+                    Id = Guid.NewGuid(),
+                    FirstName = "Desktop",
+                    LastName = "Test",
+                    Username = "desktop",
+                    PhoneNumber = "000000000",
+                    Email = "izmijeniti_email@gmail.com",
+                    IsActive = true,
+                    IsVerified = true,
+                    Roles = db.Roles.Where(x => x.Name == "Admin").ToList()
+                };
+
+                userDesktop.PasswordHash = passwordHasher.HashPassword(userDesktop, "test");
+
+                var userMobile = new User
+                {
+                    Id = Guid.NewGuid(),
+                    FirstName = "Mobile",
+                    LastName = "Test",
+                    Username = "mobile",
+                    PhoneNumber = "111111111",
+                    Email = "email_izmijeniti@gmail.com",
+                    IsActive = true,
+                    IsVerified = true,
+                    Roles = db.Roles.Where(x => x.Name == "Client").ToList()
+                };
+
+                userMobile.PasswordHash = passwordHasher.HashPassword(userDesktop, "test");
+
+                db.Users.AddRange(userDesktop, userMobile, oldUser);
+                db.SaveChanges();
+            }
+
             // --- Countries ---
             if (!db.Countries.Any())
             {
@@ -56,6 +120,7 @@ namespace eTouristAgencyAPI.InitialData
                     new EntityCodeValue { Id = Guid.Parse("962a3c05-fa18-4183-b0fe-84a3e88fd4aa"), Name = "Otkazano", EntityCodeId = Guid.Parse("0a50e072-8431-46ce-ad96-5972d230f254"), CreatedOn = DateTime.Parse("2025-08-18T16:03:14.7200000"), ModifiedOn = DateTime.Parse("2025-08-18T16:03:27.8730649"), CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"), ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785") },
                     new EntityCodeValue { Id = Guid.Parse("b3ee8a83-4b17-48e4-b547-ad099f03717e"), Name = "Djelimično uplaćeno", EntityCodeId = Guid.Parse("0a50e072-8431-46ce-ad96-5972d230f254"), CreatedOn = DateTime.Parse("2025-08-18T01:03:37.8900000"), ModifiedOn = DateTime.Parse("2025-08-18T01:03:37.8900000") },
                     new EntityCodeValue { Id = Guid.Parse("c55bc19b-7276-416c-8bb1-b7cd78245ac0"), Name = "Nije uplaćeno", EntityCodeId = Guid.Parse("0a50e072-8431-46ce-ad96-5972d230f254"), CreatedOn = DateTime.Parse("2025-08-18T01:03:37.8900000"), ModifiedOn = DateTime.Parse("2025-08-18T01:03:37.8900000") },
+                    new EntityCodeValue { Id = Guid.Parse("F6159BF6-5061-4583-8714-B40BD0A24476"), Name = "Zakašnjela uplata", EntityCodeId = Guid.Parse("0A50E072-8431-46CE-AD96-5972D230F254"), CreatedOn = DateTime.Parse("2025-08-18T01:03:37.8900000"), ModifiedOn = DateTime.Parse("2025-08-18T01:03:37.8900000") },
 
                     // Offer Discount Type (bfae64f5-c544-4f93-b193-034f6d0971d7)
                     new EntityCodeValue { Id = Guid.Parse("d7913839-e8d7-4b66-aa66-38e7bf1f86e1"), Name = "Last Minute", EntityCodeId = Guid.Parse("bfae64f5-c544-4f93-b193-034f6d0971d7"), CreatedOn = DateTime.Parse("2025-07-18T00:10:58.4333333"), ModifiedOn = DateTime.Parse("2025-07-18T00:10:58.4333333") },
@@ -92,55 +157,6 @@ namespace eTouristAgencyAPI.InitialData
                     new RoomType { Id = Guid.Parse("dfe05a3e-80d8-467e-83a5-a103e5eb583a"), Name = "Jednokrevetna", RoomCapacity = 1, CreatedOn = DateTime.Parse("2025-07-20T04:50:56.5800000"), ModifiedOn = DateTime.Parse("2025-07-20T04:51:37.5410229"), CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"), ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785") },
                     new RoomType { Id = Guid.Parse("a57611c4-2585-44c3-a551-b6d080df682d"), Name = "Trokrevetna", RoomCapacity = 3, CreatedOn = DateTime.Parse("2025-07-18T20:04:09.7400000"), ModifiedOn = DateTime.Parse("2025-07-18T20:04:09.7400000") }
                 );
-                db.SaveChanges();
-            }
-
-            // --- Roles ---
-            if (!db.Roles.Any())
-            {
-                db.Roles.AddRange(
-                    new Role { Id = Guid.Parse("ecc8e410-5e61-493e-a99e-51ade8e1aa1d"), Name = "Admin" },
-                    new Role { Id = Guid.Parse("f193f30a-7406-4e10-b226-dde0ee5f5e57"), Name = "Client" }
-                );
-                db.SaveChanges();
-            }
-
-            // --- Users ---
-            if (!db.Users.Any())
-            {
-                PasswordHasher<User> passwordHasher = new PasswordHasher<User>();
-
-                var userDesktop = new User
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "Desktop",
-                    LastName = "Test",
-                    Username = "desktop",
-                    PhoneNumber = "000000000",
-                    Email = "izmijeniti_email@gmail.com",
-                    IsActive = true,
-                    IsVerified = true,
-                    Roles = db.Roles.Where(x => x.Name == "Admin").ToList()
-                };
-
-                userDesktop.PasswordHash = passwordHasher.HashPassword(userDesktop, "test");
-
-                var userMobile = new User
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "Mobile",
-                    LastName = "Test",
-                    Username = "mobile",
-                    PhoneNumber = "111111111",
-                    Email = "email_izmijeniti@gmail.com",
-                    IsActive = true,
-                    IsVerified = true,
-                    Roles = db.Roles.Where(x => x.Name == "Client").ToList()
-                };
-
-                userMobile.PasswordHash = passwordHasher.HashPassword(userDesktop, "test");
-
-                db.Users.AddRange(userDesktop, userMobile);
                 db.SaveChanges();
             }
         }

@@ -1,4 +1,5 @@
-﻿using eTouristAgencyAPI.Services.Configuration;
+﻿using EasyNetQ;
+using eTouristAgencyAPI.Services.Configuration;
 using eTouristAgencyAPI.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,13 @@ namespace eTouristAgencyAPI.Services.IoC
             services.AddTransient<IPassengerService, PassengerService>();
             services.AddTransient<IReservationService, ReservationService>();
             services.AddTransient<IReservationReviewService, ReservationReviewService>();
+            services.AddSingleton<IBus>((provider) =>
+            {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var bus = RabbitHutch.CreateBus($"host={configuration["RabbitMQConfig:Host"]};username={configuration["RabbitMQConfig:Username"]};password={configuration["RabbitMQConfig:Password"]}");
+
+                return bus;
+            });
 
             return services;
         }

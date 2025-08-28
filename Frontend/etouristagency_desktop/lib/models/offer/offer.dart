@@ -2,7 +2,6 @@ import 'package:etouristagency_desktop/models/entity_code_value/entity_code_valu
 import 'package:etouristagency_desktop/models/hotel/hotel.dart';
 import 'package:etouristagency_desktop/models/offer_discount/offer_discount.dart';
 import 'package:etouristagency_desktop/models/room/room.dart';
-import 'package:flutter/material.dart';
 
 class Offer {
   String? id;
@@ -23,20 +22,9 @@ class Offer {
   EntityCodeValue? offerStatus;
   List<OfferDiscount>? offerDiscounts;
   List<Room>? rooms;
-
-  bool isReviewsButtonEnabled() {
-    final now = DateUtils.dateOnly(DateTime.now());
-    final endDate = DateUtils.dateOnly(tripEndDate!);
-
-    return endDate.isBefore(now) || endDate.isAtSameMomentAs(now);
-  }
-
-  bool isReservationAndOfferEditEnabled() {
-    final now = DateUtils.dateOnly(DateTime.now());
-    final startDate = DateUtils.dateOnly(tripStartDate!);
-
-    return now.isBefore(startDate);
-  }
+  bool? isEditable;
+  bool? isReviewable;
+  int? remainingSpots;
 
   Offer(
     this.id,
@@ -57,6 +45,9 @@ class Offer {
     this.offerStatus,
     this.offerDiscounts,
     this.rooms,
+    this.isEditable,
+    this.isReviewable,
+    this.remainingSpots
   );
 
   factory Offer.fromJson(Map<String, dynamic> json) {
@@ -89,6 +80,9 @@ class Offer {
       json["rooms"] != null
           ? (json["rooms"] as List).map((x) => Room.fromJson(x)).toList()
           : null,
+      json["isEditable"],
+      json["isReviewable"],
+      json["remainingSpots"]
     );
   }
 

@@ -72,4 +72,10 @@ public partial class Reservation
     [ForeignKey("UserId")]
     [InverseProperty("ReservationUsers")]
     public virtual User User { get; set; } = null!;
+
+    [NotMapped]
+    public bool IsEditable { get; set; }
+
+    [NotMapped]
+    public bool IsReviewable { get; set; }
 }

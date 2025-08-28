@@ -22,7 +22,7 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
   late final UserProvider userProvider;
   late final RoleProvider roleProvider;
   List<Role>? roleList;
-  bool buttonEnabled = true;
+  bool _isProcessing = false;
   bool emailIsValid = true;
   bool usernameIsValid = true;
   String? operationErrorMessage;
@@ -96,7 +96,8 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                             errorText: "Ovo polje je obavezno.",
                           ),
                           (value) {
-                            if (value == widget.user?.username || usernameIsValid) {
+                            if (value == widget.user?.username ||
+                                usernameIsValid) {
                               return null;
                             } else {
                               return "Uneseno korisničko ime se već koristi.";
@@ -194,8 +195,22 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                           : SizedBox(),
                       SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: buttonEnabled ? addUpdateUser : () {},
-                        child: Text(widget.user == null ? "Dodaj" : "Sačuvaj"),
+                        onPressed: !_isProcessing ? addUpdateUser : null,
+                        child: !_isProcessing
+                            ? Text(widget.user == null ? "Dodaj" : "Sačuvaj")
+                            : Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: Transform.scale(
+                                    scale: 0.6,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -209,17 +224,16 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
   }
 
   Future addUpdateUser() async {
-    buttonEnabled = false;
-    setState(() {});
     await validateEmail();
     await validateUsername();
     bool isValid = addUserFormBuilderKey.currentState!.validate();
 
     if (!isValid) {
-      buttonEnabled = true;
-      setState(() {});
       return;
     }
+
+    _isProcessing = true;
+    setState(() {});
 
     addUserFormBuilderKey.currentState!.save();
     var insertModel = Map<String, dynamic>.from(
@@ -245,19 +259,19 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
           );
         },
       );
-
-      return;
     } on Exception catch (ex) {
       operationErrorMessage = ex.toString();
-      setState(() {});
     }
 
-    buttonEnabled = true;
+    _isProcessing = false;
     setState(() {});
     return;
   }
 
   Future validateUsername() async {
+    if (addUserFormBuilderKey.currentState!.fields["username"]!.value == null)
+      return;
+
     usernameIsValid = !(await checkEmailAndUsername(
       "",
       addUserFormBuilderKey.currentState!.fields["username"]!.value ?? "",
@@ -266,6 +280,9 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
   }
 
   Future validateEmail() async {
+    if (addUserFormBuilderKey.currentState!.fields["email"]!.value == null)
+      return;
+
     emailIsValid = !(await checkEmailAndUsername(
       addUserFormBuilderKey.currentState!.fields["email"]!.value ?? "",
       "",

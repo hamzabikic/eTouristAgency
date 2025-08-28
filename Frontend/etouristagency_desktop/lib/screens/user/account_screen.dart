@@ -22,7 +22,7 @@ class _AccountScreenState extends State<AccountScreen> {
   bool usernameIsValid = true;
   bool emailIsValid = true;
   User? user = null;
-  bool buttonEnabled = true;
+  bool _isProcessing = false;
   late final UserProvider userProvider;
   late final AuthService authService;
 
@@ -104,7 +104,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                       usernameIsValid) {
                                     return null;
                                   } else {
-                                    "Uneseno korisničko ime se već koristi.";
+                                    return "Uneseno korisničko ime se već koristi.";
                                   }
                                 },
                               ]),
@@ -183,8 +183,23 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                             SizedBox(height: 20),
                             ElevatedButton(
-                              onPressed: buttonEnabled ? updateUser : () {},
-                              child: Text("Sačuvaj promjene"),
+                              onPressed: !_isProcessing ? updateUser : null,
+                              child: !_isProcessing
+                                  ? Text("Sačuvaj promjene")
+                                  : Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: Transform.scale(
+                                          scale: 0.6,
+                                          child:
+                                              const CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ],
                         ),
@@ -199,7 +214,6 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future updateUser() async {
-    buttonEnabled = false;
     setState(() {});
     await validateEmail();
     await validateUsername();
@@ -207,10 +221,11 @@ class _AccountScreenState extends State<AccountScreen> {
     bool isValid = updateUserFormBuilder.currentState!.validate();
 
     if (!isValid) {
-      buttonEnabled = true;
-      setState(() {});
       return;
     }
+
+    _isProcessing = true;
+    setState(() {});
 
     updateUserFormBuilder.currentState!.save();
     var insertModel = Map<String, dynamic>.from(
@@ -230,28 +245,37 @@ class _AccountScreenState extends State<AccountScreen> {
         Navigator.of(context).pop();
       });
     } on Exception catch (ex) {
-      operationErrorMessage = ex.toString();
-      setState(() {});
+      DialogHelper.openDialog(context, ex.toString(), () {
+        Navigator.of(context).pop();
+      }, type: DialogType.error);
     }
-
-    buttonEnabled = true;
+    
+    _isProcessing = false;
     setState(() {});
     return;
   }
 
   Future validateUsername() async {
+    if (updateUserFormBuilder.currentState!.fields["username"]!.value == null)
+      return;
+
     usernameIsValid = !(await checkEmailAndUsername(
       "",
       updateUserFormBuilder.currentState!.fields["username"]!.value ?? "",
     ));
+
     setState(() {});
   }
 
   Future validateEmail() async {
+    if (updateUserFormBuilder.currentState!.fields["email"]!.value == null)
+      return;
+
     emailIsValid = !(await checkEmailAndUsername(
       updateUserFormBuilder.currentState!.fields["email"]!.value ?? "",
       "",
     ));
+
     setState(() {});
   }
 

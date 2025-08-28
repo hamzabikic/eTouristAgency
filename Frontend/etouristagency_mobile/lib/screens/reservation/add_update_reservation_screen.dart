@@ -66,16 +66,15 @@ class _AddUpdateReservationScreenState
   List<ReservationPaymentInfo> loadedPayments = [];
   List<ReservationPaymentInfo> addedPayments = [];
   bool _isProcessStarted = false;
-  bool _isEditingEnabled = true;
-  bool _isReviewEnabled = true;
   late final ReservationReviewProvider reservationReviewProvider;
   Map<String, dynamic> reviewRequestModel = {};
+  bool _isEditable = false;
+  bool _isReviewable = false;
 
   @override
   void initState() {
     if (widget.reservationId == null) {
       addNewPassenger();
-      _isReviewEnabled = false;
     }
     userProvider = UserProvider();
     offerProvider = OfferProvider();
@@ -83,7 +82,6 @@ class _AddUpdateReservationScreenState
     reservationReviewProvider = ReservationReviewProvider();
     fetchOfferData();
     fetchReservationData();
-    fetchReview();
     verifyUser();
     super.initState();
   }
@@ -443,7 +441,7 @@ class _AddUpdateReservationScreenState
                       maxOpenSections: 1,
                       children: getAccordionItems(),
                     ),
-                    _isEditingEnabled &&
+                    _isEditable &&
                             room!.roomType!.roomCapacity! >
                                 formBuilderKeys.length
                         ? Center(
@@ -497,7 +495,7 @@ class _AddUpdateReservationScreenState
                     TextField(
                       minLines: 3,
                       maxLines: 6,
-                      enabled: _isEditingEnabled,
+                      enabled: _isEditable,
                       controller: noteEditingController,
                       decoration: InputDecoration(labelText: "Napomena"),
                     ),
@@ -505,7 +503,7 @@ class _AddUpdateReservationScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        widget.reservationId == null || !_isEditingEnabled
+                        !_isEditable
                             ? SizedBox()
                             : ElevatedButton(
                                 onPressed: cancelReservation,
@@ -514,7 +512,7 @@ class _AddUpdateReservationScreenState
                                   style: TextStyle(color: AppColors.darkRed),
                                 ),
                               ),
-                        _isEditingEnabled
+                        _isEditable
                             ? ElevatedButton(
                                 onPressed: !_isProcessStarted
                                     ? createUpdateReservation
@@ -537,7 +535,7 @@ class _AddUpdateReservationScreenState
                             : SizedBox(),
                       ],
                     ),
-                    _isReviewEnabled
+                    _isReviewable
                         ? Row(
                             children: [
                               ElevatedButton(
@@ -567,21 +565,6 @@ class _AddUpdateReservationScreenState
       offerDocumentInfo = await offerProvider.getOfferDocument(widget.offerId);
     } on Exception catch (ex) {}
 
-    final now = DateUtils.dateOnly(DateTime.now());
-    final deadline = DateUtils.dateOnly(offer!.lastPaymentDeadline!);
-    final tripEnd = DateUtils.dateOnly(offer!.tripEndDate!);
-
-    if (offer!.offerStatusId!.toLowerCase() ==
-            AppConstants.inactiveOfferGuid.toLowerCase() ||
-        deadline.isBefore(now)) {
-      _isEditingEnabled = false;
-    }
-
-    if (offer!.offerStatusId!.toLowerCase() ==
-            AppConstants.inactiveOfferGuid.toLowerCase() ||
-        now.isBefore(tripEnd)) {
-      _isReviewEnabled = false;
-    }
     setState(() {});
   }
 
@@ -634,7 +617,7 @@ class _AddUpdateReservationScreenState
                     child: FormBuilderTextField(name: "id"),
                   ),
                   FormBuilderTextField(
-                    enabled: _isEditingEnabled,
+                    enabled: _isEditable,
                     name: "fullName",
                     decoration: InputDecoration(labelText: "Ime i prezime"),
                     validator: FormBuilderValidators.compose([
@@ -644,7 +627,7 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   FormBuilderDateTimePicker(
-                    enabled: _isEditingEnabled,
+                    enabled: _isEditable,
                     name: "dateOfBirth",
                     decoration: InputDecoration(labelText: "Datum rođenja"),
                     format: DateFormat("dd.MM.yyyy"),
@@ -656,7 +639,7 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   FormBuilderTextField(
-                    enabled: _isEditingEnabled,
+                    enabled: _isEditable,
                     name: "phoneNumber",
                     decoration: InputDecoration(labelText: "Broj telefona"),
                     validator: FormBuilderValidators.compose([
@@ -673,7 +656,7 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   SizedBox(height: 5),
-                  formBuilderKeys.length > 1 && _isEditingEnabled
+                  formBuilderKeys.length > 1 && _isEditable
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -801,9 +784,6 @@ class _AddUpdateReservationScreenState
     var user = User.fromJson(await userProvider.getMe());
 
     if (!user.isVerified!) {
-      _isEditingEnabled = false;
-      _isReviewEnabled = false;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -829,7 +809,13 @@ class _AddUpdateReservationScreenState
   }
 
   Future fetchReservationData() async {
-    if (widget.reservationId == null) return;
+    if (widget.reservationId == null) {
+      _isEditable = true;
+      setState(() {
+        
+      });
+      return;
+    }
 
     reservation = Reservation.fromJson(
       await reservationProvider.getById(widget.reservationId!),
@@ -842,13 +828,10 @@ class _AddUpdateReservationScreenState
       formBuilderKeys.add(GlobalKey<FormBuilderState>());
     }
 
-    await loadReservationPayments();
+    _isEditable = reservation!.isEditable!;
+    _isReviewable = reservation!.isReviewable!;
 
-    if (reservation!.reservationStatusId!.toLowerCase() ==
-        AppConstants.reservationCancelledGuid.toLowerCase()) {
-      _isEditingEnabled = false;
-      _isReviewEnabled = false;
-    }
+    await loadReservationPayments();
 
     setState(() {});
   }
@@ -972,7 +955,7 @@ class _AddUpdateReservationScreenState
       );
     }
 
-    if (_isEditingEnabled) {
+    if (_isEditable) {
       documents.add(
         IconButton(
           icon: Icon(Icons.add_circle, color: AppColors.primary),
@@ -1146,16 +1129,5 @@ class _AddUpdateReservationScreenState
         );
       },
     );
-  }
-
-  Future fetchReview() async {
-    if (widget.reservationId == null) return;
-
-    try {
-      var review = await reservationReviewProvider.getById(
-        widget.reservationId!,
-      );
-      _isReviewEnabled = false;
-    } on Exception catch (ex) {}
   }
 }

@@ -30,6 +30,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
   List<HotelImageInfo>? images;
   GlobalKey<FormBuilderState> addHotelFormBuilder =
       GlobalKey<FormBuilderState>();
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -122,12 +123,26 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           ElevatedButton(
-                            onPressed: addHotel,
-                            child: Text(
-                              widget.hotel == null
-                                  ? "Sačuvaj"
-                                  : "Sačuvaj promjene",
-                            ),
+                            onPressed: !_isProcessing ? addUpdateHotel : null,
+                            child: !_isProcessing
+                                ? Text(
+                                    widget.hotel == null
+                                        ? "Sačuvaj"
+                                        : "Sačuvaj promjene",
+                                  )
+                                : Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: Transform.scale(
+                                        scale: 0.6,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                           ),
                         ],
                       ),
@@ -275,10 +290,13 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
     setState(() {});
   }
 
-  Future addHotel() async {
+  Future addUpdateHotel() async {
     bool isValid = addHotelFormBuilder.currentState!.validate();
 
     if (!isValid) return;
+
+    _isProcessing = true;
+    setState(() {});
 
     addHotelFormBuilder.currentState!.save();
     var formBuilderModel = addHotelFormBuilder.currentState!.value;
@@ -311,6 +329,9 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
         Navigator.of(context).pop();
       }, type: DialogType.error);
     }
+
+    _isProcessing = false;
+    setState(() {});
   }
 
   Future loadHotelImages() async {

@@ -20,6 +20,7 @@ namespace eTouristAgencyAPI.Services
     {
         private readonly IVerificationCodeService _verificationCodeService;
         private readonly IEmailContentService _emailContentService;
+        private readonly IBus _bus;
 
         private readonly bool _isAdmin;
         private readonly Guid? _userId;
@@ -28,13 +29,15 @@ namespace eTouristAgencyAPI.Services
                            IMapper mapper,
                            IUserContextService userContextService,
                            IVerificationCodeService verificationCodeService,
-                           IEmailContentService emailContentService) : base(dbContext, mapper)
+                           IEmailContentService emailContentService,
+                           IBus bus) : base(dbContext, mapper)
         {
             _verificationCodeService = verificationCodeService;
             _emailContentService = emailContentService;
 
             _isAdmin = userContextService.UserHasRole(Roles.Admin);
             _userId = userContextService.GetUserId();
+            _bus = bus;
         }
 
         public override Task<UserResponse> GetByIdAsync(Guid id)
@@ -82,8 +85,7 @@ namespace eTouristAgencyAPI.Services
                 Recipients = [user.Email]
             };
 
-            var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
-            bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+            _bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
             {
                 EmailNotification = emailNotification
             }));

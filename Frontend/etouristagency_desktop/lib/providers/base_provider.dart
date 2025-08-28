@@ -45,7 +45,7 @@ abstract class BaseProvider<TResponseModel> {
     );
 
     if (response.statusCode != 200)
-      throw Exception("Dogodila se greska: ${response.body}");
+      throw Exception(response.body);
   }
 
   Future update(String id, Map<String, dynamic> updateModel) async {
@@ -60,7 +60,7 @@ abstract class BaseProvider<TResponseModel> {
     );
 
     if (response.statusCode != 200)
-      throw Exception("Dogodila se greska: ${response.body}");
+      throw Exception(response.body);
   }
 
   Future<PaginatedList<TResponseModel>> getAll(
@@ -78,7 +78,7 @@ abstract class BaseProvider<TResponseModel> {
     );
 
     if (response.statusCode != 200)
-      throw Exception("Nije uspjelo dohvatanje podataka: ${response.body}");
+      throw Exception(response.body);
 
     return jsonToPaginatedList(jsonDecode(response.body));
   }

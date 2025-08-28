@@ -23,8 +23,9 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task BeforeInsertAsync(AddReservationReviewRequest insertModel, ReservationReview dbModel)
         {
-            var reservation = await _dbContext.Reservations.Include(x => x.Room.Offer).Include(x => x.ReservationReview).Include(x=> x.User).FirstOrDefaultAsync(x => x.Id == insertModel.Id);
+            var reservation = await _dbContext.Reservations.Include(x => x.Room.Offer).Include(x => x.ReservationReview).Include(x => x.User).FirstOrDefaultAsync(x => x.Id == insertModel.Id);
 
+            #region Validation
             if (reservation == null)
             {
                 throw new Exception("Reservation with provided id is not found.");
@@ -45,7 +46,7 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("You have to verify your email for this action.");
             }
 
-            if (reservation.ReservationStatusId == AppConstants.FixedReservationStatusCancelled)
+            if (AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(reservation.ReservationStatusId))
             {
                 throw new Exception("Reservation with provided id is cancelled.");
             }
@@ -59,6 +60,7 @@ namespace eTouristAgencyAPI.Services
             {
                 throw new Exception("You cannot add review before end of trip.");
             }
+            #endregion
 
             dbModel.CreatedBy = _userId ?? Guid.Empty;
             dbModel.ModifiedBy = _userId ?? Guid.Empty;
