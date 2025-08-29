@@ -6,6 +6,7 @@ import 'package:etouristagency_desktop/providers/user_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -59,7 +60,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Izmjena podataka",
+                              "Podaci o korisničkom nalogu",
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w500,
@@ -134,6 +135,7 @@ class _AccountScreenState extends State<AccountScreen> {
                               decoration: InputDecoration(
                                 labelText: "Broj telefona",
                               ),
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                               validator: FormBuilderValidators.compose([
                                 FormBuilderValidators.minLength(
                                   6,
@@ -214,7 +216,6 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future updateUser() async {
-    setState(() {});
     await validateEmail();
     await validateUsername();
 

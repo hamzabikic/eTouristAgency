@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:accordion/accordion.dart';
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/app_constants.dart';
@@ -21,6 +19,7 @@ import 'package:etouristagency_desktop/screens/offer/models/room_accordion_item.
 import 'package:etouristagency_desktop/screens/offer/offer_list_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
@@ -194,7 +193,6 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                   ),
                                                 ]),
                                                 name: "firstPaymentDeadline",
-                                                initialDate: DateTime.now(),
                                                 inputType: InputType.date,
                                                 format: DateFormat(
                                                   "dd.MM.yyyy",
@@ -222,7 +220,6 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                   ),
                                                 ]),
                                                 name: "lastPaymentDeadline",
-                                                initialDate: DateTime.now(),
                                                 inputType: InputType.date,
                                                 format: DateFormat(
                                                   "dd.MM.yyyy",
@@ -304,7 +301,6 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                   ),
                                                 ]),
                                                 name: "tripStartDate",
-                                                initialDate: DateTime.now(),
                                                 inputType: InputType.both,
                                                 style: TextStyle(
                                                   color: Colors.black,
@@ -331,7 +327,6 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                   ),
                                                 ]),
                                                 name: "tripEndDate",
-                                                initialDate: DateTime.now(),
                                                 inputType: InputType.both,
                                                 style: TextStyle(
                                                   color: Colors.black,
@@ -372,6 +367,10 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                             SizedBox(
                                               width: 300,
                                               child: FormBuilderTextField(
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter
+                                                      .digitsOnly,
+                                                ],
                                                 name: "numberOfNights",
                                                 enabled: _isEditable,
                                                 style: TextStyle(
@@ -381,10 +380,6 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                   FormBuilderValidators.required(
                                                     errorText:
                                                         "Ovo polje je obavezno.",
-                                                  ),
-                                                  FormBuilderValidators.numeric(
-                                                    errorText:
-                                                        "Ovo polje može sadržavati isključivo brojeve.",
                                                   ),
                                                 ]),
                                                 decoration: InputDecoration(
@@ -515,6 +510,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                   discountTypeId: AppConstants
                                                       .firstMinuteDiscountGuid,
                                                   isEditable: true,
+                                                  isRemovable: true,
                                                 ),
                                               );
 
@@ -544,6 +540,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                                                   discountTypeId: AppConstants
                                                       .lastMinuteDiscountGuid,
                                                   isEditable: true,
+                                                  isRemovable: true,
                                                 ),
                                               );
 
@@ -890,6 +887,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                   SizedBox(
                     width: 180,
                     child: FormBuilderTextField(
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
                       onChanged: (value) {
                         rooms[i].pricePerPerson = value;
                       },
@@ -903,16 +903,14 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(
                           errorText: "Ovo polje je obavezno.",
-                        ),
-                        FormBuilderValidators.numeric(
-                          errorText: "Ovo polje može samo sadržavati brojeve.",
-                        ),
+                        )
                       ]),
                     ),
                   ),
                   SizedBox(
                     width: 180,
                     child: FormBuilderTextField(
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       onChanged: (value) {
                         globalKey.currentState!.save();
                         rooms[i].childDiscount = value;
@@ -927,16 +925,14 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(
                           errorText: "Ovo polje je obavezno.",
-                        ),
-                        FormBuilderValidators.numeric(
-                          errorText: "Ovo polje može samo sadržavati brojeve.",
-                        ),
+                        )
                       ]),
                     ),
                   ),
                   SizedBox(
                     width: 180,
                     child: FormBuilderTextField(
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       onChanged: (value) {
                         globalKey.currentState!.save();
                         rooms[i].quantity = value;
@@ -951,10 +947,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(
                           errorText: "Ovo polje je obavezno.",
-                        ),
-                        FormBuilderValidators.numeric(
-                          errorText: "Ovo polje može samo sadržavati brojeve.",
-                        ),
+                        )
                       ]),
                     ),
                   ),
@@ -1039,6 +1032,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                   SizedBox(
                     width: 150,
                     child: FormBuilderTextField(
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       onChanged: (value) {
                         offerDiscounts[i].discount = value;
                       },
@@ -1049,11 +1043,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                       ),
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(
-                          errorText: "Ovo polje je obavezno",
-                        ),
-                        FormBuilderValidators.numeric(
-                          errorText: "Ovo polje može samo sadržavati brojeve.",
-                        ),
+                          errorText: "Ovo polje je obavezno.",
+                        )
                       ]),
                     ),
                   ),
@@ -1180,7 +1171,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
   }
 
   Future addUpdateOffer() async {
-    if (!validateOfferForm()) {
+    if (!(await validateOfferForm())) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -1276,16 +1267,20 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
     setState(() {});
   }
 
-  bool validateOfferForm() {
-    globalErrorMessage = "";
+  Future<bool> validateOfferForm() async {
     bool isValidForm = true;
+    globalErrorMessage = "";
+    setState(() {});
 
     if (photo == null || photoName == null) {
       photoErrorMessage = "Upload slike je obavezan.";
       isValidForm = false;
+      setState(() {});
     } else {
       photoErrorMessage = "";
     }
+
+    await WidgetsBinding.instance.endOfFrame;
 
     if (!formBuilderKey.currentState!.validate()) {
       isValidForm = false;
@@ -1302,8 +1297,6 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
         isValidForm = false;
       }
     }
-
-    setState(() {});
 
     return isValidForm;
   }

@@ -59,7 +59,7 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
                               _isResetPasswordInProcess = true;
                               setState(() {});
 
-                              await userProvider.resetPassword(
+                              await userProvider.resetPasswordByUserId(
                                 widget._user.id!,
                               );
                               DialogHelper.openDialog(

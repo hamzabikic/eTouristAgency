@@ -6,6 +6,7 @@ import 'package:etouristagency_desktop/providers/role_provider.dart';
 import 'package:etouristagency_desktop/providers/user_provider.dart';
 import 'package:etouristagency_desktop/screens/user/user_list_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -127,6 +128,7 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                       FormBuilderTextField(
                         name: "phoneNumber",
                         decoration: InputDecoration(labelText: "Broj telefona"),
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         validator: FormBuilderValidators.compose([
                           FormBuilderValidators.minLength(
                             6,

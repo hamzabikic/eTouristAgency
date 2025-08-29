@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:etouristagency_desktop/models/offer/offer.dart';
 import 'package:etouristagency_desktop/models/offer/offer_document_info.dart';
 import 'package:etouristagency_desktop/models/offer/offer_image_info.dart';

@@ -12,6 +12,7 @@ import 'package:etouristagency_desktop/screens/hotel/hotel_list_screen.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -104,6 +105,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
                         decoration: InputDecoration(
                           labelText: "Broj zvjezdica",
                         ),
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         validator: FormBuilderValidators.compose([
                           FormBuilderValidators.required(
                             errorText: "Ovo polje je obavezno.",
