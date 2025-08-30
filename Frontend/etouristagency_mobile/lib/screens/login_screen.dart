@@ -1,7 +1,7 @@
-import 'dart:developer';
-
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/consts/roles.dart';
+import 'package:etouristagency_mobile/helpers/auth_navigation_helper.dart';
+import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/main.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
@@ -15,7 +15,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final bool isLoggedOut;
+  const LoginScreen({this.isLoggedOut = false, super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -26,136 +27,133 @@ class _LoginScreenState extends State<LoginScreen> {
   final formBuilderKey = GlobalKey<FormBuilderState>();
   late final AuthService authService;
   late final UserProvider userProvider;
+  bool _isLoggedIn = true;
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      bool isLoggedIn = await authService.isLoged();
-
-      if (!mounted) return;
-
-      if (isLoggedIn) {
-        if (remoteMessage != null) {
-          var message = remoteMessage;
-          remoteMessage = null;
-
-          while (navigatorKey.currentState == null) {}
-          navigateOnNotification(message);
-          return;
-        }
-
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (builder) => OfferListScreen()),
-        );
-      }
-    });
-
     userProvider = UserProvider();
     authService = AuthService();
+    checkIsUserLoged();
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDisplayMessage();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              height: 300,
-              color: AppColors.primary,
-              child: Center(child: Image.asset("lib/assets/images/logo.png")),
-            ),
-            SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadiusGeometry.all(Radius.circular(20)),
-                  color: AppColors.primaryTransparent,
-                ),
-                width: 500,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: FormBuilder(
-                    key: formBuilderKey,
-                    child: Column(
-                      children: [
-                        operationErrorMessage != null
-                            ? Text(
-                                operationErrorMessage!,
-                                style: TextStyle(color: AppColors.darkRed),
-                              )
-                            : SizedBox(),
-                        FormBuilderTextField(
-                          decoration: InputDecoration(
-                            labelText: "Korisničko ime",
-                          ),
-                          name: "username",
-                          validator: FormBuilderValidators.compose([
-                            FormBuilderValidators.required(
-                              errorText: "Ovo polje je obavezno",
-                            ),
-                          ]),
-                        ),
-                        SizedBox(height: 10),
-                        FormBuilderTextField(
-                          obscureText: true,
-                          decoration: InputDecoration(labelText: "Lozinka"),
-                          name: "password",
-                          validator: FormBuilderValidators.compose([
-                            FormBuilderValidators.required(
-                              errorText: "Ovo polje je obavezno",
-                            ),
-                          ]),
-                        ),
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _authorize,
-                          child: Text("Prijavi se"),
-                        ),
-                      ],
+    return _isLoggedIn
+        ? DialogHelper.openSpinner(context, "")
+        : Scaffold(
+            backgroundColor: Colors.white,
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    height: 300,
+                    color: AppColors.primary,
+                    child: Center(
+                      child: Image.asset("lib/assets/images/logo.png"),
                     ),
                   ),
-                ),
-              ),
-            ),
-            InkWell(
-              child: Text(
-                "Nemate korisnički nalog?",
-                style: TextStyle(
-                  color: AppColors.primary,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-              onTap: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => RegistrationScreen()),
-                );
-              },
-            ),
-            InkWell(
-              child: Text(
-                "Zaboravili ste lozinku?",
-                style: TextStyle(
-                  color: AppColors.primary,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-              onTap: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => ForgotPasswordScreen(),
+                  SizedBox(height: 40),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadiusGeometry.all(
+                          Radius.circular(20),
+                        ),
+                        color: AppColors.primaryTransparent,
+                      ),
+                      width: 500,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: FormBuilder(
+                          key: formBuilderKey,
+                          child: Column(
+                            children: [
+                              operationErrorMessage != null
+                                  ? Text(
+                                      operationErrorMessage!,
+                                      style: TextStyle(
+                                        color: AppColors.darkRed,
+                                      ),
+                                    )
+                                  : SizedBox(),
+                              FormBuilderTextField(
+                                decoration: InputDecoration(
+                                  labelText: "Korisničko ime",
+                                ),
+                                name: "username",
+                                validator: FormBuilderValidators.compose([
+                                  FormBuilderValidators.required(
+                                    errorText: "Ovo polje je obavezno",
+                                  ),
+                                ]),
+                              ),
+                              SizedBox(height: 10),
+                              FormBuilderTextField(
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  labelText: "Lozinka",
+                                ),
+                                name: "password",
+                                validator: FormBuilderValidators.compose([
+                                  FormBuilderValidators.required(
+                                    errorText: "Ovo polje je obavezno",
+                                  ),
+                                ]),
+                              ),
+                              SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: _authorize,
+                                child: Text("Prijavi se"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                );
-              },
+                  InkWell(
+                    child: Text(
+                      "Nemate korisnički nalog?",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => RegistrationScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  InkWell(
+                    child: Text(
+                      "Zaboravili ste lozinku?",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => ForgotPasswordScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: 40),
+                ],
+              ),
             ),
-            SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
+          );
   }
 
   Future _authorize() async {
@@ -166,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
     formBuilderKey.currentState!.save();
     var formObject = formBuilderKey.currentState!.value;
 
-    await authService.storeCredentials(
+    await authService.storeCredetials(
       formObject["username"],
       formObject["password"],
     );
@@ -177,6 +175,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!user.roles!.any((x) => x.name == Roles.client)) {
         throw Exception("Uneseno korisničko ime ili lozinka su netačni.");
       }
+
+      authService.storeUserId(user.id!);
+
+      AuthNavigationHelper.resetRedirectFlag();
 
       if (isFirebaseInitialized) {
         String? token = await FirebaseMessaging.instance.getToken();
@@ -194,5 +196,40 @@ class _LoginScreenState extends State<LoginScreen> {
       await authService.clearCredentials();
       setState(() {});
     }
+  }
+
+  Future checkIsUserLoged() async {
+    _isLoggedIn = await authService.areCredentialsValid();
+
+    if (_isLoggedIn == false) {
+      setState(() {});
+
+      return;
+    }
+
+    if (remoteMessage != null) {
+      var message = remoteMessage;
+      remoteMessage = null;
+
+      while (navigatorKey.currentState == null) {}
+      navigateOnNotification(message);
+      return;
+    }
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (builder) => OfferListScreen()),
+    );
+  }
+
+  void showDisplayMessage() {
+    if (!widget.isLoggedOut) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "Vaš uređaj je odjavljen sa korisničkog naloga. Molimo Vas da se opet prijavite.",
+        ),
+      ),
+    );
   }
 }

@@ -22,6 +22,7 @@ import 'package:etouristagency_mobile/screens/hotel/hotel_images_dialog.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/my_reservations_list_screen.dart';
+import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -61,6 +62,7 @@ class _AddUpdateReservationScreenState
   final TextEditingController noteEditingController = TextEditingController();
   late final ReservationProvider reservationProvider;
   late final UserProvider userProvider;
+  late final AuthService authService;
   Reservation? reservation;
   List<Map<String, dynamic>> initialValues = [];
   List<ReservationPaymentInfo> loadedPayments = [];
@@ -80,6 +82,7 @@ class _AddUpdateReservationScreenState
     offerProvider = OfferProvider();
     reservationProvider = ReservationProvider();
     reservationReviewProvider = ReservationReviewProvider();
+    authService = AuthService();
     fetchOfferData();
     fetchReservationData();
     verifyUser();
@@ -554,7 +557,10 @@ class _AddUpdateReservationScreenState
   }
 
   Future fetchOfferData() async {
-    offer = Offer.fromJson(await offerProvider.getById(widget.offerId));
+    var offerJson = await offerProvider.getById(widget.offerId);
+    if (!mounted) return;
+
+    offer = Offer.fromJson(offerJson);
     room = offer!.rooms!.firstWhere((element) => element.id == widget.roomId);
 
     try {
@@ -744,6 +750,7 @@ class _AddUpdateReservationScreenState
     if (widget.reservationId == null) {
       try {
         await reservationProvider.add(json);
+        if (!mounted) return;
 
         DialogHelper.openDialog(context, "Uspješno dodavanje rezervacije", () {
           Navigator.of(context).pop();
@@ -755,13 +762,19 @@ class _AddUpdateReservationScreenState
         _isProcessStarted = false;
         setState(() {});
 
-        DialogHelper.openDialog(context, ex.toString(), () {
-          Navigator.of(context).pop();
-        }, type: DialogType.error);
+        DialogHelper.openDialog(
+          context,
+          ex.toString().replaceFirst("Exception: ", ""),
+          () {
+            Navigator.of(context).pop();
+          },
+          type: DialogType.error,
+        );
       }
     } else {
       try {
         await reservationProvider.update(widget.reservationId!, json);
+        if (!mounted) return;
 
         DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
           Navigator.of(context).pop();
@@ -773,15 +786,27 @@ class _AddUpdateReservationScreenState
         _isProcessStarted = false;
         setState(() {});
 
-        DialogHelper.openDialog(context, ex.toString(), () {
-          Navigator.of(context).pop();
-        }, type: DialogType.error);
+        DialogHelper.openDialog(
+          context,
+          ex.toString().replaceFirst("Exception: ", ""),
+          () {
+            Navigator.of(context).pop();
+          },
+          type: DialogType.error,
+        );
       }
     }
   }
 
   Future verifyUser() async {
-    var user = User.fromJson(await userProvider.getMe());
+    var userId = await authService.getUserId();
+
+    if(userId == null) return;
+
+    var userJson = await userProvider.getById(userId);
+    if(!mounted) return;
+
+    var user = User.fromJson(userJson);
 
     if (!user.isVerified!) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -811,15 +836,17 @@ class _AddUpdateReservationScreenState
   Future fetchReservationData() async {
     if (widget.reservationId == null) {
       _isEditable = true;
-      setState(() {
-        
-      });
+      setState(() {});
       return;
     }
 
-    reservation = Reservation.fromJson(
-      await reservationProvider.getById(widget.reservationId!),
+    var reservationJson = await reservationProvider.getById(
+      widget.reservationId!,
     );
+
+    if (!mounted) return;
+
+    reservation = Reservation.fromJson(reservationJson);
 
     noteEditingController.text = reservation!.note ?? "";
 
@@ -845,6 +872,7 @@ class _AddUpdateReservationScreenState
     for (var item in reservation!.reservationPayments!) {
       var reservationPaymentInfo = await reservationProvider
           .getReservationPaymentDocument(item.id!);
+      if (!mounted) return;
 
       loadedPayments.add(reservationPaymentInfo);
     }
@@ -988,20 +1016,33 @@ class _AddUpdateReservationScreenState
       "Jeste li sigurni da želite otkazati ovu rezervaciju?",
       "Otkazivanjem ove rezervacije moguće je da nećete ostvariti povrat novca.",
       () async {
-        await reservationProvider.cancelReservation(widget.reservationId!);
-        Navigator.of(context).pop();
-        DialogHelper.openDialog(context, "Uspješno otkazana rezervacija", () {
+        try {
+          await reservationProvider.cancelReservation(widget.reservationId!);
+
+          if (!mounted) return;
           Navigator.of(context).pop();
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => AddUpdateReservationScreen(
-                widget.offerId,
-                widget.roomId,
-                widget.reservationId,
+          DialogHelper.openDialog(context, "Uspješno otkazana rezervacija", () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => AddUpdateReservationScreen(
+                  widget.offerId,
+                  widget.roomId,
+                  widget.reservationId,
+                ),
               ),
-            ),
+            );
+          });
+        } on Exception catch (ex) {
+          DialogHelper.openDialog(
+            context,
+            ex.toString().replaceFirst("Exception: ", ""),
+            () {
+              Navigator.of(context).pop();
+            },
+            type: DialogType.error,
           );
-        });
+        }
       },
     );
   }
@@ -1101,6 +1142,8 @@ class _AddUpdateReservationScreenState
                         reviewRequestModel["id"] = reservation!.id!;
 
                         await reservationReviewProvider.add(reviewRequestModel);
+                        if (!mounted) return;
+
                         DialogHelper.openDialog(
                           context,
                           "Uspješno ste poslali recenziju",

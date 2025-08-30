@@ -66,7 +66,7 @@ namespace eTouristAgencyAPI.Services
 
         public async Task ResetPasswordAsync(Guid userId)
         {
-            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userId && x.IsActive);
 
             if (user == null) throw new Exception("User with provided id is not found.");
             if (!user.Roles.Any(x => x.Id == AppConstants.FixedRoleClientId)) throw new Exception("Reset password is only allowed for client users.");

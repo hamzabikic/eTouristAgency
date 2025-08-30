@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/models/hotel/hotel.dart';
@@ -52,7 +50,7 @@ class _HotelImageDialogState extends State<HotelImageDialog> {
                                     color: AppColors.lighterBlue,
                                   ),
                                   imageProvider: NetworkImage(
-                                    "${hotelProvider.controllerUrl}/${hotel!.hotelImages![index].id}/image"
+                                    "${hotelProvider.controllerUrl}/${hotel!.hotelImages![index].id}/image",
                                   ),
                                 ),
                               ),
@@ -61,12 +59,12 @@ class _HotelImageDialogState extends State<HotelImageDialog> {
                           scrollPhysics: const BouncingScrollPhysics(),
                         )
                       : Center(
-                        child: Text(
+                          child: Text(
                             "Trenutno nema dostupnih fotografija za ovaj hotel.",
                             style: TextStyle(fontSize: 15),
                             textAlign: TextAlign.center,
                           ),
-                      )
+                        )
                 : DialogHelper.openSpinner(context, "Učitavam fotografije..."),
           ),
         ),
@@ -77,6 +75,7 @@ class _HotelImageDialogState extends State<HotelImageDialog> {
   Future fetchHotelData() async {
     hotel = Hotel.fromJson(await hotelProvider.getById(widget.hotelId));
 
+    if(!mounted) return;
     setState(() {});
   }
 }

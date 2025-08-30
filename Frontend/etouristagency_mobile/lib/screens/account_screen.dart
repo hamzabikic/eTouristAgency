@@ -267,9 +267,12 @@ class _AccountScreenState extends State<AccountScreen> {
                       ElevatedButton(
                         child: Text("Odjavi se"),
                         onPressed: () async {
-                          await userProvider.updateFirebaseToken({
-                            "firebaseToken": null,
-                          });
+                          try {
+                            await userProvider.updateFirebaseToken({
+                              "firebaseToken": null,
+                            });
+                          } on Exception catch (ex) {}
+
                           await authService.clearCredentials();
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
@@ -313,19 +316,23 @@ class _AccountScreenState extends State<AccountScreen> {
 
     try {
       var response = await userProvider.update(user!.id!, insertModel);
+
+      if (!mounted) return;
+      
       await authService.clearCredentials();
-      await authService.storeCredentials(
+      await authService.storeCredetials(
         insertModel["username"],
         insertModel["password"],
       );
+      await authService.storeUserId(user!.id!);
+
       await fetchUserData();
 
       DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
         Navigator.of(context).pop();
       });
     } on Exception catch (ex) {
-      operationErrorMessage = ex.toString();
-      setState(() {});
+      operationErrorMessage = ex.toString().replaceFirst("Exception: ", "");
     }
 
     _isProcessing = false;
@@ -358,7 +365,14 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future fetchUserData() async {
-    user = User.fromJson(await userProvider.getMe());
+    var userId = await authService.getUserId();
+
+    if(userId == null) return;
+
+    var userJson = await userProvider.getById(userId);
+    if (!mounted) return;
+
+    user = User.fromJson(userJson);
 
     setState(() {});
   }
@@ -369,11 +383,18 @@ class _AccountScreenState extends State<AccountScreen> {
       setState(() {});
 
       await verificationCodeProvider.addEmailVerification();
+      if (!mounted) return;
+
       openVerificationDialog();
     } on Exception catch (ex) {
-      DialogHelper.openDialog(context, ex.toString(), () {
-        Navigator.of(context).pop();
-      }, type: DialogType.error);
+      DialogHelper.openDialog(
+        context,
+        ex.toString().replaceFirst("Exception: ", ""),
+        () {
+          Navigator.of(context).pop();
+        },
+        type: DialogType.error,
+      );
     }
 
     _isVerificationCalled = false;
@@ -430,6 +451,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                 await userProvider.verify(
                                   verificationCodeController.text,
                                 );
+
+                                if (!mounted) return;
+
                                 DialogHelper.openDialog(
                                   context,
                                   "Uspješna verifikacije email naloga",
@@ -443,7 +467,7 @@ class _AccountScreenState extends State<AccountScreen> {
                               } on Exception catch (ex) {
                                 DialogHelper.openDialog(
                                   context,
-                                  ex.toString(),
+                                  ex.toString().replaceFirst("Exception: ", ""),
                                   () {
                                     Navigator.of(context).pop();
                                   },
@@ -485,19 +509,32 @@ class _AccountScreenState extends State<AccountScreen> {
       "Da li ste sigurni da želite deaktivirati korisnika?",
       "Ovom akcijom ćete trajno obrisati korisnički nalog i isti će postati nepovratan.",
       () async {
-        await userProvider.deactivate(user!.id!);
-        await authService.clearCredentials();
-        Navigator.of(context).pop();
-        DialogHelper.openDialog(
-          context,
-          "Uspješno deaktiviran korisnički nalog",
-          () async {
-            Navigator.of(context).pop();
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => LoginScreen()),
-            );
-          },
-        );
+        try {
+          await userProvider.deactivate(user!.id!);
+
+          if (!mounted) return;
+          await authService.clearCredentials();
+          Navigator.of(context).pop();
+          DialogHelper.openDialog(
+            context,
+            "Uspješno deaktiviran korisnički nalog",
+            () async {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+          );
+        } on Exception catch (ex) {
+          DialogHelper.openDialog(
+            context,
+            ex.toString().replaceFirst("Exception: ", ""),
+            () {
+              Navigator.of(context).pop();
+            },
+            type: DialogType.error,
+          );
+        }
       },
     );
   }

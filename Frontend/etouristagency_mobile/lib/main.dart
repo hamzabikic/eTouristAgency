@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
 Future initializeFirebase() async {
   var authService = AuthService();
 
-  if (!(await authService.isLoged())) {
+  if (!(await authService.areCredentialsValid())) {
     return;
   }
 
@@ -78,7 +78,7 @@ Future initializeFirebase() async {
 
   FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
     var authServ = AuthService();
-    if (!(await authServ.isLoged())) {
+    if (!(await authServ.areCredentialsValid())) {
       return;
     }
 

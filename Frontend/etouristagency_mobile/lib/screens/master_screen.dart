@@ -1,8 +1,11 @@
 import 'package:etouristagency_mobile/consts/app_colors.dart';
+import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/screens/account_screen.dart';
+import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/last_minute_offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/my_reservations_list_screen.dart';
+import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class MasterScreen extends StatefulWidget {
@@ -25,10 +28,22 @@ class MasterScreen extends StatefulWidget {
 
 class _MasterScreenState extends State<MasterScreen> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget._screenTitle, style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+        title: Text(
+          widget._screenTitle,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: AppColors.primary,
         centerTitle: true,
         leadingWidth: 70,
