@@ -126,12 +126,20 @@ class _EntityCodeValueListScreenState extends State<EntityCodeValueListScreen> {
           await entityCodeValueProvider.GetReservationStatusList();
     }
 
+    if (!mounted) {
+      return;
+    }
+
     setState(() {});
   }
 
   String getTitle() {
     if (widget.entityCode == EntityCode.boardType) {
       return "Šifarnici -> Tipovi usluga";
+    }
+
+    if (widget.entityCode == EntityCode.reservationStatus) {
+      return "Šifarnici -> Statusi rezervacije";
     }
 
     return "";

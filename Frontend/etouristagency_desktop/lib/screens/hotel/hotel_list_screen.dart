@@ -20,7 +20,11 @@ class HotelListScreen extends StatefulWidget {
 
 class _HotelListScreenState extends State<HotelListScreen> {
   List<City>? cityData;
-  Map<String, dynamic> queryStrings = {"searchText": "", "cityId": "", "page": 1};
+  Map<String, dynamic> queryStrings = {
+    "searchText": "",
+    "cityId": "",
+    "page": 1,
+  };
   PaginatedList<Hotel>? paginatedList;
   ScrollController horizontalScrollController = ScrollController();
   late final HotelProvider hotelProvider;
@@ -148,9 +152,7 @@ class _HotelListScreenState extends State<HotelListScreen> {
                                 .map(
                                   (x) => DataRow(
                                     cells: [
-                                      DataCell(
-                                        Text(x.name?.toString() ?? ""),
-                                      ),
+                                      DataCell(Text(x.name?.toString() ?? "")),
                                       DataCell(
                                         Text(x.starRating?.toString() ?? ""),
                                       ),
@@ -231,9 +233,11 @@ class _HotelListScreenState extends State<HotelListScreen> {
 
   Future fetchHotelData() async {
     paginatedList = null;
-    setState((){});
+    setState(() {});
 
     paginatedList = await hotelProvider.getAll(queryStrings);
+    if (!mounted) return;
+
     setState(() {});
   }
 
@@ -241,6 +245,8 @@ class _HotelListScreenState extends State<HotelListScreen> {
     cityData = (await cityProvider.getAll({
       "recordsPerPage": 1000,
     })).listOfRecords;
+
+    if (!mounted) return;
 
     setState(() {});
   }

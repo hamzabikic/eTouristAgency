@@ -190,9 +190,13 @@ class _CityListScreenState extends State<CityListScreen> {
 
   Future fetchData() async {
     paginatedList = null;
-    setState((){});
+    setState(() {});
 
     paginatedList = await cityProvider.getAll(queryStrings);
+    if (!mounted) {
+      return;
+    }
+
     setState(() {});
   }
 
@@ -234,6 +238,10 @@ class _CityListScreenState extends State<CityListScreen> {
     countries = (await countryProvider.getAll({
       "recordsPerPage": 1000,
     })).listOfRecords;
+
+    if (!mounted) {
+      return;
+    }
 
     setState(() {});
   }

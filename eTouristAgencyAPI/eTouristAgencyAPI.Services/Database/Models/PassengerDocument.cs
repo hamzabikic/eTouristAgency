@@ -6,17 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace eTouristAgencyAPI.Services.Database.Models;
 
-[Table("ReservationReview")]
-public partial class ReservationReview
+[Table("PassengerDocument")]
+public partial class PassengerDocument
 {
     [Key]
     public Guid Id { get; set; }
 
-    public int AccommodationRating { get; set; }
+    public byte[] DocumentBytes { get; set; } = null!;
 
-    public int ServiceRating { get; set; }
-
-    public string Description { get; set; } = null!;
+    [StringLength(255)]
+    public string DocumentName { get; set; } = null!;
 
     public DateTime CreatedOn { get; set; }
 
@@ -27,14 +26,14 @@ public partial class ReservationReview
     public Guid ModifiedBy { get; set; }
 
     [ForeignKey("CreatedBy")]
-    [InverseProperty("ReservationReviewCreatedByNavigations")]
+    [InverseProperty("PassengerDocumentCreatedByNavigations")]
     public virtual User CreatedByNavigation { get; set; } = null!;
 
     [ForeignKey("Id")]
-    [InverseProperty("ReservationReview")]
-    public virtual Reservation IdNavigation { get; set; } = null!;
+    [InverseProperty("PassengerDocument")]
+    public virtual Passenger IdNavigation { get; set; } = null!;
 
     [ForeignKey("ModifiedBy")]
-    [InverseProperty("ReservationReviewModifiedByNavigations")]
+    [InverseProperty("PassengerDocumentModifiedByNavigations")]
     public virtual User ModifiedByNavigation { get; set; } = null!;
 }

@@ -54,5 +54,5 @@ public partial class OfferDiscount
     public bool IsEditable { get; set; }
 
     [NotMapped]
-    public bool IsRemovable { get; internal set; }
+    public bool IsRemovable { get; set; }
 }

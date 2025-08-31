@@ -201,6 +201,8 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
       "recordsPerPage": 1000,
     })).listOfRecords;
 
+    if(!mounted) return;
+
     setState(() {});
   }
 
@@ -313,6 +315,8 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
         await hotelProvider.update(widget.hotel!.id!, jsonModel);
       }
 
+      if(!mounted) return;
+
       DialogHelper.openDialog(
         context,
         widget.hotel == null
@@ -345,6 +349,8 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
 
     for (var item in widget.hotel!.hotelImages!) {
       var hotelImageInfo = await hotelProvider.getHotelImage(item.id!);
+
+      if(!mounted) return;
 
       images!.add(
         HotelImageInfo(

@@ -12,7 +12,7 @@ class HotelImageInfo {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
-      "imageBytes": base64Encode(imageBytes!),
+      "imageBytes": imageBytes != null ? base64Encode(imageBytes!) : null,
       "imageName": imageName,
     };
   }

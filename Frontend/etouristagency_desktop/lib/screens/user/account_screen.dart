@@ -135,7 +135,9 @@ class _AccountScreenState extends State<AccountScreen> {
                               decoration: InputDecoration(
                                 labelText: "Broj telefona",
                               ),
-                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
                               validator: FormBuilderValidators.compose([
                                 FormBuilderValidators.minLength(
                                   6,
@@ -236,11 +238,14 @@ class _AccountScreenState extends State<AccountScreen> {
 
     try {
       var response = await userProvider.update(user!.id!, insertModel);
+      if (!mounted) return;
+
       await authService.storeCredentials(
         insertModel["username"],
         insertModel["password"],
       );
       await fetchUserData();
+      await authService.storeData(user!);
 
       DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
         Navigator.of(context).pop();
@@ -250,7 +255,7 @@ class _AccountScreenState extends State<AccountScreen> {
         Navigator.of(context).pop();
       }, type: DialogType.error);
     }
-    
+
     _isProcessing = false;
     setState(() {});
     return;
@@ -289,7 +294,13 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future fetchUserData() async {
-    user = User.fromJson(await userProvider.getMe());
+    var userId = (await authService.getUserData())?.id;
+
+    if (userId == null) return;
+
+    user = await userProvider.getById(userId);
+
+    if (!mounted) return;
 
     setState(() {});
   }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:etouristagency_desktop/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -27,6 +28,11 @@ class EntityCodeValueProvider {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return [];
+    }
+
     if (response.statusCode != 200) {
       throw Exception("Neuspješno učitavanje statusa ponude: ${response.body}");
     }
@@ -46,6 +52,11 @@ class EntityCodeValueProvider {
         "Content-Type": "application/json",
       },
     );
+
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return [];
+    }
 
     if (response.statusCode != 200) {
       throw Exception("Neuspješno učitavanje statusa ponude: ${response.body}");
@@ -67,8 +78,15 @@ class EntityCodeValueProvider {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return [];
+    }
+
     if (response.statusCode != 200) {
-      throw Exception("Neuspješno učitavanje statusa rezervacije: ${response.body}");
+      throw Exception(
+        "Neuspješno učitavanje statusa rezervacije: ${response.body}",
+      );
     }
 
     var offerStatusList = (jsonDecode(response.body) as List)
@@ -77,7 +95,7 @@ class EntityCodeValueProvider {
     return offerStatusList;
   }
 
-  Future<EntityCodeValue> addBoardType(Map<String, dynamic> json) async {
+  Future addBoardType(Map<String, dynamic> json) async {
     var url = Uri.parse("${controllerUrl}/board-type");
     var response = await http.post(
       url,
@@ -88,8 +106,13 @@ class EntityCodeValueProvider {
       body: jsonEncode(json),
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
     if (response.statusCode == 200) {
-      return EntityCodeValue.fromJson(jsonDecode(response.body));
+      return;
     }
 
     throw Exception(
@@ -97,7 +120,9 @@ class EntityCodeValueProvider {
     );
   }
 
-  Future<EntityCodeValue> addReservationStatus(Map<String, dynamic> json) async {
+  Future addReservationStatus(
+    Map<String, dynamic> json,
+  ) async {
     var url = Uri.parse("${controllerUrl}/reservation-status");
     var response = await http.post(
       url,
@@ -108,8 +133,13 @@ class EntityCodeValueProvider {
       body: jsonEncode(json),
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
     if (response.statusCode == 200) {
-      return EntityCodeValue.fromJson(jsonDecode(response.body));
+      return;
     }
 
     throw Exception(
@@ -117,7 +147,7 @@ class EntityCodeValueProvider {
     );
   }
 
-  Future<EntityCodeValue> update(String id, Map<String, dynamic> json) async {
+  Future update(String id, Map<String, dynamic> json) async {
     var url = Uri.parse("${controllerUrl}/${id}");
     var response = await http.put(
       url,
@@ -128,11 +158,13 @@ class EntityCodeValueProvider {
       body: jsonEncode(json),
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
     if (response.statusCode != 200) {
       throw Exception("Nije uspjelo uređivanje ${response.body}");
     }
-
-    var jsonResponse = jsonDecode(response.body);
-    return EntityCodeValue.fromJson(jsonResponse);
   }
 }

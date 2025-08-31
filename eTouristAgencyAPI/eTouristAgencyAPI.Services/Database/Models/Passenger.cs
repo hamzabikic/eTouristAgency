@@ -40,6 +40,9 @@ public partial class Passenger
     [InverseProperty("PassengerModifiedByNavigations")]
     public virtual User ModifiedByNavigation { get; set; } = null!;
 
+    [InverseProperty("IdNavigation")]
+    public virtual PassengerDocument? PassengerDocument { get; set; }
+
     [ForeignKey("ReservationId")]
     [InverseProperty("Passengers")]
     public virtual Reservation Reservation { get; set; } = null!;

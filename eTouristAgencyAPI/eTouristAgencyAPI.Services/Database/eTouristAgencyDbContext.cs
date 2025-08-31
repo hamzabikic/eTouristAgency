@@ -40,6 +40,8 @@ public partial class eTouristAgencyDbContext : DbContext
 
     public virtual DbSet<Passenger> Passengers { get; set; }
 
+    public virtual DbSet<PassengerDocument> PassengerDocuments { get; set; }
+
     public virtual DbSet<Reservation> Reservations { get; set; }
 
     public virtual DbSet<ReservationPayment> ReservationPayments { get; set; }
@@ -55,6 +57,10 @@ public partial class eTouristAgencyDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserTag> UserTags { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=localhost;Database=eTouristAgencyDB;User Id=sa;Password=admin123;TrustServerCertificate=true;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -283,6 +289,27 @@ public partial class eTouristAgencyDbContext : DbContext
             entity.HasOne(d => d.Reservation).WithMany(p => p.Passengers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Passenger__Reser__756D6ECB");
+        });
+
+        modelBuilder.Entity<PassengerDocument>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Passenge__3214EC07FBE8BD9F");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.PassengerDocumentCreatedByNavigations)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Passenger__Creat__318258D2");
+
+            entity.HasOne(d => d.IdNavigation).WithOne(p => p.PassengerDocument)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PassengerDoc__Id__2EA5EC27");
+
+            entity.HasOne(d => d.ModifiedByNavigation).WithMany(p => p.PassengerDocumentModifiedByNavigations)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Passenger__Modif__32767D0B");
         });
 
         modelBuilder.Entity<Reservation>(entity =>

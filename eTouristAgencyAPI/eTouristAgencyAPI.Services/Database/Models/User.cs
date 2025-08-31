@@ -106,6 +106,12 @@ public partial class User
     [InverseProperty("CreatedByNavigation")]
     public virtual ICollection<Passenger> PassengerCreatedByNavigations { get; set; } = new List<Passenger>();
 
+    [InverseProperty("CreatedByNavigation")]
+    public virtual ICollection<PassengerDocument> PassengerDocumentCreatedByNavigations { get; set; } = new List<PassengerDocument>();
+
+    [InverseProperty("ModifiedByNavigation")]
+    public virtual ICollection<PassengerDocument> PassengerDocumentModifiedByNavigations { get; set; } = new List<PassengerDocument>();
+
     [InverseProperty("ModifiedByNavigation")]
     public virtual ICollection<Passenger> PassengerModifiedByNavigations { get; set; } = new List<Passenger>();
 

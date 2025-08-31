@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:core';
+import 'package:etouristagency_desktop/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_desktop/models/paginated_list.dart';
 import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -28,6 +29,11 @@ abstract class BaseProvider<TResponseModel> {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return jsonToModel({});
+    }
+
     if (response.statusCode != 200) throw Exception(response.body);
 
     return jsonToModel(jsonDecode(response.body));
@@ -44,8 +50,12 @@ abstract class BaseProvider<TResponseModel> {
       body: jsonEncode(insertModel),
     );
 
-    if (response.statusCode != 200)
-      throw Exception(response.body);
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
+    if (response.statusCode != 200) throw Exception(response.body);
   }
 
   Future update(String id, Map<String, dynamic> updateModel) async {
@@ -59,8 +69,12 @@ abstract class BaseProvider<TResponseModel> {
       body: jsonEncode(updateModel),
     );
 
-    if (response.statusCode != 200)
-      throw Exception(response.body);
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
+    if (response.statusCode != 200) throw Exception(response.body);
   }
 
   Future<PaginatedList<TResponseModel>> getAll(
@@ -77,8 +91,12 @@ abstract class BaseProvider<TResponseModel> {
       },
     );
 
-    if (response.statusCode != 200)
-      throw Exception(response.body);
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return PaginatedList([], 0);
+    }
+
+    if (response.statusCode != 200) throw Exception(response.body);
 
     return jsonToPaginatedList(jsonDecode(response.body));
   }

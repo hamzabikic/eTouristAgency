@@ -1,3 +1,4 @@
+import 'package:etouristagency_desktop/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_desktop/models/offer/offer.dart';
 import 'package:etouristagency_desktop/models/offer/offer_document_info.dart';
 import 'package:etouristagency_desktop/models/offer/offer_image_info.dart';
@@ -23,6 +24,11 @@ class OfferProvider extends BaseProvider<Offer> {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
     if (response.statusCode != 200) {
       throw Exception(
         "Dogodila se greška prilikom aktiviranja ponude ${response.body}",
@@ -41,6 +47,11 @@ class OfferProvider extends BaseProvider<Offer> {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
     if (response.statusCode != 200) {
       throw Exception(
         "Dogodila se greška prilikom aktiviranja ponude ${response.body}",
@@ -56,6 +67,11 @@ class OfferProvider extends BaseProvider<Offer> {
       headers: {"Authorization": (await authService.getBasicKey())!},
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return OfferImageInfo(null, null);
+    }
+
     if (response.statusCode != 200)
       throw Exception("Greška pri učitavanju slike: ${response.body}");
 
@@ -70,9 +86,17 @@ class OfferProvider extends BaseProvider<Offer> {
       headers: {"Authorization": (await authService.getBasicKey())!},
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return OfferDocumentInfo(null, null);
+    }
+
     if (response.statusCode != 200)
       throw Exception("Greška pri učitavanju dokumenta: ${response.body}");
 
-    return OfferDocumentInfo(response.bodyBytes, response.headers["documentname"]);
+    return OfferDocumentInfo(
+      response.bodyBytes,
+      response.headers["documentname"],
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -185,6 +186,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                       ),
                                 FormBuilderTextField(
                                   name: "phoneNumber",
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                   decoration: InputDecoration(
                                     labelText: "Broj telefona",
                                   ),

@@ -1,3 +1,4 @@
+import 'package:etouristagency_desktop/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_desktop/models/hotel/hotel.dart';
 import 'package:etouristagency_desktop/models/hotel/hotel_image_info.dart';
 import 'package:etouristagency_desktop/providers/base_provider.dart';
@@ -18,6 +19,11 @@ class HotelProvider extends BaseProvider<Hotel> {
       url,
       headers: {"Authorization": (await authService.getBasicKey())!},
     );
+
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return HotelImageInfo(null, null, null);
+    }
 
     if (response.statusCode != 200)
       throw Exception("Greška pri učitavanju dokumenta: ${response.body}");

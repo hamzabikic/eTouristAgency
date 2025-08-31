@@ -28,7 +28,7 @@ class _UserListScreenState extends State<UserListScreen> {
   late final RoleProvider roleProvider;
   late final AuthService authService;
   late ScrollController horizontalScrollController;
-  String? username;
+  String? userId;
   Map<String, dynamic> queryStrings = {
     "page": 1,
     "roleId": "",
@@ -53,7 +53,7 @@ class _UserListScreenState extends State<UserListScreen> {
     return MasterScreen(
       ScreenNames.userScreen,
       SingleChildScrollView(
-        child: paginatedList != null && username !=null
+        child: paginatedList != null && userId != null
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,7 +74,7 @@ class _UserListScreenState extends State<UserListScreen> {
                               SizedBox(
                                 width: 250,
                                 child: FormBuilderTextField(
-                                  name:"",
+                                  name: "",
                                   initialValue: queryStrings["searchText"],
                                   onSubmitted: (value) async {
                                     queryStrings["searchText"] = value;
@@ -105,7 +105,7 @@ class _UserListScreenState extends State<UserListScreen> {
                                     await fetchUserData();
                                   },
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
@@ -173,7 +173,7 @@ class _UserListScreenState extends State<UserListScreen> {
                                         ),
                                       ),
                                       DataCell(
-                                        x.username != username
+                                        x.id != userId
                                             ? ElevatedButton(
                                                 onPressed: () {
                                                   if (x.roles != null &&
@@ -223,7 +223,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     ),
                   ),
                   buildPaginationButtons(),
-                  SizedBox(height:20)
+                  SizedBox(height: 20),
                 ],
               )
             : DialogHelper.openSpinner(context, "Dohvatam korisnike..."),
@@ -236,16 +236,23 @@ class _UserListScreenState extends State<UserListScreen> {
     setState(() {});
 
     paginatedList = await userProvider.getAll(queryStrings);
+    if (!mounted) return;
+
     setState(() {});
   }
 
   Future setUsername() async {
-    username = await authService.getUsername();
+    var userData = await authService.getUserData();
+
+    if (userData == null) return;
+
+    userId = userData.id;
   }
 
   Future fetchRoleData() async {
     roleList = (await roleProvider.getAll({})).listOfRecords;
 
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -276,7 +283,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     await fetchUserData();
                   },
                 )
-              : SizedBox(width:110),
+              : SizedBox(width: 110),
           SizedBox(width: 10),
           Text(
             "${queryStrings["page"]} / ${paginatedList!.totalPages!}",
@@ -291,7 +298,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     await fetchUserData();
                   },
                 )
-              : SizedBox(width:180),
+              : SizedBox(width: 180),
         ],
       ),
     );

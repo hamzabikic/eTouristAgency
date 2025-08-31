@@ -62,6 +62,9 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
                               await userProvider.resetPasswordByUserId(
                                 widget._user.id!,
                               );
+
+                              if (!mounted) return;
+
                               DialogHelper.openDialog(
                                 context,
                                 "Uspješno resetovanje lozinke",
@@ -116,6 +119,8 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
                                     setState(() {});
 
                                     await userProvider.verify(widget._user.id!);
+                                    if (!mounted) return;
+
                                     await updateUserData();
                                     DialogHelper.openDialog(
                                       context,
@@ -158,6 +163,8 @@ class _UpdateClientUserDialogState extends State<UpdateClientUserDialog> {
 
   Future updateUserData() async {
     widget._user = await userProvider.getById(widget._user.id!);
+
+    if (!mounted) return;
 
     setState(() {});
   }

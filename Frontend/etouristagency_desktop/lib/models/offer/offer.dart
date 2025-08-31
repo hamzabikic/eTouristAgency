@@ -47,19 +47,25 @@ class Offer {
     this.rooms,
     this.isEditable,
     this.isReviewable,
-    this.remainingSpots
+    this.remainingSpots,
   );
 
   factory Offer.fromJson(Map<String, dynamic> json) {
     return Offer(
       json["id"],
-      DateTime.parse(json["tripStartDate"]),
-      DateTime.parse(json["tripEndDate"]),
+      json["tripStartDate"] != null
+          ? DateTime.parse(json["tripStartDate"])
+          : null,
+      json["tripEndDate"] != null ? DateTime.parse(json["tripEndDate"]) : null,
       json["numberOfNights"],
       json["carriers"],
       json["description"],
-      DateTime.parse(json["firstPaymentDeadline"]),
-      DateTime.parse(json["lastPaymentDeadline"]),
+      json["firstPaymentDeadline"] != null
+          ? DateTime.parse(json["firstPaymentDeadline"])
+          : null,
+      json["lastPaymentDeadline"] != null
+          ? DateTime.parse(json["lastPaymentDeadline"])
+          : null,
       json["offerNo"],
       json["departurePlace"],
       json["hotelId"],
@@ -82,7 +88,7 @@ class Offer {
           : null,
       json["isEditable"],
       json["isReviewable"],
-      json["remainingSpots"]
+      json["remainingSpots"],
     );
   }
 

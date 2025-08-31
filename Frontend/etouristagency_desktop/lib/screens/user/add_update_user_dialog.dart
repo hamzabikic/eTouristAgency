@@ -128,7 +128,9 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                       FormBuilderTextField(
                         name: "phoneNumber",
                         decoration: InputDecoration(labelText: "Broj telefona"),
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         validator: FormBuilderValidators.compose([
                           FormBuilderValidators.minLength(
                             6,
@@ -138,41 +140,6 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                           FormBuilderValidators.numeric(
                             errorText:
                                 "Broj telefona treba biti u formatu: 061000000",
-                          ),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "password",
-                        obscureText: true,
-                        decoration: InputDecoration(labelText: "Lozinka"),
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.minLength(
-                            8,
-                            errorText:
-                                "Lozinka mora sadržavati minimalno 8 karaktera.",
-                          ),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "confirmPassword",
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: "Potvrda lozinke",
-                        ),
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.minLength(
-                            8,
-                            errorText:
-                                "Lozinka mora sadržavati minimalno 8 karaktera.",
-                          ),
-                          FormBuilderValidators.conditional(
-                            (value) =>
-                                value !=
-                                addUserFormBuilderKey
-                                    .currentState!
-                                    .fields["password"]!
-                                    .value,
-                            (value) => "Lozinke nisu podudarne.",
                           ),
                         ]),
                       ),
@@ -248,6 +215,8 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
           ? await userProvider.add(insertModel)
           : await userProvider.update(widget.user!.id!, insertModel);
 
+      if (!mounted) return;
+
       DialogHelper.openDialog(
         context,
         widget.user == null
@@ -317,6 +286,8 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
   Future fetchRoleData() async {
     roleList = (await roleProvider.getAll({})).listOfRecords;
 
+    if (!mounted) return;
+
     setState(() {});
   }
 
@@ -327,6 +298,9 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
       "Ovom akcijom ćete trajno obrisati korisnički nalog i isti će postati nepovratan.",
       () async {
         await userProvider.deactivate(widget.user!.id!);
+
+        if (!mounted) return;
+
         Navigator.of(context).pop();
         DialogHelper.openDialog(
           context,

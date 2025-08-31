@@ -209,6 +209,7 @@ class _ReservationReviewListScreenState
     setState(() {});
 
     paginatedList = await reservationReviewProvider.getAll(queryStrings);
+    if (!mounted) return;
     setState(() {});
   }
 }

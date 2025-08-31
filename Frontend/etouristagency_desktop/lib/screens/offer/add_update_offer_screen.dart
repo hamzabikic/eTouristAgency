@@ -12,6 +12,7 @@ import 'package:etouristagency_desktop/models/room_type/room_type.dart';
 import 'package:etouristagency_desktop/providers/entity_code_value_provider.dart';
 import 'package:etouristagency_desktop/providers/hotel_provider.dart';
 import 'package:etouristagency_desktop/providers/offer_provider.dart';
+import 'package:etouristagency_desktop/providers/passenger_provider.dart';
 import 'package:etouristagency_desktop/providers/room_type_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/models/discount_accordion_item.dart';
@@ -797,11 +798,15 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
     hotelList = (await hotelProvider.getAll({
       "recordsPerPage": 50,
     })).listOfRecords;
+
+    if (!mounted) return;
     setState(() {});
   }
 
   Future fetchBoardTypeData() async {
     boardTypeList = await entityCodeValueProvider.GetBoardTypeList();
+
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -810,6 +815,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
       "recordsPerPage": 50,
     })).listOfRecords;
 
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -903,7 +909,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(
                           errorText: "Ovo polje je obavezno.",
-                        )
+                        ),
                       ]),
                     ),
                   ),
@@ -925,7 +931,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(
                           errorText: "Ovo polje je obavezno.",
-                        )
+                        ),
                       ]),
                     ),
                   ),
@@ -947,7 +953,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(
                           errorText: "Ovo polje je obavezno.",
-                        )
+                        ),
                       ]),
                     ),
                   ),
@@ -1044,7 +1050,7 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(
                           errorText: "Ovo polje je obavezno.",
-                        )
+                        ),
                       ]),
                     ),
                   ),
@@ -1235,6 +1241,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
       if (widget.offerId == null) {
         await offerProvider.add(offerJson);
 
+        if (!mounted) return;
+
         DialogHelper.openDialog(context, "Uspješno kreirana rezervacija", () {
           Navigator.of(context).pop();
           Navigator.of(context).pushReplacement(
@@ -1243,6 +1251,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
         });
       } else {
         await offerProvider.update(widget.offerId!, offerJson);
+
+        if (!mounted) return;
 
         DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
           Navigator.of(context).pop();
@@ -1306,6 +1316,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
 
     try {
       var offerImageInfo = await offerProvider.getOfferImage(widget.offerId!);
+
+      if (!mounted) return;
+
       photo = offerImageInfo.imageBytes;
       photoName = offerImageInfo.imageName;
     } on Exception catch (ex) {}
@@ -1318,6 +1331,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
 
     try {
       var documentInfo = await offerProvider.getOfferDocument(offer!.id!);
+
+      if (!mounted) return;
+
       document = documentInfo.documentBytes;
       documentName = documentInfo.documentName;
     } on Exception catch (ex) {}
@@ -1331,6 +1347,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
 
     try {
       await offerProvider.activate(offer!.id!);
+
+      if (!mounted) return;
+
       DialogHelper.openDialog(context, "Uspješno aktiviranje ponude", () async {
         Navigator.of(context).pop();
         Navigator.of(context).pushReplacement(
@@ -1355,6 +1374,9 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
 
     try {
       await offerProvider.deactivate(offer!.id!);
+
+      if (!mounted) return;
+
       DialogHelper.openDialog(context, "Uspješno otkazana ponuda", () async {
         Navigator.of(context).pop();
         Navigator.of(context).pushReplacement(
@@ -1384,6 +1406,8 @@ class _AddUpdateOfferScreenState extends State<AddUpdateOfferScreen> {
     }
 
     offer = await offerProvider.getById(widget.offerId!);
+
+    if (!mounted) return;
 
     _isEditable = offer!.isEditable!;
     isRoomUpdateEnabled =

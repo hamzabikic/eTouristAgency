@@ -223,7 +223,11 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                       ),
                                       DataCell(Text(x.carriers ?? "")),
                                       DataCell(Text(x.offerStatus?.name ?? "")),
-                                      DataCell(Text(x.remainingSpots?.toString() ?? "")),
+                                      DataCell(
+                                        Text(
+                                          x.remainingSpots?.toString() ?? "",
+                                        ),
+                                      ),
                                       DataCell(
                                         ElevatedButton(
                                           child: Text("Uredi"),
@@ -258,22 +262,24 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                           },
                                         ),
                                       ),
-                                       DataCell(
-                                        x.isReviewable! ? ElevatedButton(
-                                          child: Text("Recenzije"),
-                                          onPressed: () {
-                                            Navigator.of(
-                                              context,
-                                            ).pushReplacement(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ReservationReviewListScreen(
-                                                      x,
+                                      DataCell(
+                                        x.isReviewable!
+                                            ? ElevatedButton(
+                                                child: Text("Recenzije"),
+                                                onPressed: () {
+                                                  Navigator.of(
+                                                    context,
+                                                  ).pushReplacement(
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          ReservationReviewListScreen(
+                                                            x,
+                                                          ),
                                                     ),
-                                              ),
-                                            );
-                                          },
-                                        ) : SizedBox(),
+                                                  );
+                                                },
+                                              )
+                                            : SizedBox(),
                                       ),
                                     ],
                                   ),
@@ -407,6 +413,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
     setState(() {});
 
     paginatedList = await offerProvider.getAll(queryStrings);
+
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -415,11 +423,13 @@ class _OfferListScreenState extends State<OfferListScreen> {
       "recordsPerPage": 50,
     })).listOfRecords!;
 
+    if (!mounted) return;
     setState(() {});
   }
 
   Future fetchOfferStatusData() async {
     offerStatusList = await entityCodeValueProvider.GetOfferStatusList();
+    if (!mounted) return;
 
     setState(() {});
   }

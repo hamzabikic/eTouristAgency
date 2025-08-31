@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using eTouristAgencyAPI.Models.RequestModels.Reservation;
+﻿using eTouristAgencyAPI.Models.RequestModels.Reservation;
 using eTouristAgencyAPI.Models.ResponseModels;
 using eTouristAgencyAPI.Models.ResponseModels.Reservation;
 using eTouristAgencyAPI.Models.SearchModels;

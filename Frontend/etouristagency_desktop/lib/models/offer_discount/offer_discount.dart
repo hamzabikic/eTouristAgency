@@ -18,7 +18,7 @@ class OfferDiscount {
     this.validTo,
     this.discountType,
     this.isEditable,
-    this.isRemovable
+    this.isRemovable,
   });
 
   factory OfferDiscount.fromJson(Map<String, dynamic> json) {
@@ -26,13 +26,15 @@ class OfferDiscount {
       id: json["id"],
       discountTypeId: json["discountTypeId"],
       discount: json["discount"],
-      validFrom: DateTime.parse(json["validFrom"]),
-      validTo: DateTime.parse(json["validTo"]),
+      validFrom: json["validFrom"] != null
+          ? DateTime.parse(json["validFrom"])
+          : null,
+      validTo: json["validTo"] != null ? DateTime.parse(json["validTo"]) : null,
       discountType: json["discountType"] != null
           ? EntityCodeValue.fromJson(json["discountType"])
           : null,
       isEditable: json["isEditable"],
-      isRemovable: json["isRemovable"]
+      isRemovable: json["isRemovable"],
     );
   }
 

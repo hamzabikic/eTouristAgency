@@ -68,7 +68,11 @@ class _AddUpdateCityDialogState extends State<AddUpdateCityDialog> {
                         name: "countryId",
                         initialValue: (widget.city?.countryId ?? ""),
                         items: getCountryDropdownItems(),
-                        validator: FormBuilderValidators.compose([FormBuilderValidators.required(errorText: "Ovo polje je obavezno.")])
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(
+                            errorText: "Ovo polje je obavezno.",
+                          ),
+                        ]),
                       ),
                       SizedBox(height: 20),
                       Row(
@@ -102,6 +106,10 @@ class _AddUpdateCityDialogState extends State<AddUpdateCityDialog> {
       "recordsPerPage": 1000,
     })).listOfRecords;
 
+    if (!mounted) {
+      return;
+    }
+
     setState(() {});
   }
 
@@ -133,6 +141,11 @@ class _AddUpdateCityDialogState extends State<AddUpdateCityDialog> {
     if (widget.city == null) {
       try {
         await cityProvider.add(json);
+
+        if (!mounted) {
+          return;
+        }
+
         DialogHelper.openDialog(context, "Uspješno dodan grad", () {
           Navigator.of(context).pop();
           Navigator.of(context).pop();
@@ -145,6 +158,11 @@ class _AddUpdateCityDialogState extends State<AddUpdateCityDialog> {
     } else {
       try {
         await cityProvider.update(widget.city!.id!, json);
+
+        if (!mounted) {
+          return;
+        }
+
         DialogHelper.openDialog(context, "Uspješno sačuvane izmjene", () {
           Navigator.of(context).pop();
           Navigator.of(context).pop();
