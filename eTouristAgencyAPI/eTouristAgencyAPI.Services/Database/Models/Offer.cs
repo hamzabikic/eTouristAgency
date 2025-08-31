@@ -90,4 +90,10 @@ public partial class Offer
 
     [NotMapped]
     public int RemainingSpots { get; set; }
+
+    [NotMapped]
+    public bool IsEditable { get; set; }
+
+    [NotMapped]
+    public bool IsReviewable { get; set; }
 }

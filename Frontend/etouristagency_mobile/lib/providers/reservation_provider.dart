@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:etouristagency_mobile/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_mobile/models/paginated_list.dart';
 import 'package:etouristagency_mobile/models/reservation/my_reservation.dart';
 import 'package:etouristagency_mobile/models/reservation/reservation.dart';
@@ -29,6 +29,12 @@ class ReservationProvider extends BaseProvider<Reservation> {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+
+      return PaginatedList([], 0);
+    }
+
     if (response.statusCode != 200) {
       throw Exception("Dogodila se greška: ${response.body}");
     }
@@ -53,6 +59,12 @@ class ReservationProvider extends BaseProvider<Reservation> {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+
+      return;
+    }
+
     if (response.statusCode != 200) {
       throw Exception(
         "Dogodila se greška prilikom otkazivanja rezervacije: ${response.body}",
@@ -71,6 +83,12 @@ class ReservationProvider extends BaseProvider<Reservation> {
       url,
       headers: {"Authorization": (await authService.getBasicKey())!},
     );
+
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+
+      return ReservationPaymentInfo(null, null);
+    }
 
     if (response.statusCode != 200)
       throw Exception(

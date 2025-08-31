@@ -1,3 +1,4 @@
+import 'package:etouristagency_mobile/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_mobile/models/offer/offer.dart';
 import 'package:etouristagency_mobile/models/offer/offer_document_info.dart';
 import 'package:etouristagency_mobile/models/offer/offer_image_info.dart';
@@ -20,6 +21,12 @@ class OfferProvider extends BaseProvider<Offer> {
       headers: {"Authorization": (await authService.getBasicKey())!},
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+
+      return OfferImageInfo(null, null);
+    }
+
     if (response.statusCode != 200) {
       throw Exception(
         "Dogodila se greška prilikom dohvatanja slike :${response.body}",
@@ -36,6 +43,12 @@ class OfferProvider extends BaseProvider<Offer> {
       url,
       headers: {"Authorization": (await authService.getBasicKey())!},
     );
+
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+
+      return OfferDocumentInfo(null, null);
+    }
 
     if (response.statusCode != 200) {
       throw Exception(

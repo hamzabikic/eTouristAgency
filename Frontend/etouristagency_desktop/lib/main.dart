@@ -2,6 +2,8 @@ import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   runApp(const MyApp());
 }
@@ -13,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'eTouristAgency Desktop App',
       theme: ThemeData(
         // This is the theme of your application.

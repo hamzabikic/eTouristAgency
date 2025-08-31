@@ -79,7 +79,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                             SizedBox(height: 10),
                             Center(
                               child: Text(
-                                "${offer!.hotel?.name ?? ""}",
+                                offer?.hotel?.name ?? "",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
@@ -316,13 +316,16 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
 
   Future fetchOfferData() async {
     offer = Offer.fromJson(await offerProvider.getById(widget.offerId));
+    if (!mounted) return;
 
     try {
       offerImageInfo = await offerProvider.getOfferImage(widget.offerId);
+      if (!mounted) return;
     } on Exception catch (ex) {}
 
     try {
       offerDocumentInfo = await offerProvider.getOfferDocument(widget.offerId);
+      if (!mounted) return;
     } on Exception catch (ex) {}
 
     setState(() {});

@@ -54,7 +54,8 @@ namespace eTouristAgencyAPI.Authentication
             var claims = new List<Claim>()
             {
                 new Claim (CustomClaimTypes.Id, user.Id.ToString()),
-                new Claim (ClaimTypes.Name, username)
+                new Claim (ClaimTypes.Name, username),
+                new Claim (CustomClaimTypes.IsVerified, user.IsVerified.ToString())
             };
 
             claims.AddRange(user.Roles.Select(x => new Claim(ClaimTypes.Role, x.Name)));

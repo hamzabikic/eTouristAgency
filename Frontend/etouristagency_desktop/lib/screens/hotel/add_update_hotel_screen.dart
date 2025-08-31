@@ -12,6 +12,7 @@ import 'package:etouristagency_desktop/screens/hotel/hotel_list_screen.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -30,6 +31,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
   List<HotelImageInfo>? images;
   GlobalKey<FormBuilderState> addHotelFormBuilder =
       GlobalKey<FormBuilderState>();
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -103,6 +105,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
                         decoration: InputDecoration(
                           labelText: "Broj zvjezdica",
                         ),
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         validator: FormBuilderValidators.compose([
                           FormBuilderValidators.required(
                             errorText: "Ovo polje je obavezno.",
@@ -122,12 +125,26 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           ElevatedButton(
-                            onPressed: addHotel,
-                            child: Text(
-                              widget.hotel == null
-                                  ? "Sačuvaj"
-                                  : "Sačuvaj promjene",
-                            ),
+                            onPressed: !_isProcessing ? addUpdateHotel : null,
+                            child: !_isProcessing
+                                ? Text(
+                                    widget.hotel == null
+                                        ? "Sačuvaj"
+                                        : "Sačuvaj promjene",
+                                  )
+                                : Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: Transform.scale(
+                                        scale: 0.6,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                           ),
                         ],
                       ),
@@ -183,6 +200,8 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
     cityData = (await cityProvider.getAll({
       "recordsPerPage": 1000,
     })).listOfRecords;
+
+    if(!mounted) return;
 
     setState(() {});
   }
@@ -275,10 +294,13 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
     setState(() {});
   }
 
-  Future addHotel() async {
+  Future addUpdateHotel() async {
     bool isValid = addHotelFormBuilder.currentState!.validate();
 
     if (!isValid) return;
+
+    _isProcessing = true;
+    setState(() {});
 
     addHotelFormBuilder.currentState!.save();
     var formBuilderModel = addHotelFormBuilder.currentState!.value;
@@ -292,6 +314,8 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
         jsonModel["images"] = images?.map((e) => e.toJson()).toList();
         await hotelProvider.update(widget.hotel!.id!, jsonModel);
       }
+
+      if(!mounted) return;
 
       DialogHelper.openDialog(
         context,
@@ -311,6 +335,9 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
         Navigator.of(context).pop();
       }, type: DialogType.error);
     }
+
+    _isProcessing = false;
+    setState(() {});
   }
 
   Future loadHotelImages() async {
@@ -322,6 +349,8 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
 
     for (var item in widget.hotel!.hotelImages!) {
       var hotelImageInfo = await hotelProvider.getHotelImage(item.id!);
+
+      if(!mounted) return;
 
       images!.add(
         HotelImageInfo(

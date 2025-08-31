@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/consts/screen_names.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
@@ -69,7 +67,10 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                     separatorBuilder: (context, index) => SizedBox(height: 15),
                     itemBuilder: (context, index) {
                       if (index == paginatedList!.listOfRecords.length) {
-                        return SizedBox(height: 100, child: DialogHelper.openSpinner(context, ""));
+                        return SizedBox(
+                          height: 100,
+                          child: DialogHelper.openSpinner(context, ""),
+                        );
                       }
 
                       var offer = paginatedList!.listOfRecords[index];
@@ -175,7 +176,7 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                                                 OfferDetailsScreen(
                                                   ScreenNames
                                                       .lastMinuteOfferListScreen,
-                                                  offer.id!
+                                                  offer.id!,
                                                 ),
                                           ),
                                         );
@@ -210,6 +211,7 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
 
     paginatedList = await offerProvider.getAll(queryStrings);
 
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -219,6 +221,7 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
     });
 
     var newRecords = await offerProvider.getAll(queryStrings);
+    if (!mounted) return;
 
     paginatedList!.listOfRecords.addAll(newRecords.listOfRecords);
 

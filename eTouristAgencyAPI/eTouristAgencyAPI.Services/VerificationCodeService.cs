@@ -16,17 +16,20 @@ namespace eTouristAgencyAPI.Services
     {
         private readonly eTouristAgencyDbContext _dbContext;
         private readonly IEmailContentService _emailContentService;
+        private readonly IBus _bus;
 
         private readonly Guid? _userId;
 
         public VerificationCodeService(eTouristAgencyDbContext dbContext,
                                        IUserContextService userContextService,
-                                       IEmailContentService emailContentService)
+                                       IEmailContentService emailContentService,
+                                       IBus bus)
         {
             _dbContext = dbContext;
             _emailContentService = emailContentService;
 
             _userId = userContextService.GetUserId();
+            _bus = bus;
         }
 
         public async Task AddVerificationCodeAsync(EmailVerificationType verificationType, string email = "")
@@ -92,8 +95,7 @@ namespace eTouristAgencyAPI.Services
                         Recipients = [email]
                     };
 
-                    var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
-                    bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+                    _bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
                     {
                         EmailNotification = emailNotification
                     }));
@@ -109,8 +111,7 @@ namespace eTouristAgencyAPI.Services
                         Recipients = [email]
                     };
 
-                    bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
-                    bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+                    _bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
                     {
                         EmailNotification = emailNotification
                     }));

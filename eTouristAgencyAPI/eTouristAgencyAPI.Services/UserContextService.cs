@@ -39,5 +39,14 @@ namespace eTouristAgencyAPI.Services
 
             return user.Identity.Name;
         }
+
+        public bool UserIsVerified()
+        {
+            var user = _httpContext.HttpContext?.User;
+
+            if (user == null || !user.Identity.IsAuthenticated) return false;
+
+            return user.Claims.First(x => x.Type == CustomClaimTypes.IsVerified).Value == "True";
+        }
     }
 }

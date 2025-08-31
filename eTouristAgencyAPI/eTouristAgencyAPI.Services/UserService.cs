@@ -20,6 +20,7 @@ namespace eTouristAgencyAPI.Services
     {
         private readonly IVerificationCodeService _verificationCodeService;
         private readonly IEmailContentService _emailContentService;
+        private readonly IBus _bus;
 
         private readonly bool _isAdmin;
         private readonly Guid? _userId;
@@ -28,13 +29,15 @@ namespace eTouristAgencyAPI.Services
                            IMapper mapper,
                            IUserContextService userContextService,
                            IVerificationCodeService verificationCodeService,
-                           IEmailContentService emailContentService) : base(dbContext, mapper)
+                           IEmailContentService emailContentService,
+                           IBus bus) : base(dbContext, mapper)
         {
             _verificationCodeService = verificationCodeService;
             _emailContentService = emailContentService;
 
             _isAdmin = userContextService.UserHasRole(Roles.Admin);
             _userId = userContextService.GetUserId();
+            _bus = bus;
         }
 
         public override Task<UserResponse> GetByIdAsync(Guid id)
@@ -63,7 +66,7 @@ namespace eTouristAgencyAPI.Services
 
         public async Task ResetPasswordAsync(Guid userId)
         {
-            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Id == userId && x.IsActive);
 
             if (user == null) throw new Exception("User with provided id is not found.");
             if (!user.Roles.Any(x => x.Id == AppConstants.FixedRoleClientId)) throw new Exception("Reset password is only allowed for client users.");
@@ -82,8 +85,7 @@ namespace eTouristAgencyAPI.Services
                 Recipients = [user.Email]
             };
 
-            var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
-            bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+            _bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
             {
                 EmailNotification = emailNotification
             }));
@@ -226,6 +228,7 @@ namespace eTouristAgencyAPI.Services
         {
             if (_userId != dbModel.Id && !dbModel.Roles.Any(x => x.Id == AppConstants.FixedRoleAdminId)) throw new Exception("Only users with the Admin role can be updated.");
             if (updateModel.Password != updateModel.ConfirmPassword) throw new Exception("Entered passwords are not equal.");
+            if (_userId != dbModel.Id && (string.IsNullOrEmpty(updateModel.Password) || string.IsNullOrEmpty(updateModel.ConfirmPassword))) throw new Exception("You have to provide a new password.");
             if (updateModel.Username != dbModel.Username && await UsernameExistsAsync(updateModel.Username)) throw new Exception("Entered username is already in usage.");
             if (updateModel.Email != dbModel.Email)
             {
@@ -234,8 +237,12 @@ namespace eTouristAgencyAPI.Services
                 if (dbModel.Roles.Any(x => x.Name == Roles.Client)) dbModel.IsVerified = false;
             }
 
-            var passwordHasher = new PasswordHasher<User>();
-            dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, updateModel.Password);
+            if (_userId == dbModel.Id)
+            {
+                var passwordHasher = new PasswordHasher<User>();
+                dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, updateModel.Password);
+            }
+
             dbModel.ModifiedOn = DateTime.Now;
         }
 

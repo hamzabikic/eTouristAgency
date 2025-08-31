@@ -86,8 +86,9 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                                 SizedBox(
                                   width: 250,
                                   child: FormBuilderTextField(
-                                    name:"",
-                                    initialValue: queryStrings["reservationNoSearchText"],
+                                    name: "",
+                                    initialValue:
+                                        queryStrings["reservationNoSearchText"],
                                     decoration: InputDecoration(
                                       labelText: "Pretraga",
                                       helperText: "Broj rezervacije",
@@ -97,7 +98,8 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                                       ),
                                     ),
                                     onSubmitted: (value) async {
-                                      queryStrings["reservationNoSearchText"] = value;
+                                      queryStrings["reservationNoSearchText"] =
+                                          value;
                                       queryStrings["page"] = 1;
                                       await fetchData();
                                     },
@@ -129,102 +131,126 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                       ],
                     ),
                   ),
-                  paginatedList!.listOfRecords!.isNotEmpty ? Scrollbar(
-                    thumbVisibility: true,
-                    interactive: true,
-                    controller: horizontalScrollController,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      controller: horizontalScrollController,
-                      child: Container(
-                        constraints: BoxConstraints(
-                          minWidth: MediaQuery.of(context).size.width,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: DataTable(
-                            columns: [
-                              DataColumn(label: Text("Broj rezervacije")),
-                              DataColumn(label: Text("Broj ponude")),
-                              DataColumn(label: Text("Datum kreiranja")),
-                              DataColumn(label: Text("Kreirao/la")),
-                              DataColumn(label: Text("Vrsta sobe")),
-                              DataColumn(label: Text("Broj putnika")),
-                              DataColumn(label: Text("Iskorišten popust")),
-                              DataColumn(label: Text("Ukupna cijena")),
-                              DataColumn(label: Text("Uplaćeno")),
-                              DataColumn(label: SizedBox()),
-                            ],
-                            rows: paginatedList!.listOfRecords!
-                                .map(
-                                  (x) => DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Text(x.reservationNo?.toString() ?? ""),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          widget.offer.offerNo?.toString() ??
-                                              "",
-                                        ),
-                                      ),
-                                      DataCell(Text(x.formatedCreatedOn)),
-                                      DataCell(
-                                        Text(
-                                          "${x.user!.firstName} ${x.user!.lastName}",
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text(x.room?.roomType?.name ?? ""),
-                                      ),
-                                      DataCell(
-                                        Text(x.passengers!.length.toString()),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          x.offerDiscount?.discountType?.name ??
-                                              "",
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          "${FormatHelper.formatNumber(x.totalCost!)} KM",
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Text(
-                                          "${FormatHelper.formatNumber(x.paidAmount!)} KM",
-                                        ),
-                                      ),
-                                      DataCell(
-                                        ElevatedButton(
-                                          child: Text("Detalji"),
-                                          onPressed: () {
-                                            Navigator.of(
-                                              context,
-                                            ).pushReplacement(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    UpdateReservationScreen(
-                                                      widget.offer,
-                                                      x.id!,
-                                                    ),
+                  paginatedList!.listOfRecords!.isNotEmpty
+                      ? Scrollbar(
+                          thumbVisibility: true,
+                          interactive: true,
+                          controller: horizontalScrollController,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            controller: horizontalScrollController,
+                            child: Container(
+                              constraints: BoxConstraints(
+                                minWidth: MediaQuery.of(context).size.width,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: DataTable(
+                                  columns: [
+                                    DataColumn(label: Text("Broj rezervacije")),
+                                    DataColumn(label: Text("Broj ponude")),
+                                    DataColumn(label: Text("Datum kreiranja")),
+                                    DataColumn(label: Text("Kreirao/la")),
+                                    DataColumn(label: Text("Vrsta sobe")),
+                                    DataColumn(label: Text("Broj putnika")),
+                                    DataColumn(
+                                      label: Text("Iskorišten popust"),
+                                    ),
+                                    DataColumn(label: Text("Ukupna cijena")),
+                                    DataColumn(label: Text("Uplaćeno")),
+                                    DataColumn(label: SizedBox()),
+                                  ],
+                                  rows: paginatedList!.listOfRecords!
+                                      .map(
+                                        (x) => DataRow(
+                                          cells: [
+                                            DataCell(
+                                              Text(
+                                                x.reservationNo?.toString() ??
+                                                    "",
                                               ),
-                                            );
-                                          },
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                widget.offer.offerNo
+                                                        ?.toString() ??
+                                                    "",
+                                              ),
+                                            ),
+                                            DataCell(Text(x.formatedCreatedOn)),
+                                            DataCell(
+                                              Text(
+                                                "${x.user!.firstName} ${x.user!.lastName}",
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                x.room?.roomType?.name ?? "",
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                x.passengers!.length.toString(),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                x
+                                                        .offerDiscount
+                                                        ?.discountType
+                                                        ?.name ??
+                                                    "",
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                "${FormatHelper.formatNumber(x.totalCost!)} KM",
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                "${FormatHelper.formatNumber(x.paidAmount!)} KM",
+                                              ),
+                                            ),
+                                            DataCell(
+                                              ElevatedButton(
+                                                child: Text("Detalji"),
+                                                onPressed: () {
+                                                  Navigator.of(
+                                                    context,
+                                                  ).pushReplacement(
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          UpdateReservationScreen(
+                                                            widget.offer,
+                                                            x.id!,
+                                                          ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       )
-                                    ],
-                                  ),
-                                )
-                                .toList(),
+                                      .toList(),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ) : SizedBox(),
-                  paginatedList!.listOfRecords!.isNotEmpty? buildPaginationButtons(): SizedBox(),
-                  paginatedList!.listOfRecords!.isEmpty ? Center(child: Text("Trenutno nema kreiranih rezervacija za ovu ponudu.", style: TextStyle(fontSize: 20))) : SizedBox()
+                        )
+                      : SizedBox(),
+                  paginatedList!.listOfRecords!.isNotEmpty
+                      ? buildPaginationButtons()
+                      : SizedBox(),
+                  paginatedList!.listOfRecords!.isEmpty
+                      ? Center(
+                          child: Text(
+                            "Trenutno nema kreiranih rezervacija za ovu ponudu.",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        )
+                      : SizedBox(),
                 ],
               )
             : DialogHelper.openSpinner(context, "Dohvatam rezervacije..."),
@@ -237,6 +263,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
     setState(() {});
 
     paginatedList = await reservationProvider.getAll(queryStrings);
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -278,6 +305,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
     reservationStatusList =
         await entityCodeValueProvider.GetReservationStatusList();
 
+    if (!mounted) return;
     setState(() {});
   }
 

@@ -34,7 +34,7 @@ namespace eTouristAgencyAPI.Controllers
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPost("board-type")]
-        public async Task<ActionResult<EntityCodeValueResponse>> AddBoardType(AddUpdateEntityCodeValueRequest request)
+        public async Task<ActionResult> AddBoardType(AddUpdateEntityCodeValueRequest request)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace eTouristAgencyAPI.Controllers
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPost("reservation-status")]
-        public async Task<ActionResult<EntityCodeValueResponse>> AddReservationStatus(AddUpdateEntityCodeValueRequest request)
+        public async Task<ActionResult> AddReservationStatus(AddUpdateEntityCodeValueRequest request)
         {
             try
             {
@@ -111,7 +111,7 @@ namespace eTouristAgencyAPI.Controllers
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPut("{id}")]
-        public async Task<ActionResult<EntityCodeValueResponse>> Update(Guid id, [FromBody] AddUpdateEntityCodeValueRequest updateModel)
+        public async Task<ActionResult> Update(Guid id, [FromBody] AddUpdateEntityCodeValueRequest updateModel)
         {
             try
             {

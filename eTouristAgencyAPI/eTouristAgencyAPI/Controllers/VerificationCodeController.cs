@@ -2,7 +2,6 @@
 using eTouristAgencyAPI.Services.Enums;
 using eTouristAgencyAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eTouristAgencyAPI.Controllers

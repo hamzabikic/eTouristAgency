@@ -6,6 +6,7 @@ import 'package:etouristagency_desktop/providers/user_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -22,7 +23,7 @@ class _AccountScreenState extends State<AccountScreen> {
   bool usernameIsValid = true;
   bool emailIsValid = true;
   User? user = null;
-  bool buttonEnabled = true;
+  bool _isProcessing = false;
   late final UserProvider userProvider;
   late final AuthService authService;
 
@@ -59,7 +60,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Izmjena podataka",
+                              "Podaci o korisničkom nalogu",
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w500,
@@ -104,7 +105,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                       usernameIsValid) {
                                     return null;
                                   } else {
-                                    "Uneseno korisničko ime se već koristi.";
+                                    return "Uneseno korisničko ime se već koristi.";
                                   }
                                 },
                               ]),
@@ -134,6 +135,9 @@ class _AccountScreenState extends State<AccountScreen> {
                               decoration: InputDecoration(
                                 labelText: "Broj telefona",
                               ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
                               validator: FormBuilderValidators.compose([
                                 FormBuilderValidators.minLength(
                                   6,
@@ -183,8 +187,23 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                             SizedBox(height: 20),
                             ElevatedButton(
-                              onPressed: buttonEnabled ? updateUser : () {},
-                              child: Text("Sačuvaj promjene"),
+                              onPressed: !_isProcessing ? updateUser : null,
+                              child: !_isProcessing
+                                  ? Text("Sačuvaj promjene")
+                                  : Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: Transform.scale(
+                                          scale: 0.6,
+                                          child:
+                                              const CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ],
                         ),
@@ -199,18 +218,17 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future updateUser() async {
-    buttonEnabled = false;
-    setState(() {});
     await validateEmail();
     await validateUsername();
 
     bool isValid = updateUserFormBuilder.currentState!.validate();
 
     if (!isValid) {
-      buttonEnabled = true;
-      setState(() {});
       return;
     }
+
+    _isProcessing = true;
+    setState(() {});
 
     updateUserFormBuilder.currentState!.save();
     var insertModel = Map<String, dynamic>.from(
@@ -220,38 +238,50 @@ class _AccountScreenState extends State<AccountScreen> {
 
     try {
       var response = await userProvider.update(user!.id!, insertModel);
+      if (!mounted) return;
+
       await authService.storeCredentials(
         insertModel["username"],
         insertModel["password"],
       );
       await fetchUserData();
+      await authService.storeData(user!);
 
       DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
         Navigator.of(context).pop();
       });
     } on Exception catch (ex) {
-      operationErrorMessage = ex.toString();
-      setState(() {});
+      DialogHelper.openDialog(context, ex.toString(), () {
+        Navigator.of(context).pop();
+      }, type: DialogType.error);
     }
 
-    buttonEnabled = true;
+    _isProcessing = false;
     setState(() {});
     return;
   }
 
   Future validateUsername() async {
+    if (updateUserFormBuilder.currentState!.fields["username"]!.value == null)
+      return;
+
     usernameIsValid = !(await checkEmailAndUsername(
       "",
       updateUserFormBuilder.currentState!.fields["username"]!.value ?? "",
     ));
+
     setState(() {});
   }
 
   Future validateEmail() async {
+    if (updateUserFormBuilder.currentState!.fields["email"]!.value == null)
+      return;
+
     emailIsValid = !(await checkEmailAndUsername(
       updateUserFormBuilder.currentState!.fields["email"]!.value ?? "",
       "",
     ));
+
     setState(() {});
   }
 
@@ -264,7 +294,13 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future fetchUserData() async {
-    user = User.fromJson(await userProvider.getMe());
+    var userId = (await authService.getUserData())?.id;
+
+    if (userId == null) return;
+
+    user = await userProvider.getById(userId);
+
+    if (!mounted) return;
 
     setState(() {});
   }

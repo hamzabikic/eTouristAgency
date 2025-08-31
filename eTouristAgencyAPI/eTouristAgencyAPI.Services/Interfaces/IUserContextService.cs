@@ -5,5 +5,6 @@
         Guid? GetUserId();
         bool UserHasRole(string roleName);
         string GetUsername();
+        public bool UserIsVerified();
     }
 }

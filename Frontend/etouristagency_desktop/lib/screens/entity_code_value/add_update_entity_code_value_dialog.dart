@@ -112,6 +112,10 @@ class _AddUpdateEntityCodeValueDialogState
         await entityCodeValueProvider.addReservationStatus(json);
       }
 
+      if (!mounted) {
+        return;
+      }
+
       DialogHelper.openDialog(context, "Uspješno dodavanje tipa usluge", () {
         Navigator.of(context).pop();
         Navigator.of(context).pop();
@@ -133,6 +137,10 @@ class _AddUpdateEntityCodeValueDialogState
         widget.entityCodeValue!.id!,
         formBuilderKey.currentState!.value,
       );
+
+      if (!mounted) {
+        return;
+      }
 
       DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
         Navigator.of(context).pop();

@@ -27,6 +27,8 @@ class Reservation {
   List<ReservationPayment>? reservationPayments;
   User? user;
   String? note;
+  bool? isEditable;
+  bool? isReviewable;
 
   String get formatedCreatedOn =>
       DateFormat('dd.MM.yyyy HH:mm').format(createdOn!);
@@ -50,6 +52,8 @@ class Reservation {
     this.reservationPayments,
     this.user,
     this.note,
+    this.isEditable,
+    this.isReviewable
   );
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
@@ -88,6 +92,8 @@ class Reservation {
           : null,
       json["user"] != null ? User.fromJson(json["user"]) : null,
       json["note"],
+      json["isEditable"],
+      json["isReviewable"]
     );
   }
 

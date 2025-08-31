@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/consts/app_constants.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
@@ -206,6 +204,8 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
       queryStrings,
     );
 
+    if(!mounted) return;
+
     setState(() {});
   }
 
@@ -217,6 +217,8 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
     var newRecords = await reservationProvider.getAllForCurrentUser(
       queryStrings,
     );
+
+    if(!mounted) return;
 
     paginatedList!.listOfRecords.addAll(newRecords.listOfRecords);
 

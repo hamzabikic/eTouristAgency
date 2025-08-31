@@ -6,6 +6,8 @@ class DiscountAccordionItem {
   String? discount;
   DateTime? validFrom;
   DateTime? validTo;
+  bool? isEditable;
+  bool? isRemovable;
 
   DiscountAccordionItem({
     this.id,
@@ -13,11 +15,9 @@ class DiscountAccordionItem {
     this.discount,
     this.validFrom,
     this.validTo,
+    this.isEditable,
+    this.isRemovable
   });
-
-  bool isUpdateEnabled() {
-    return validFrom == null || DateTime.now().isBefore(validFrom ?? DateTime.now());
-  }
 
   factory DiscountAccordionItem.fromOfferDiscount(OfferDiscount discount) {
     return DiscountAccordionItem(
@@ -26,6 +26,8 @@ class DiscountAccordionItem {
       discount: discount.discount?.toString(),
       validFrom: discount.validFrom,
       validTo: discount.validTo,
+      isEditable: discount.isEditable,
+      isRemovable: discount.isRemovable
     );
   }
 

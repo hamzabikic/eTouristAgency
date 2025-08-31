@@ -10,11 +10,13 @@ import 'package:etouristagency_mobile/helpers/format_helper.dart';
 import 'package:etouristagency_mobile/models/offer/offer.dart';
 import 'package:etouristagency_mobile/models/offer/offer_document_info.dart';
 import 'package:etouristagency_mobile/models/offer/offer_image_info.dart';
+import 'package:etouristagency_mobile/models/passenger/passenger_document.dart';
 import 'package:etouristagency_mobile/models/reservation/reservation.dart';
 import 'package:etouristagency_mobile/models/reservation/reservation_payment_info.dart';
 import 'package:etouristagency_mobile/models/room/room.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
+import 'package:etouristagency_mobile/providers/passenger_provider.dart';
 import 'package:etouristagency_mobile/providers/reservation_provider.dart';
 import 'package:etouristagency_mobile/providers/reservation_review_provider.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
@@ -22,6 +24,7 @@ import 'package:etouristagency_mobile/screens/hotel/hotel_images_dialog.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/my_reservations_list_screen.dart';
+import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -61,29 +64,32 @@ class _AddUpdateReservationScreenState
   final TextEditingController noteEditingController = TextEditingController();
   late final ReservationProvider reservationProvider;
   late final UserProvider userProvider;
+  late final AuthService authService;
+  late final PassengerProvider passengerProvider;
   Reservation? reservation;
   List<Map<String, dynamic>> initialValues = [];
   List<ReservationPaymentInfo> loadedPayments = [];
   List<ReservationPaymentInfo> addedPayments = [];
+  List<PassengerDocument> passengerDocuments = [];
   bool _isProcessStarted = false;
-  bool _isEditingEnabled = true;
-  bool _isReviewEnabled = true;
   late final ReservationReviewProvider reservationReviewProvider;
   Map<String, dynamic> reviewRequestModel = {};
+  bool _isEditable = false;
+  bool _isReviewable = false;
 
   @override
   void initState() {
     if (widget.reservationId == null) {
       addNewPassenger();
-      _isReviewEnabled = false;
     }
     userProvider = UserProvider();
     offerProvider = OfferProvider();
     reservationProvider = ReservationProvider();
     reservationReviewProvider = ReservationReviewProvider();
+    authService = AuthService();
+    passengerProvider = PassengerProvider();
     fetchOfferData();
     fetchReservationData();
-    fetchReview();
     verifyUser();
     super.initState();
   }
@@ -443,7 +449,7 @@ class _AddUpdateReservationScreenState
                       maxOpenSections: 1,
                       children: getAccordionItems(),
                     ),
-                    _isEditingEnabled &&
+                    _isEditable &&
                             room!.roomType!.roomCapacity! >
                                 formBuilderKeys.length
                         ? Center(
@@ -497,7 +503,7 @@ class _AddUpdateReservationScreenState
                     TextField(
                       minLines: 3,
                       maxLines: 6,
-                      enabled: _isEditingEnabled,
+                      enabled: _isEditable,
                       controller: noteEditingController,
                       decoration: InputDecoration(labelText: "Napomena"),
                     ),
@@ -505,7 +511,7 @@ class _AddUpdateReservationScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        widget.reservationId == null || !_isEditingEnabled
+                        !_isEditable
                             ? SizedBox()
                             : ElevatedButton(
                                 onPressed: cancelReservation,
@@ -514,7 +520,7 @@ class _AddUpdateReservationScreenState
                                   style: TextStyle(color: AppColors.darkRed),
                                 ),
                               ),
-                        _isEditingEnabled
+                        _isEditable
                             ? ElevatedButton(
                                 onPressed: !_isProcessStarted
                                     ? createUpdateReservation
@@ -537,7 +543,7 @@ class _AddUpdateReservationScreenState
                             : SizedBox(),
                       ],
                     ),
-                    _isReviewEnabled
+                    _isReviewable
                         ? Row(
                             children: [
                               ElevatedButton(
@@ -556,7 +562,10 @@ class _AddUpdateReservationScreenState
   }
 
   Future fetchOfferData() async {
-    offer = Offer.fromJson(await offerProvider.getById(widget.offerId));
+    var offerJson = await offerProvider.getById(widget.offerId);
+    if (!mounted) return;
+
+    offer = Offer.fromJson(offerJson);
     room = offer!.rooms!.firstWhere((element) => element.id == widget.roomId);
 
     try {
@@ -567,21 +576,6 @@ class _AddUpdateReservationScreenState
       offerDocumentInfo = await offerProvider.getOfferDocument(widget.offerId);
     } on Exception catch (ex) {}
 
-    final now = DateUtils.dateOnly(DateTime.now());
-    final deadline = DateUtils.dateOnly(offer!.lastPaymentDeadline!);
-    final tripEnd = DateUtils.dateOnly(offer!.tripEndDate!);
-
-    if (offer!.offerStatusId!.toLowerCase() ==
-            AppConstants.inactiveOfferGuid.toLowerCase() ||
-        deadline.isBefore(now)) {
-      _isEditingEnabled = false;
-    }
-
-    if (offer!.offerStatusId!.toLowerCase() ==
-            AppConstants.inactiveOfferGuid.toLowerCase() ||
-        now.isBefore(tripEnd)) {
-      _isReviewEnabled = false;
-    }
     setState(() {});
   }
 
@@ -610,6 +604,8 @@ class _AddUpdateReservationScreenState
 
     int counter = 1;
     for (var item in formBuilderKeys) {
+      final int index = counter - 1;
+
       list.add(
         AccordionSection(
           header: Padding(
@@ -634,7 +630,7 @@ class _AddUpdateReservationScreenState
                     child: FormBuilderTextField(name: "id"),
                   ),
                   FormBuilderTextField(
-                    enabled: _isEditingEnabled,
+                    enabled: _isEditable,
                     name: "fullName",
                     decoration: InputDecoration(labelText: "Ime i prezime"),
                     validator: FormBuilderValidators.compose([
@@ -644,7 +640,7 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   FormBuilderDateTimePicker(
-                    enabled: _isEditingEnabled,
+                    enabled: _isEditable,
                     name: "dateOfBirth",
                     decoration: InputDecoration(labelText: "Datum rođenja"),
                     format: DateFormat("dd.MM.yyyy"),
@@ -656,7 +652,7 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   FormBuilderTextField(
-                    enabled: _isEditingEnabled,
+                    enabled: _isEditable,
                     name: "phoneNumber",
                     decoration: InputDecoration(labelText: "Broj telefona"),
                     validator: FormBuilderValidators.compose([
@@ -673,28 +669,62 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   SizedBox(height: 5),
-                  formBuilderKeys.length > 1 && _isEditingEnabled
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                  Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.description,
+                                        color: AppColors.primary,
+                                      ),
+                                      onPressed: () async {
+                                        await openPassengerDocument(index);
+                                      },
+                                    ),
+                                    SizedBox(width: 20),
+                                    _isEditable ? ElevatedButton(
+                                      onPressed: () async {
+                                        await pickAndUploadPassengerDocument(
+                                          index,
+                                        );
+                                      },
+                                      child: Icon(
+                                        Icons.upload,
+                                        color: AppColors.primary,
+                                      ),
+                                    ) : SizedBox(),
+                                  ],
+                                ),
+                                _isEditable ? SizedBox(height: 5) : SizedBox(),
+                                _isEditable ? Text(
+                                  "Ovdje učitajte prvu stranicu putovnice.",
+                                  style: TextStyle(fontSize: 14),
+                                ) : SizedBox(),
+                              ],
+                            ),
+                            formBuilderKeys.length > 1 && _isEditable ? IconButton(
                               icon: Icon(
                                 Icons.delete_forever,
                                 color: AppColors.darkRed,
                                 size: 30,
                               ),
                               onPressed: () {
-                                var indexToRemove = formBuilderKeys.indexOf(
-                                  item,
-                                );
-                                formBuilderKeys.removeAt(indexToRemove);
-                                initialValues.removeAt(indexToRemove);
+                                formBuilderKeys.removeAt(index);
+                                initialValues.removeAt(index);
+                                passengerDocuments.removeAt(index);
+
                                 setState(() {});
                               },
-                            ),
+                            ) : SizedBox(),
                           ],
                         )
-                      : SizedBox(),
                 ],
               ),
             ),
@@ -712,6 +742,7 @@ class _AddUpdateReservationScreenState
     var key = GlobalKey<FormBuilderState>();
     formBuilderKeys.add(key);
     initialValues.add({});
+    passengerDocuments.add(PassengerDocument(null, null));
 
     setState(() {});
   }
@@ -743,14 +774,18 @@ class _AddUpdateReservationScreenState
 
     var listOfPassengers = [];
 
+    int counter = 0;
     for (var item in formBuilderKeys) {
       item.currentState!.save();
       var passenger = item.currentState!.value;
       var passengerJson = Map<String, dynamic>.from(passenger);
       passengerJson["dateOfBirth"] = (passengerJson["dateOfBirth"] as DateTime)
           .toIso8601String();
+      passengerJson["passengerDocument"] = passengerDocuments[counter].toJson();
 
       listOfPassengers.add(passengerJson);
+
+      counter++;
     }
 
     json["passengerList"] = listOfPassengers;
@@ -761,6 +796,7 @@ class _AddUpdateReservationScreenState
     if (widget.reservationId == null) {
       try {
         await reservationProvider.add(json);
+        if (!mounted) return;
 
         DialogHelper.openDialog(context, "Uspješno dodavanje rezervacije", () {
           Navigator.of(context).pop();
@@ -772,13 +808,19 @@ class _AddUpdateReservationScreenState
         _isProcessStarted = false;
         setState(() {});
 
-        DialogHelper.openDialog(context, ex.toString(), () {
-          Navigator.of(context).pop();
-        }, type: DialogType.error);
+        DialogHelper.openDialog(
+          context,
+          ex.toString().replaceFirst("Exception: ", ""),
+          () {
+            Navigator.of(context).pop();
+          },
+          type: DialogType.error,
+        );
       }
     } else {
       try {
         await reservationProvider.update(widget.reservationId!, json);
+        if (!mounted) return;
 
         DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
           Navigator.of(context).pop();
@@ -790,20 +832,29 @@ class _AddUpdateReservationScreenState
         _isProcessStarted = false;
         setState(() {});
 
-        DialogHelper.openDialog(context, ex.toString(), () {
-          Navigator.of(context).pop();
-        }, type: DialogType.error);
+        DialogHelper.openDialog(
+          context,
+          ex.toString().replaceFirst("Exception: ", ""),
+          () {
+            Navigator.of(context).pop();
+          },
+          type: DialogType.error,
+        );
       }
     }
   }
 
   Future verifyUser() async {
-    var user = User.fromJson(await userProvider.getMe());
+    var userId = await authService.getUserId();
+
+    if (userId == null) return;
+
+    var userJson = await userProvider.getById(userId);
+    if (!mounted) return;
+
+    var user = User.fromJson(userJson);
 
     if (!user.isVerified!) {
-      _isEditingEnabled = false;
-      _isReviewEnabled = false;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -825,30 +876,64 @@ class _AddUpdateReservationScreenState
       }
     }
 
+    for (var passengerDocument in passengerDocuments) {
+      if (passengerDocument.documentBytes == null ||
+          passengerDocument.documentName == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Upload putovnice putnika je obavezan.",
+            ),
+          ),
+        );
+
+        isValid = false;
+      }
+    }
+
     return isValid;
   }
 
   Future fetchReservationData() async {
-    if (widget.reservationId == null) return;
+    if (widget.reservationId == null) {
+      _isEditable = true;
+      setState(() {});
+      return;
+    }
 
-    reservation = Reservation.fromJson(
-      await reservationProvider.getById(widget.reservationId!),
+    var reservationJson = await reservationProvider.getById(
+      widget.reservationId!,
     );
 
+    if (!mounted) return;
+
+    reservation = Reservation.fromJson(reservationJson);
+
     noteEditingController.text = reservation!.note ?? "";
+
+    for (var passenger in reservation!.passengers!) {
+      try {
+        var passengerDocument = await passengerProvider.getDocumentById(
+          passenger.id!,
+        );
+
+        if (!mounted) return;
+
+        passengerDocuments.add(passengerDocument);
+      } on Exception catch (ex) {
+        passengerDocuments.add(PassengerDocument(null, null));
+      }
+    }
 
     initialValues = reservation!.passengers!.map((e) => e.toJson(e)).toList();
     for (int i = 0; i < reservation!.passengers!.length; i++) {
       formBuilderKeys.add(GlobalKey<FormBuilderState>());
     }
 
-    await loadReservationPayments();
+    _isEditable = reservation!.isEditable!;
+    _isReviewable = reservation!.isReviewable!;
 
-    if (reservation!.reservationStatusId!.toLowerCase() ==
-        AppConstants.reservationCancelledGuid.toLowerCase()) {
-      _isEditingEnabled = false;
-      _isReviewEnabled = false;
-    }
+    await loadReservationPayments();
 
     setState(() {});
   }
@@ -862,6 +947,7 @@ class _AddUpdateReservationScreenState
     for (var item in reservation!.reservationPayments!) {
       var reservationPaymentInfo = await reservationProvider
           .getReservationPaymentDocument(item.id!);
+      if (!mounted) return;
 
       loadedPayments.add(reservationPaymentInfo);
     }
@@ -900,6 +986,25 @@ class _AddUpdateReservationScreenState
         context,
       ).showSnackBar(SnackBar(content: Text("Greška pri radu sa fajlom: $e")));
     }
+  }
+
+  Future<void> openPassengerDocument(int index) async {
+    var passengerDocument = passengerDocuments[index];
+
+    if (passengerDocument.documentBytes == null ||
+        passengerDocument.documentName == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Ovaj putnik nema dokument.")));
+
+      return;
+    }
+
+    await saveAndOpenDocument(
+      context,
+      passengerDocument.documentName!,
+      passengerDocument.documentBytes!,
+    );
   }
 
   List<Widget> getDocumentElements() {
@@ -972,7 +1077,7 @@ class _AddUpdateReservationScreenState
       );
     }
 
-    if (_isEditingEnabled) {
+    if (_isEditable) {
       documents.add(
         IconButton(
           icon: Icon(Icons.add_circle, color: AppColors.primary),
@@ -999,26 +1104,54 @@ class _AddUpdateReservationScreenState
     }
   }
 
+  Future<void> pickAndUploadPassengerDocument(int index) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+
+      var bytes = await file.readAsBytes();
+      var fileName = result.files.single.name;
+
+      passengerDocuments[index] = PassengerDocument(fileName, bytes);
+
+      setState(() {});
+    }
+  }
+
   Future cancelReservation() async {
     DialogHelper.openConfirmationDialog(
       context,
       "Jeste li sigurni da želite otkazati ovu rezervaciju?",
       "Otkazivanjem ove rezervacije moguće je da nećete ostvariti povrat novca.",
       () async {
-        await reservationProvider.cancelReservation(widget.reservationId!);
-        Navigator.of(context).pop();
-        DialogHelper.openDialog(context, "Uspješno otkazana rezervacija", () {
+        try {
+          await reservationProvider.cancelReservation(widget.reservationId!);
+
+          if (!mounted) return;
           Navigator.of(context).pop();
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => AddUpdateReservationScreen(
-                widget.offerId,
-                widget.roomId,
-                widget.reservationId,
+          DialogHelper.openDialog(context, "Uspješno otkazana rezervacija", () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => AddUpdateReservationScreen(
+                  widget.offerId,
+                  widget.roomId,
+                  widget.reservationId,
+                ),
               ),
-            ),
+            );
+          });
+        } on Exception catch (ex) {
+          DialogHelper.openDialog(
+            context,
+            ex.toString().replaceFirst("Exception: ", ""),
+            () {
+              Navigator.of(context).pop();
+            },
+            type: DialogType.error,
           );
-        });
+        }
       },
     );
   }
@@ -1028,6 +1161,7 @@ class _AddUpdateReservationScreenState
       context: context,
       builder: (context) {
         var errorMessage = "";
+        bool isReviewInProcess = false;
 
         return StatefulBuilder(
           builder: (context, setStateDialog) => Dialog(
@@ -1101,7 +1235,16 @@ class _AddUpdateReservationScreenState
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
-                      child: Text("Pošalji"),
+                      child: !isReviewInProcess
+                          ? Text("Pošalji")
+                          : SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            ),
                       onPressed: () async {
                         if (reviewRequestModel["accommodationRating"] == null ||
                             reviewRequestModel["serviceRating"] == null ||
@@ -1115,27 +1258,48 @@ class _AddUpdateReservationScreenState
                           errorMessage = "";
                         }
 
+                        isReviewInProcess = true;
+                        setStateDialog(() {});
+
                         reviewRequestModel["id"] = reservation!.id!;
 
-                        await reservationReviewProvider.add(reviewRequestModel);
-                        DialogHelper.openDialog(
-                          context,
-                          "Uspješno ste poslali recenziju",
-                          () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).pop();
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    AddUpdateReservationScreen(
-                                      widget.offerId,
-                                      widget.roomId,
-                                      widget.reservationId,
-                                    ),
-                              ),
-                            );
-                          },
-                        );
+                        try {
+                          await reservationReviewProvider.add(
+                            reviewRequestModel,
+                          );
+                          if (!mounted) return;
+
+                          DialogHelper.openDialog(
+                            context,
+                            "Uspješno ste poslali recenziju",
+                            () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      AddUpdateReservationScreen(
+                                        widget.offerId,
+                                        widget.roomId,
+                                        widget.reservationId,
+                                      ),
+                                ),
+                              );
+                            },
+                          );
+                        } on Exception catch (ex) {
+                          DialogHelper.openDialog(
+                            context,
+                            ex.toString().replaceFirst("Exception: ", ""),
+                            () {
+                              Navigator.of(context).pop();
+                            },
+                            type: DialogType.error,
+                          );
+                        }
+
+                        isReviewInProcess = false;
+                        setStateDialog(() {});
                       },
                     ),
                   ],
@@ -1146,16 +1310,5 @@ class _AddUpdateReservationScreenState
         );
       },
     );
-  }
-
-  Future fetchReview() async {
-    if (widget.reservationId == null) return;
-
-    try {
-      var review = await reservationReviewProvider.getById(
-        widget.reservationId!,
-      );
-      _isReviewEnabled = false;
-    } on Exception catch (ex) {}
   }
 }

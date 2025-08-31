@@ -24,7 +24,10 @@ class User {
   );
 
   factory User.fromJson(Map<String, dynamic> json) {
-    var roles = (json["roles"] as List).map((x) => Role.fromJson(x)).toList();
+    var roles = json["roles"] != null
+        ? (json["roles"] as List).map((x) => Role.fromJson(x)).toList()
+        : null;
+        
     return User(
       json["id"],
       json["username"],
@@ -48,7 +51,7 @@ class User {
       "phoneNumber": phoneNumber,
       "isActive": isActive,
       "isVerified": isVerified,
-      "roles": roles,
+      "roles": roles?.map((e) => e.toJson()).toList(),
     };
   }
 }

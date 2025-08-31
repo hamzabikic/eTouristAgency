@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:etouristagency_desktop/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:etouristagency_desktop/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
@@ -51,10 +52,15 @@ class UserProvider extends BaseProvider<User> {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
     if (response.statusCode != 200) throw Exception(response.body);
   }
 
-  Future resetPassword(String userId) async {
+  Future resetPasswordByUserId(String userId) async {
     var url = Uri.parse("${controllerUrl}/${userId}/reset-password");
     var response = await http.post(
       url,
@@ -64,7 +70,26 @@ class UserProvider extends BaseProvider<User> {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
     if (response.statusCode != 200) throw Exception(response.body);
+  }
+
+  Future resetPassword(Map<String, dynamic> requestModel) async {
+    var url = Uri.parse("${controllerUrl}/reset-password");
+
+    var response = await http.patch(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(requestModel),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
   }
 
   Future deactivate(String userId) async {
@@ -76,6 +101,11 @@ class UserProvider extends BaseProvider<User> {
         "Content-Type": "application/json",
       },
     );
+
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
 
     if (response.statusCode != 200) throw Exception(response.body);
   }

@@ -18,28 +18,34 @@ namespace eTouristAgencyAPI.Services
     public class ReservationService : CRUDService<Reservation, ReservationResponse, ReservationSearchModel, AddReservationRequest, UpdateReservationRequest>, IReservationService
     {
         private readonly IPassengerService _passengerService;
-        private readonly IUserContextService _userContextService;
         private readonly IEmailContentService _emailContentService;
         private readonly IUserTagService _userTagService;
+        private readonly IBus _bus;
         private readonly Guid? _userId;
+        private readonly bool _isAdmin;
+        private readonly bool _isVerified;
 
         public ReservationService(eTouristAgencyDbContext dbContext,
                                   IMapper mapper,
                                   IUserContextService userContextService,
                                   IPassengerService passengerService,
                                   IEmailContentService emailContentService,
-                                  IUserTagService userTagService) : base(dbContext, mapper)
+                                  IUserTagService userTagService,
+                                  IBus bus) : base(dbContext, mapper)
         {
             _userId = userContextService.GetUserId();
-            _userContextService = userContextService;
+            _isAdmin = userContextService.UserHasRole(Roles.Admin);
+            _isVerified = userContextService.UserIsVerified();
             _passengerService = passengerService;
             _emailContentService = emailContentService;
             _userTagService = userTagService;
+            _bus = bus;
         }
 
         protected override async Task BeforeInsertAsync(AddReservationRequest insertModel, Reservation dbModel)
         {
-            if (!(await _dbContext.Users.FindAsync(_userId)).IsVerified)
+            #region Validation
+            if (!_isVerified)
             {
                 throw new Exception("You have to verify your e-mail for this action.");
             }
@@ -62,12 +68,13 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Currently it is not possible to reserve room with provided id.");
             }
 
-            if (room.Reservations.Count(x => x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) >= room.Quantity)
+            if (room.Reservations.Count(x => !AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(x.ReservationStatusId)) >= room.Quantity)
             {
                 throw new Exception("Room with provided id is already included in other reservation");
             }
 
             if (insertModel.PassengerList.Count > room.RoomType.RoomCapacity) throw new Exception("You provided number of passengers higher than room capacity");
+            #endregion
 
             var numberOfKids = insertModel.PassengerList.Where(x => x.DateOfBirth > DateTime.Now.AddYears(-18)).Count();
             var discount = room.Offer.OfferDiscounts.Where(x => x.ValidFrom.Date <= DateTime.Now.Date && DateTime.Now.Date <= x.ValidTo.Date).FirstOrDefault();
@@ -98,14 +105,15 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task BeforeUpdateAsync(UpdateReservationRequest updateModel, Reservation dbModel)
         {
+            #region Validation
             if (dbModel.UserId != _userId) throw new Exception("You can only edit reservations created by yourself.");
 
-            if (!(await _dbContext.Users.FindAsync(_userId)).IsVerified)
+            if (!_isVerified)
             {
                 throw new Exception("You have to verify your e-mail for this action.");
             }
 
-            if (dbModel.ReservationStatusId == AppConstants.FixedReservationStatusCancelled) throw new Exception("You cannot update cancelled reservation.");
+            if (AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(dbModel.ReservationStatusId)) throw new Exception("You cannot update cancelled reservation.");
 
             if (!updateModel.PassengerList.Any()) throw new Exception("You did not provide passengers.");
 
@@ -118,6 +126,7 @@ namespace eTouristAgencyAPI.Services
             {
                 throw new Exception("Currently it is not possible to update this record.");
             }
+            #endregion
 
             var numberOfKids = updateModel.PassengerList.Where(x => x.DateOfBirth > DateTime.Now.AddYears(-18)).Count();
             var discountPercent = dbModel.OfferDiscount == null ? 0 : dbModel.OfferDiscount.Discount / 100;
@@ -163,19 +172,21 @@ namespace eTouristAgencyAPI.Services
                                  .Include(x => x.OfferDiscount).ThenInclude(x => x.DiscountType)
                                  .Include(x => x.Passengers.OrderBy(x => x.DisplayOrderWithinReservation))
                                  .Include(x => x.ReservationStatus)
-                                 .Include(x => x.User);
+                                 .Include(x => x.User)
+                                 .Include(x => x.ReservationReview);
 
             return queryable;
         }
 
         protected override async Task<IQueryable<Reservation>> BeforeFetchAllDataAsync(IQueryable<Reservation> queryable, ReservationSearchModel searchModel)
         {
-            queryable = queryable.Include(x => x.Room)
-                                 .ThenInclude(x => x.RoomType)
+            queryable = queryable.Include(x => x.Room.Offer)
+                                 .Include(x => x.Room.RoomType)
                                  .Include(x => x.OfferDiscount).ThenInclude(x => x.DiscountType)
                                  .Include(x => x.Passengers.OrderBy(x => x.DisplayOrderWithinReservation))
                                  .Include(x => x.ReservationStatus)
-                                 .Include(x => x.User);
+                                 .Include(x => x.User)
+                                 .Include(x => x.ReservationReview);
 
             if (searchModel.OfferId != null)
             {
@@ -199,18 +210,6 @@ namespace eTouristAgencyAPI.Services
 
         public override async Task<ReservationResponse> GetByIdAsync(Guid id)
         {
-            var reservation = await _dbContext.Reservations.FindAsync(id);
-
-            if (reservation == null)
-            {
-                throw new Exception("Reservation with provided id is not found.");
-            }
-
-            if (!_userContextService.UserHasRole(Roles.Admin) && reservation.UserId != _userId)
-            {
-                throw new Exception("Reservation with provided id is not avalible for this user.");
-            }
-
             var reservationResponse = await base.GetByIdAsync(id);
 
             reservationResponse.ReservationPayments = await _dbContext.ReservationPayments.Where(x => x.ReservationId == id)
@@ -223,24 +222,52 @@ namespace eTouristAgencyAPI.Services
             return reservationResponse;
         }
 
+        protected override async Task AfterFetchAllDataAsync(List<Reservation> listOfRecords)
+        {
+            foreach (var reservation in listOfRecords)
+            {
+                await AfterFetchRecordAsync(reservation);
+            }
+        }
+
+        protected override async Task AfterFetchRecordAsync(Reservation dbModel)
+        {
+            if (!_isAdmin && dbModel.UserId != _userId)
+            {
+                throw new Exception("Reservation with provided id is not avalible for this user.");
+            }
+
+            dbModel.IsEditable = ((!_isAdmin && DateTime.Now.Date <= dbModel.Room.Offer.LastPaymentDeadline.Date && _isVerified) ||
+                                 (_isAdmin && DateTime.Now.Date < dbModel.Room.Offer.TripStartDate.Date)) &&
+                                 dbModel.Room.Offer.OfferStatusId != AppConstants.FixedOfferStatusInactive &&
+                                 !AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(dbModel.ReservationStatusId);
+
+            dbModel.IsReviewable = (!_isAdmin && DateTime.Now.Date >= dbModel.Room.Offer.TripEndDate.Date && _isVerified) &&
+                                   dbModel.Room.Offer.OfferStatusId != AppConstants.FixedOfferStatusInactive &&
+                                   !AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(dbModel.ReservationStatusId) &&
+                                   dbModel.ReservationReview == null;
+        }
+
         public async Task AddPaymentAsync(Guid reservationId, UpdateReservationStatusRequest request)
         {
-            var reservation = await _dbContext.Reservations.Include(x=> x.Room.Offer).FirstOrDefaultAsync(x => x.Id == reservationId);
+            #region Validation
+            var reservation = await _dbContext.Reservations.Include(x => x.Room.Offer).FirstOrDefaultAsync(x => x.Id == reservationId);
 
             if (reservation == null)
             {
                 throw new Exception("Reservation with provided id is not found.");
             }
 
-            if (reservation.ReservationStatusId == AppConstants.FixedReservationStatusCancelled)
+            if (AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(reservation.ReservationStatusId))
             {
                 throw new Exception("You cannot update  reservation on cancelled reservation.");
             }
 
-            if(reservation.Room.Offer.TripStartDate.Date <= DateTime.Now.Date)
+            if (reservation.Room.Offer.TripStartDate.Date <= DateTime.Now.Date || reservation.Room.Offer.OfferStatusId == AppConstants.FixedOfferStatusInactive)
             {
                 throw new Exception("Currentry, you cannot update reservation.");
             }
+            #endregion
 
             reservation.ReservationStatusId = request.ReservationStatusId;
             reservation.PaidAmount = request.PaidAmount;
@@ -286,8 +313,7 @@ namespace eTouristAgencyAPI.Services
                 };
             }
 
-            var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
-            bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
+            _bus.PubSub.Publish(JsonConvert.SerializeObject(new RabbitMQNotification
             {
                 FirebaseNotification = firebaseNotification,
                 EmailNotification = emailNotification
@@ -296,6 +322,7 @@ namespace eTouristAgencyAPI.Services
 
         public async Task CancelReservationAsync(Guid reservationId)
         {
+            #region Validation
             var reservation = await _dbContext.Reservations.Include(x => x.Room.Offer).FirstOrDefaultAsync(x => x.Id == reservationId);
 
             if (reservation == null)
@@ -308,7 +335,7 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("You cannot cancel the reservation with the provided ID.");
             }
 
-            if (!(await _dbContext.Users.FindAsync(_userId)).IsVerified)
+            if (!_isVerified)
             {
                 throw new Exception("You have to verify your e-mail for this action.");
             }
@@ -318,10 +345,16 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("You cannot cancel reservation on inactive offer.");
             }
 
-            if(reservation.Room.Offer.LastPaymentDeadline.Date < DateTime.Now.Date)
+            if (reservation.Room.Offer.LastPaymentDeadline.Date < DateTime.Now.Date)
             {
                 throw new Exception("Currentry it is not possible to cancel this reservation.");
             }
+
+            if (AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(reservation.ReservationStatusId))
+            {
+                throw new Exception("You cannot cancel reservation with inactive status.");
+            }
+            #endregion
 
             reservation.ReservationStatusId = AppConstants.FixedReservationStatusCancelled;
             reservation.CancellationDate = DateTime.Now;
@@ -363,7 +396,7 @@ namespace eTouristAgencyAPI.Services
                 throw new Exception("Reservation payment document with provided id is not found.");
             }
 
-            if (!_userContextService.UserHasRole(Roles.Admin) && reservationPayment.Reservation.UserId != _userId) throw new Exception("You are not authorized to access this resource.");
+            if (!_isAdmin && reservationPayment.Reservation.UserId != _userId) throw new Exception("You are not authorized to access this resource.");
 
             return reservationPayment;
         }

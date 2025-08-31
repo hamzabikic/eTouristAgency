@@ -1,3 +1,4 @@
+import 'package:etouristagency_mobile/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_mobile/models/paginated_list.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -30,6 +31,11 @@ abstract class BaseProvider<TResponseModel> {
       },
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return PaginatedList([], 0);
+    }
+
     if (response.statusCode != 200) {
       throw Exception("Dogodila se greška: ${response.body}");
     }
@@ -53,7 +59,14 @@ abstract class BaseProvider<TResponseModel> {
       },
     );
 
-    if (response.statusCode == 401) throw Exception(response.body);
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return {};
+    }
+
+    if (response.statusCode != 200) {
+      throw Exception("Dogodila se greška: ${response.body}");
+    }
 
     return jsonDecode(response.body);
   }
@@ -68,6 +81,11 @@ abstract class BaseProvider<TResponseModel> {
       },
       body: jsonEncode(updateModel),
     );
+
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
 
     if (response.statusCode != 200) {
       throw Exception("Dogodila se greska: ${response.body}");
@@ -85,6 +103,11 @@ abstract class BaseProvider<TResponseModel> {
         "Content-Type": "application/json",
       },
     );
+
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
 
     if (response.statusCode != 200) {
       throw Exception("Dogodila se greška: ${response.body}");

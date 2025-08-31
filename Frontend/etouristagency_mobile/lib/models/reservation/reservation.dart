@@ -24,6 +24,8 @@ class Reservation {
   List<ReservationPayment>? reservationPayments;
   User? user;
   String? note;
+  bool? isEditable;
+  bool? isReviewable;
 
   Reservation(
     this.id,
@@ -43,7 +45,9 @@ class Reservation {
     this.reservationStatus,
     this.reservationPayments,
     this.user,
-    this.note
+    this.note,
+    this.isEditable,
+    this.isReviewable
   );
 
   factory Reservation.fromJson(Map<String, dynamic> json) {
@@ -77,7 +81,9 @@ class Reservation {
           : null,
       json["reservationPayments"] != null ? (json["reservationPayments"] as List).map((e)=> ReservationPayment.fromJson(e)).toList() : null,
       json["user"] != null ? User.fromJson(json["user"]) : null,
-      json["note"]
+      json["note"],
+      json["isEditable"],
+      json["isReviewable"]
     );
   }
 }

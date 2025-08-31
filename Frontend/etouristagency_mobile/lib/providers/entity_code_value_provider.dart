@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:etouristagency_mobile/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_mobile/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -16,11 +17,25 @@ class EntityCodeValueProvider {
     _authService = AuthService();
   }
 
-  Future<List<EntityCodeValue>> getBoardTypes() async{
+  Future<List<EntityCodeValue>> getBoardTypes() async {
     var url = Uri.parse("${controllerUrl}/board-type");
 
-    var response = await http.get(url, headers: {"Authorization" : (await _authService.getBasicKey())!, "Content-Type" : "application/json"});
+    var response = await http.get(
+      url,
+      headers: {
+        "Authorization": (await _authService.getBasicKey())!,
+        "Content-Type": "application/json",
+      },
+    );
 
-    return (jsonDecode(response.body) as List).map((e) => EntityCodeValue.fromJson(e)).toList();
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+
+      return [];
+    }
+
+    return (jsonDecode(response.body) as List)
+        .map((e) => EntityCodeValue.fromJson(e))
+        .toList();
   }
 }

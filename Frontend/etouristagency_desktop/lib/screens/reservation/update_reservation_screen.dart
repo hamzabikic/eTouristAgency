@@ -13,6 +13,7 @@ import 'package:etouristagency_desktop/models/reservation/reservation_payment_in
 import 'package:etouristagency_desktop/models/reservation_review/reservation_review.dart';
 import 'package:etouristagency_desktop/providers/entity_code_value_provider.dart';
 import 'package:etouristagency_desktop/providers/offer_provider.dart';
+import 'package:etouristagency_desktop/providers/passenger_provider.dart';
 import 'package:etouristagency_desktop/providers/reservation_provider.dart';
 import 'package:etouristagency_desktop/providers/reservation_review_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
@@ -46,6 +47,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
   late final OfferProvider offerProvider;
   late final EntityCodeValueProvider entityCodeValueProvider;
   late final ReservationReviewProvider reservationReviewProvider;
+  late final PassengerProvider passengerProvider;
   ScrollController horizontalScrollController = ScrollController();
   final GlobalKey<FormBuilderState> formBuilderKey =
       GlobalKey<FormBuilderState>();
@@ -57,6 +59,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
     offerProvider = OfferProvider();
     entityCodeValueProvider = EntityCodeValueProvider();
     reservationReviewProvider = ReservationReviewProvider();
+    passengerProvider = PassengerProvider();
     fetchReservationData();
     fetchReservationStatusData();
     loadPhoto();
@@ -176,7 +179,8 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                                   MaterialPageRoute(
                                                     builder: (context) =>
                                                         AddUpdateOfferScreen(
-                                                          offer: widget.offer,
+                                                          offerId:
+                                                              widget.offer.id,
                                                         ),
                                                   ),
                                                 );
@@ -411,8 +415,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                         SizedBox(
                                           width: 300,
                                           child: FormBuilderTextField(
-                                            enabled: widget.offer
-                                                .isReservationAndOfferEditEnabled(),
+                                            enabled: reservation!.isEditable!,
                                             inputFormatters: <TextInputFormatter>[
                                               FilteringTextInputFormatter.allow(
                                                 RegExp(r'^\d+\.?\d{0,2}'),
@@ -440,8 +443,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                         SizedBox(
                                           width: 300,
                                           child: FormBuilderDropdown(
-                                            enabled: widget.offer
-                                                .isReservationAndOfferEditEnabled(),
+                                            enabled: reservation!.isEditable!,
                                             items:
                                                 getReservationStatusDropdownItems(),
                                             style: TextStyle(
@@ -480,7 +482,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                                   openReservationReviewDialog,
                                             )
                                           : SizedBox(),
-                                      widget.offer.isReservationAndOfferEditEnabled()
+                                      reservation!.isEditable!
                                           ? ElevatedButton(
                                               child: Text("Sačuvaj promjene"),
                                               onPressed: saveChanges,
@@ -516,7 +518,7 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                                 spacing: 10,
                                                 children: [
                                                   SizedBox(
-                                                    width: 250,
+                                                    width: 200,
                                                     child: FormBuilderTextField(
                                                       enabled: false,
                                                       style: TextStyle(
@@ -581,6 +583,17 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
                                                           ),
                                                     ),
                                                   ),
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      Icons.description,
+                                                      color: AppColors.primary,
+                                                    ),
+                                                    onPressed: () async {
+                                                      await openPassengerDocument(
+                                                        x.id!,
+                                                      );
+                                                    },
+                                                  ),
                                                 ],
                                               ),
                                             ),
@@ -635,15 +648,17 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
 
   Future fetchReservationData() async {
     reservation = await reservationProvider.getById(widget.reservationId);
+    if (!mounted) return;
 
     await loadReservationPayments();
-
     setState(() {});
   }
 
   Future fetchReservationStatusData() async {
     reservationStatusList =
         await entityCodeValueProvider.GetReservationStatusList();
+
+    if (!mounted) return;
 
     setState(() {});
   }
@@ -713,6 +728,25 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
     await OpenFile.open(savePath);
   }
 
+  Future openPassengerDocument(String passengerId) async {
+    try {
+      var passengerDocument = await passengerProvider.getPassengerDocument(
+        passengerId,
+      );
+
+      if (!mounted) return;
+
+      await openFile(
+        base64Encode(passengerDocument.documentBytes!),
+        passengerDocument.documentName!,
+      );
+    } on Exception catch (ex) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Ovaj putnik nema otpremljen dokument.")),
+      );
+    }
+  }
+
   Future saveChanges() async {
     bool isValidForm = formBuilderKey.currentState!.validate();
 
@@ -723,6 +757,8 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
 
     try {
       await reservationProvider.addPayment(widget.reservationId, json);
+
+      if (!mounted) return;
 
       DialogHelper.openDialog(context, "Uspješno sačuvane promjene", () {
         Navigator.of(context).pop();
@@ -761,6 +797,8 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
         item.id!,
       );
 
+      if (!mounted) return;
+
       reservationPayments.add(
         ReservationPaymentInfo(
           reservationPaymentInfo.documentBytes,
@@ -775,6 +813,8 @@ class _UpdateReservationScreenState extends State<UpdateReservationScreen> {
       reservationReview = await reservationReviewProvider.getById(
         widget.reservationId,
       );
+
+      if (!mounted) return;
     } on Exception catch (ex) {
       reservationReview = null;
     }

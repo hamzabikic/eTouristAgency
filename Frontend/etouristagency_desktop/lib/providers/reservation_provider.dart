@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:etouristagency_desktop/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_desktop/models/reservation/reservation.dart';
 import 'package:etouristagency_desktop/models/reservation/reservation_payment_info.dart';
 import 'package:etouristagency_desktop/providers/base_provider.dart';
@@ -25,12 +26,19 @@ class ReservationProvider extends BaseProvider<Reservation> {
       body: jsonEncode(json),
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
     if (response.statusCode != 200) {
       throw Exception("Dogodila se greška: ${response.body}");
     }
   }
 
-  Future<ReservationPaymentInfo> getPaymentDocument(String reservationPaymentId) async {
+  Future<ReservationPaymentInfo> getPaymentDocument(
+    String reservationPaymentId,
+  ) async {
     var url = Uri.parse(
       "${controllerUrl}/${reservationPaymentId}/payment-document",
     );
@@ -40,9 +48,17 @@ class ReservationProvider extends BaseProvider<Reservation> {
       headers: {"Authorization": (await authService.getBasicKey())!},
     );
 
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return ReservationPaymentInfo(null, null);
+    }
+
     if (response.statusCode != 200)
       throw Exception("Greška pri učitavanju dokumenta: ${response.body}");
 
-    return ReservationPaymentInfo(response.bodyBytes, response.headers["documentname"]);
+    return ReservationPaymentInfo(
+      response.bodyBytes,
+      response.headers["documentname"],
+    );
   }
 }

@@ -9,6 +9,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
+string rabbitMqHost = "";
+string rabbitMqUsername = "";
+string rabbitMqPassword = "";
+
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((context, config) =>
     {
@@ -22,13 +26,31 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddTransient<ISmtpService, SmtpService>();
         services.AddTransient<IEmailNotificationService, EmailNotificationService>();
         services.AddTransient<IFirebaseNotificationService, FirebaseNotificationService>();
+
+        rabbitMqHost = context.Configuration["RabbitMQConfig:Host"];
+        rabbitMqUsername = context.Configuration["RabbitMQConfig:Username"];
+        rabbitMqPassword = context.Configuration["RabbitMQConfig:Password"];
     })
     .Build();
 
 var emailNotificationService = host.Services.GetRequiredService<IEmailNotificationService>();
 var firebaseNotificationService = host.Services.GetRequiredService<IFirebaseNotificationService>();
 
-var bus = RabbitHutch.CreateBus("host=localhost;username=admin;password=admin");
+IBus bus = null;
+var maxRetries = 10;
+for (int i = 0; i < maxRetries; i++)
+{
+    try
+    {
+        bus = RabbitHutch.CreateBus($"host={rabbitMqHost};username={rabbitMqUsername};password={rabbitMqPassword}");
+        break;
+    }
+    catch (Exception ex)
+    {
+        if (i == maxRetries - 1) throw;
+        await Task.Delay(5000);
+    }
+}
 
 bus.PubSub.Subscribe<string>("Notification", async msg =>
 {
@@ -65,7 +87,7 @@ bus.PubSub.Subscribe<string>("Notification", async msg =>
                     await firebaseNotificationService.SendNotificationAsync(firebaseToken, firebaseNotification.Title, firebaseNotification.Text, firebaseNotification.Data);
                     await CustomLogger.LogInfo($"Succesfully sent firebase notification with title '{firebaseNotification.Title}' to: {firebaseToken}");
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     await CustomLogger.LogError($"Error while sending firebase notification with title '{firebaseNotification.Title}' to: {firebaseToken} - {ex.Message}");
                 }

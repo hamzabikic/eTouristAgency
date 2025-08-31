@@ -32,6 +32,10 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Reservation
 
         public string? Note { get; set; }
 
+        public bool IsEditable { get; set; }
+
+        public bool IsReviewable { get; set; }
+
         public RoomResponse Room { get; set; }
 
         public OfferDiscountResponse OfferDiscount { get; set; }

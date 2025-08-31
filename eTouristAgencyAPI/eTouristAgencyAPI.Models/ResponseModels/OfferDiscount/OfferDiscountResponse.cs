@@ -15,5 +15,9 @@ namespace eTouristAgencyAPI.Models.ResponseModels.OfferDiscount
         public DateTime ValidTo { get; set; }
 
         public EntityCodeValueResponse DiscountType { get; set; }
+
+        public bool IsEditable { get; set; }
+
+        public bool IsRemovable { get; set; }
     }
 }

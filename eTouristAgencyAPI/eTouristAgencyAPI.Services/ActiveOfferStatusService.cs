@@ -39,6 +39,8 @@ namespace eTouristAgencyAPI.Services
 
             if (offer == null) throw new Exception("Offer with provided id is not found.");
 
+            if (offer.TripStartDate.Date <= DateTime.Now.Date) throw new Exception("Currently, you cannot update offer status.");
+
             offer.OfferStatusId = AppConstants.FixedOfferStatusInactive;
 
             await _dbContext.SaveChangesAsync();

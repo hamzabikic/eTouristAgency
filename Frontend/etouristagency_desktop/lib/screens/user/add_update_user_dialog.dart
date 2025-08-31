@@ -6,6 +6,7 @@ import 'package:etouristagency_desktop/providers/role_provider.dart';
 import 'package:etouristagency_desktop/providers/user_provider.dart';
 import 'package:etouristagency_desktop/screens/user/user_list_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -22,7 +23,7 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
   late final UserProvider userProvider;
   late final RoleProvider roleProvider;
   List<Role>? roleList;
-  bool buttonEnabled = true;
+  bool _isProcessing = false;
   bool emailIsValid = true;
   bool usernameIsValid = true;
   String? operationErrorMessage;
@@ -96,7 +97,8 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                             errorText: "Ovo polje je obavezno.",
                           ),
                           (value) {
-                            if (value == widget.user?.username || usernameIsValid) {
+                            if (value == widget.user?.username ||
+                                usernameIsValid) {
                               return null;
                             } else {
                               return "Uneseno korisničko ime se već koristi.";
@@ -126,6 +128,9 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                       FormBuilderTextField(
                         name: "phoneNumber",
                         decoration: InputDecoration(labelText: "Broj telefona"),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         validator: FormBuilderValidators.compose([
                           FormBuilderValidators.minLength(
                             6,
@@ -135,41 +140,6 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                           FormBuilderValidators.numeric(
                             errorText:
                                 "Broj telefona treba biti u formatu: 061000000",
-                          ),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "password",
-                        obscureText: true,
-                        decoration: InputDecoration(labelText: "Lozinka"),
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.minLength(
-                            8,
-                            errorText:
-                                "Lozinka mora sadržavati minimalno 8 karaktera.",
-                          ),
-                        ]),
-                      ),
-                      FormBuilderTextField(
-                        name: "confirmPassword",
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: "Potvrda lozinke",
-                        ),
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.minLength(
-                            8,
-                            errorText:
-                                "Lozinka mora sadržavati minimalno 8 karaktera.",
-                          ),
-                          FormBuilderValidators.conditional(
-                            (value) =>
-                                value !=
-                                addUserFormBuilderKey
-                                    .currentState!
-                                    .fields["password"]!
-                                    .value,
-                            (value) => "Lozinke nisu podudarne.",
                           ),
                         ]),
                       ),
@@ -194,8 +164,22 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
                           : SizedBox(),
                       SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: buttonEnabled ? addUpdateUser : () {},
-                        child: Text(widget.user == null ? "Dodaj" : "Sačuvaj"),
+                        onPressed: !_isProcessing ? addUpdateUser : null,
+                        child: !_isProcessing
+                            ? Text(widget.user == null ? "Dodaj" : "Sačuvaj")
+                            : Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: Transform.scale(
+                                    scale: 0.6,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -209,17 +193,16 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
   }
 
   Future addUpdateUser() async {
-    buttonEnabled = false;
-    setState(() {});
     await validateEmail();
     await validateUsername();
     bool isValid = addUserFormBuilderKey.currentState!.validate();
 
     if (!isValid) {
-      buttonEnabled = true;
-      setState(() {});
       return;
     }
+
+    _isProcessing = true;
+    setState(() {});
 
     addUserFormBuilderKey.currentState!.save();
     var insertModel = Map<String, dynamic>.from(
@@ -231,6 +214,8 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
       var response = widget.user == null
           ? await userProvider.add(insertModel)
           : await userProvider.update(widget.user!.id!, insertModel);
+
+      if (!mounted) return;
 
       DialogHelper.openDialog(
         context,
@@ -245,19 +230,19 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
           );
         },
       );
-
-      return;
     } on Exception catch (ex) {
       operationErrorMessage = ex.toString();
-      setState(() {});
     }
 
-    buttonEnabled = true;
+    _isProcessing = false;
     setState(() {});
     return;
   }
 
   Future validateUsername() async {
+    if (addUserFormBuilderKey.currentState!.fields["username"]!.value == null)
+      return;
+
     usernameIsValid = !(await checkEmailAndUsername(
       "",
       addUserFormBuilderKey.currentState!.fields["username"]!.value ?? "",
@@ -266,6 +251,9 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
   }
 
   Future validateEmail() async {
+    if (addUserFormBuilderKey.currentState!.fields["email"]!.value == null)
+      return;
+
     emailIsValid = !(await checkEmailAndUsername(
       addUserFormBuilderKey.currentState!.fields["email"]!.value ?? "",
       "",
@@ -298,6 +286,8 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
   Future fetchRoleData() async {
     roleList = (await roleProvider.getAll({})).listOfRecords;
 
+    if (!mounted) return;
+
     setState(() {});
   }
 
@@ -308,6 +298,9 @@ class _AddUpdateUserDialogState extends State<AddUpdateUserDialog> {
       "Ovom akcijom ćete trajno obrisati korisnički nalog i isti će postati nepovratan.",
       () async {
         await userProvider.deactivate(widget.user!.id!);
+
+        if (!mounted) return;
+
         Navigator.of(context).pop();
         DialogHelper.openDialog(
           context,

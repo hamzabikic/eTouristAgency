@@ -6,7 +6,7 @@ import 'package:etouristagency_mobile/models/country/country.dart';
 import 'package:etouristagency_mobile/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_mobile/models/offer/offer.dart';
 import 'package:etouristagency_mobile/models/paginated_list.dart';
-import 'package:etouristagency_mobile/providers/countryProvider.dart';
+import 'package:etouristagency_mobile/providers/country_provider.dart';
 import 'package:etouristagency_mobile/providers/entity_code_value_provider.dart';
 import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
@@ -294,7 +294,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     ),
                                   ],
                                 ),
-                              )
+                              ),
                       ),
                     ],
                   ),
@@ -479,9 +479,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
 
   Future fetchData() async {
     paginatedList = null;
-    setState(() {});
 
     paginatedList = await offerProvider.getAll(queryStrings);
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -490,6 +490,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
       "recordsPerPage": 1000,
     })).listOfRecords;
 
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -533,6 +534,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
     });
 
     var newRecords = await offerProvider.getAll(queryStrings);
+    if (!mounted) return;
 
     paginatedList!.listOfRecords.addAll(newRecords.listOfRecords);
 
@@ -544,6 +546,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
   Future fetchBoardTypes() async {
     boardTypes = await entityCodeValueProvider.getBoardTypes();
 
+    if (!mounted) return;
     setState(() {});
   }
 

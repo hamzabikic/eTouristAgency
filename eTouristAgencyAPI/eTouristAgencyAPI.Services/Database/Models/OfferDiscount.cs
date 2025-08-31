@@ -49,4 +49,10 @@ public partial class OfferDiscount
 
     [InverseProperty("OfferDiscount")]
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+
+    [NotMapped]
+    public bool IsEditable { get; set; }
+
+    [NotMapped]
+    public bool IsRemovable { get; set; }
 }

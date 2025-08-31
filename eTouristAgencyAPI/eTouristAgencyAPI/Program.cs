@@ -5,6 +5,7 @@ using eTouristAgencyAPI.Services.IoC;
 using Mapster;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -65,19 +66,28 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<eTouristAgencyDbContext>();
-    db.Database.Migrate();
-    DatabaseSeeder.SeedDatabase(db);
-}
+//var retry = 0;
+//var maxRetry = 10;
+//while (retry < maxRetry)
+//{
+//    try
+//    {
+//        using var scope = app.Services.CreateScope();
+//        var db = scope.ServiceProvider.GetRequiredService<eTouristAgencyDbContext>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//        db.Database.Migrate();
+//        DatabaseSeeder.SeedDatabase(db);
+//        break;
+//    }
+//    catch (SqlException)
+//    {
+//        retry++;
+//        Thread.Sleep(5000);
+//    }
+//}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors();
 
