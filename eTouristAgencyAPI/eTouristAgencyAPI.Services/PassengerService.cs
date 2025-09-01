@@ -3,6 +3,7 @@ using eTouristAgencyAPI.Models.ResponseModels.Passenger;
 using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
+using eTouristAgencyAPI.Services.DTOs;
 using eTouristAgencyAPI.Services.Interfaces;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -13,14 +14,16 @@ namespace eTouristAgencyAPI.Services
     {
         private readonly eTouristAgencyDbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly IWordGeneratorService _wordGeneratorService;
 
         private readonly Guid? _userId;
         private readonly bool _isAdmin;
 
-        public PassengerService(eTouristAgencyDbContext dbContext, IMapper mapper, IUserContextService userContextService)
+        public PassengerService(eTouristAgencyDbContext dbContext, IMapper mapper, IUserContextService userContextService, IWordGeneratorService wordGeneratorService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _wordGeneratorService = wordGeneratorService;
             _userId = userContextService.GetUserId();
             _isAdmin = userContextService.UserHasRole(Roles.Admin);
         }
@@ -105,6 +108,21 @@ namespace eTouristAgencyAPI.Services
             if (!_isAdmin && passengerDocument.CreatedBy != _userId) throw new Exception("You don't have a permission to see this document.");
 
             return passengerDocument;
+        }
+
+        public async Task<PassengersDocumentDTO> GetDocumentOfPassengersByOfferIdAsync(Guid offerId)
+        {
+            var offer = await _dbContext.Offers.Include(x=> x.Rooms).ThenInclude(x=> x.Reservations).ThenInclude(x=> x.Passengers).FirstOrDefaultAsync(x=> x.Id == offerId);
+
+            if (offer == null) throw new Exception("Offer with provided id is not found.");
+
+            var documentOfPassengers = _wordGeneratorService.GetPassengerListDocument(offer);
+
+            return new PassengersDocumentDTO
+            {
+                DocumentBytes = documentOfPassengers,
+                DocumentName = $"passengers_offerNo_{offer.OfferNo}_{DateTime.Now.ToString("dd-MM-yyyy")}.docx"
+            };
         }
     }
 }
