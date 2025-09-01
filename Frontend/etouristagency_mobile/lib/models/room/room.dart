@@ -11,6 +11,7 @@ class Room {
   String? shortDescription;
   RoomType? roomType;
   bool? isAvalible;
+  int? remainingQuantity;
 
   Room({
     this.id,
@@ -22,7 +23,8 @@ class Room {
     this.shortDescription,
     this.roomType,
     this.isAvalible,
-    this.discountedPrice
+    this.discountedPrice,
+    this.remainingQuantity
   });
 
   factory Room.fromJson(Map<String, dynamic> json) {
@@ -42,7 +44,8 @@ class Room {
           ? RoomType.fromJson(json["roomType"])
           : null,
       isAvalible: json["isAvalible"],
-      discountedPrice:  json["discountedPrice"] != null ? (json["discountedPrice"] as num).toDouble() : null
+      discountedPrice:  json["discountedPrice"] != null ? (json["discountedPrice"] as num).toDouble() : null,
+      remainingQuantity: json["remainingQuantity"]
     );
   }
 }

@@ -9,6 +9,7 @@ class Room {
   int? quantity;
   String? shortDescription;
   RoomType? roomType;
+  int? remainingQuantity;
 
   Room({
     this.id,
@@ -19,6 +20,7 @@ class Room {
     this.quantity,
     this.shortDescription,
     this.roomType,
+    this.remainingQuantity
   });
 
   factory Room.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class Room {
       quantity: json["quantity"],
       shortDescription: json["shortDescription"],
       roomType: json["roomType"] != null ? RoomType.fromJson(json["roomType"]) : null,
+      remainingQuantity: json["remainingQuantity"]
     );
   }
 

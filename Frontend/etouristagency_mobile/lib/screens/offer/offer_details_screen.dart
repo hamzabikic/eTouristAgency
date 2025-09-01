@@ -236,27 +236,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
 
     if (offer == null) return list;
 
-    var avalibleRooms = offer!.rooms!
-        .where((element) => element.isAvalible == true)
-        .toList();
-
-    if (avalibleRooms.isEmpty) {
-      list.add(
-        Center(
-          child: Text(
-            "Trenutno nema dostupnih soba za ovu ponudu.",
-            style: TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
-        ),
-      );
-      return list;
-    }
-
-    for (var item in avalibleRooms) {
+    for (var item in offer!.rooms!) {
       var card = SizedBox(
         width: double.infinity,
         child: Card(
@@ -280,27 +260,40 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                 SizedBox(height: 5),
                 Text(item.shortDescription ?? ""),
                 SizedBox(height: 5),
+                Text(
+                  "Cijena po osobi: ${FormatHelper.formatNumber(item.discountedPrice ?? 0)} KM",
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Cijena po osobi: ${FormatHelper.formatNumber(item.discountedPrice ?? 0)} KM",
+                      getTextForRoomCard(item.remainingQuantity!),
+                      style: TextStyle(
+                        color: item.remainingQuantity! > 2
+                            ? const Color.fromARGB(255, 76, 175, 79)
+                            : AppColors.darkRed,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => AddUpdateReservationScreen(
-                              widget.offerId,
-                              item.id,
-                              null,
-                              previousScreenName: widget.previousScreenName,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Text("Odaberi"),
-                    ),
+                    item.isAvalible!
+                        ? ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      AddUpdateReservationScreen(
+                                        widget.offerId,
+                                        item.id,
+                                        null,
+                                        previousScreenName:
+                                            widget.previousScreenName,
+                                      ),
+                                ),
+                              );
+                            },
+                            child: Text("Odaberi"),
+                          )
+                        : SizedBox(),
                   ],
                 ),
               ],
@@ -368,5 +361,21 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text("Greška pri radu sa fajlom: $e")));
     }
+  }
+
+  String getTextForRoomCard(int remainingQuantity) {
+    if (remainingQuantity == 0) {
+      return "Kapacitet je popunjen!";
+    }
+
+    if (remainingQuantity < 5) {
+      return "Preostale još ${remainingQuantity} sobe!";
+    }
+
+    if (remainingQuantity >= 5) {
+      return "Preostalo još ${remainingQuantity} soba!";
+    }
+
+    return "";
   }
 }

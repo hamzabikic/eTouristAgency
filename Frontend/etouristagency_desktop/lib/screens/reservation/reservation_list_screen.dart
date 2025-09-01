@@ -132,26 +132,30 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                                 ),
                               ],
                             ),
-                            paginatedList!.listOfRecords!.isNotEmpty? Column(
-                              children: [
-                                ElevatedButton(
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    spacing: 10,
+                            paginatedList!.listOfRecords!.isNotEmpty
+                                ? Column(
                                     children: [
-                                      Icon(
-                                        Icons.download,
-                                        color: AppColors.primary,
+                                      ElevatedButton(
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          spacing: 10,
+                                          children: [
+                                            Icon(
+                                              Icons.download,
+                                              color: AppColors.primary,
+                                            ),
+                                            Text("Preuzmi listu putnika"),
+                                          ],
+                                        ),
+                                        onPressed: openDocumentOfPassengers,
                                       ),
-                                      Text("Preuzmi listu putnika"),
+                                      SizedBox(height: 5),
+                                      Text(
+                                        "Dokument sadrži putnike sa rezervacija sa statusom 'Uplaćeno'.",
+                                      ),
                                     ],
-                                  ),
-                                  onPressed: openDocumentOfPassengers,
-                                ),
-                                SizedBox(height:5),
-                                Text("Dokument sadrži putnike sa rezervacija sa statusom 'Uplaćeno'.")
-                              ],
-                            ) : SizedBox(),
+                                  )
+                                : SizedBox(),
                           ],
                         ),
                       ],
@@ -367,9 +371,9 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
 
       await OpenFile.open(savePath);
     } on Exception catch (ex) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ex.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ex.toString())));
     }
   }
 }

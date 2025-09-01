@@ -61,4 +61,7 @@ public partial class Room
 
     [NotMapped]
     public decimal DiscountedPrice { get; set; }
+
+    [NotMapped]
+    public int RemainingQuantity { get; set; }
 }

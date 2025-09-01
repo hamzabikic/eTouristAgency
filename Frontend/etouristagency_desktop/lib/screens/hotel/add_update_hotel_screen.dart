@@ -49,130 +49,164 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
       Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
-          child: Center(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusGeometry.all(Radius.circular(16)),
-                color: AppColors.primaryTransparent,
+          child: Stack(
+            children: [
+              Positioned(
+                top: 8,
+                left: 16,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      color: AppColors.primary,
+                      icon: Icon(Icons.arrow_back_ios),
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                HotelListScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-              width: 700,
-              child: Padding(
-                padding: EdgeInsetsGeometry.all(16.0),
-                child: FormBuilder(
-                  initialValue: widget.hotel?.toJson() ?? {},
-                  key: addHotelFormBuilder,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 700,
-                        child: Center(
-                          child: Text(
-                            widget.hotel == null
-                                ? "Novi hotel"
-                                : "Izmjena hotela",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.blueGrey,
-                            ),
-                          ),
-                        ),
-                      ),
-                      FormBuilderTextField(
-                        name: "name",
-                        decoration: InputDecoration(labelText: "Naziv hotela"),
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(
-                            errorText: "Ovo polje je obavezno.",
-                          ),
-                        ]),
-                      ),
-                      FormBuilderDropdown(
-                        name: "cityId",
-                        initialValue: widget.hotel?.cityId ?? "",
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(
-                            errorText: "Ovo polje je obavezno.",
-                          ),
-                        ]),
-                        items: getCityDropdownItems(),
-                      ),
-                      FormBuilderTextField(
-                        name: "starRating",
-                        decoration: InputDecoration(
-                          labelText: "Broj zvjezdica",
-                        ),
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(
-                            errorText: "Ovo polje je obavezno.",
-                          ),
-                          (value) {
-                            int? number = int.tryParse(value ?? "");
-                            if (number == null || number < 2 || number > 10) {
-                              return "Dozvoljen unos broja između 2 i 10";
-                            }
-
-                            return null;
-                          },
-                        ]),
-                      ),
-                      SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: !_isProcessing ? addUpdateHotel : null,
-                            child: !_isProcessing
-                                ? Text(
-                                    widget.hotel == null
-                                        ? "Sačuvaj"
-                                        : "Sačuvaj promjene",
-                                  )
-                                : Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: Transform.scale(
-                                        scale: 0.6,
-                                        child: const CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      Text("Fotografije", style: TextStyle(fontSize: 18)),
-                      SizedBox(height: 20),
-                      Row(
+              Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusGeometry.all(Radius.circular(16)),
+                    color: AppColors.primaryTransparent,
+                  ),
+                  width: 700,
+                  child: Padding(
+                    padding: EdgeInsetsGeometry.all(16.0),
+                    child: FormBuilder(
+                      initialValue: widget.hotel?.toJson() ?? {},
+                      key: addHotelFormBuilder,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          ElevatedButton(
-                            onPressed: uploadPhoto,
-                            child: Row(
-                              children: [
-                                Icon(Icons.upload, size: 15),
-                                SizedBox(width: 10),
-                                Text("Učitaj sliku"),
-                              ],
+                          SizedBox(
+                            width: 700,
+                            child: Center(
+                              child: Text(
+                                widget.hotel == null
+                                    ? "Novi hotel"
+                                    : "Izmjena hotela",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.blueGrey,
+                                ),
+                              ),
                             ),
                           ),
+                          FormBuilderTextField(
+                            name: "name",
+                            decoration: InputDecoration(
+                              labelText: "Naziv hotela",
+                            ),
+                            validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(
+                                errorText: "Ovo polje je obavezno.",
+                              ),
+                            ]),
+                          ),
+                          FormBuilderDropdown(
+                            name: "cityId",
+                            initialValue: widget.hotel?.cityId ?? "",
+                            validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(
+                                errorText: "Ovo polje je obavezno.",
+                              ),
+                            ]),
+                            items: getCityDropdownItems(),
+                          ),
+                          FormBuilderTextField(
+                            name: "starRating",
+                            decoration: InputDecoration(
+                              labelText: "Broj zvjezdica",
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(
+                                errorText: "Ovo polje je obavezno.",
+                              ),
+                              (value) {
+                                int? number = int.tryParse(value ?? "");
+                                if (number == null ||
+                                    number < 2 ||
+                                    number > 10) {
+                                  return "Dozvoljen unos broja između 2 i 10";
+                                }
+
+                                return null;
+                              },
+                            ]),
+                          ),
+                          SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton(
+                                onPressed: !_isProcessing
+                                    ? addUpdateHotel
+                                    : null,
+                                child: !_isProcessing
+                                    ? Text(
+                                        widget.hotel == null
+                                            ? "Sačuvaj"
+                                            : "Sačuvaj promjene",
+                                      )
+                                    : Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: Transform.scale(
+                                            scale: 0.6,
+                                            child:
+                                                const CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                ),
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          Text("Fotografije", style: TextStyle(fontSize: 18)),
+                          SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              ElevatedButton(
+                                onPressed: uploadPhoto,
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.upload, size: 15),
+                                    SizedBox(width: 10),
+                                    Text("Učitaj sliku"),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          getWrapOfImages(),
                         ],
                       ),
-                      SizedBox(height: 20),
-                      getWrapOfImages(),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -201,7 +235,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
       "recordsPerPage": 1000,
     })).listOfRecords;
 
-    if(!mounted) return;
+    if (!mounted) return;
 
     setState(() {});
   }
@@ -315,7 +349,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
         await hotelProvider.update(widget.hotel!.id!, jsonModel);
       }
 
-      if(!mounted) return;
+      if (!mounted) return;
 
       DialogHelper.openDialog(
         context,
@@ -350,7 +384,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
     for (var item in widget.hotel!.hotelImages!) {
       var hotelImageInfo = await hotelProvider.getHotelImage(item.id!);
 
-      if(!mounted) return;
+      if (!mounted) return;
 
       images!.add(
         HotelImageInfo(
