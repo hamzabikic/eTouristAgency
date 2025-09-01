@@ -8,6 +8,7 @@ class RoomAccordionItem {
   String? childDiscount;
   String? quantity;
   String? shortDescription;
+  int? remainingQuantity;
 
   RoomAccordionItem({
     this.id,
@@ -17,6 +18,7 @@ class RoomAccordionItem {
     this.childDiscount,
     this.quantity,
     this.shortDescription,
+    this.remainingQuantity
   });
 
   factory RoomAccordionItem.fromRoom(Room room) {
@@ -28,6 +30,7 @@ class RoomAccordionItem {
       childDiscount: room.childDiscount?.toString(),
       quantity: room.quantity?.toString(),
       shortDescription: room.shortDescription,
+      remainingQuantity: room.remainingQuantity
     );
   }
 

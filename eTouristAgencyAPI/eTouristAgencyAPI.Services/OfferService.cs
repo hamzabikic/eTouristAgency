@@ -280,7 +280,10 @@ namespace eTouristAgencyAPI.Services
 
             foreach (var item in dbModel.Rooms)
             {
-                item.IsAvalible = item.Reservations.Count(x => x.ReservationStatusId != AppConstants.FixedReservationStatusCancelled) < item.Quantity;
+                var numberOfReservationsForRoom = item.Reservations.Count(x => !AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(x.ReservationStatusId));
+
+                item.IsAvalible = numberOfReservationsForRoom < item.Quantity;
+                item.RemainingQuantity = item.Quantity - numberOfReservationsForRoom;
                 item.DiscountedPrice = item.PricePerPerson - item.PricePerPerson * (discount / 100);
             }
         }

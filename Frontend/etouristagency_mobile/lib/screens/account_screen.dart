@@ -70,7 +70,7 @@ class _AccountScreenState extends State<AccountScreen> {
                               children: [
                                 Center(
                                   child: Text(
-                                    "Izmjena podataka",
+                                    "Podaci o korisničkom nalogu",
                                     style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w500,

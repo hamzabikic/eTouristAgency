@@ -1,7 +1,6 @@
 ﻿using eTouristAgencyAPI.Services.Constants;
 using eTouristAgencyAPI.Services.Database.Models;
 using eTouristAgencyAPI.Services.Interfaces;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 
@@ -15,7 +14,7 @@ namespace eTouristAgencyAPI.Services
 
             foreach (var room in offer.Rooms)
             {
-                foreach (var reservation in room.Reservations.Where(x=> x.ReservationStatusId == AppConstants.FixedReservationStatusPaid))
+                foreach (var reservation in room.Reservations.Where(x => x.ReservationStatusId == AppConstants.FixedReservationStatusPaid))
                 {
                     passengers.AddRange(reservation.Passengers);
                 }
@@ -45,7 +44,7 @@ namespace eTouristAgencyAPI.Services
                                                         .Bold()
                                                         .SpacingBefore(10)
                                                         .SpacingAfter(10);
-                    
+
                     table.Rows[0].Cells[2].Paragraphs[0].Append("Broj telefona")
                                                         .Bold()
                                                         .SpacingBefore(10)

@@ -24,6 +24,8 @@ namespace eTouristAgencyAPI.Models.ResponseModels.Room
 
         public RoomTypeResponse RoomType { get; set; }
 
+        public int RemainingQuantity { get; set; }
+
         public bool IsAvalible { get; set; }
     }
 }
