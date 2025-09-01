@@ -1,54 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="EmailTemplates\EmailContents\generatedPasswordText.html" />
-    <None Remove="EmailTemplates\EmailContents\generatedPasswordTitle.html" />
-    <None Remove="EmailTemplates\emailNotification.html" />
-    <None Remove="EmailTemplates\Images\logo.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="EmailTemplates\EmailContents\generatedPasswordText.html" />
+		<None Remove="EmailTemplates\EmailContents\generatedPasswordTitle.html" />
+		<None Remove="EmailTemplates\emailNotification.html" />
+		<None Remove="EmailTemplates\Images\logo.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="EmailTemplates\EmailContents\emailVerificationText.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\emailVerificationTitle.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\generatedPasswordText.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\generatedPasswordTitle.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\offerRecommendationText.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\offerRecommendationTitle.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\reservationStatusChangeText.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\reservationStatusChangeTitle.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\resetPasswordText.html" />
-    <EmbeddedResource Include="EmailTemplates\EmailContents\resetPasswordTitle.html" />
-    <EmbeddedResource Include="EmailTemplates\Images\logo.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="EmailTemplates\EmailContents\emailVerificationText.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\emailVerificationTitle.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\generatedPasswordText.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\generatedPasswordTitle.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\offerRecommendationText.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\offerRecommendationTitle.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\reservationStatusChangeText.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\reservationStatusChangeTitle.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\resetPasswordText.html" />
+		<EmbeddedResource Include="EmailTemplates\EmailContents\resetPasswordTitle.html" />
+		<EmbeddedResource Include="EmailTemplates\Images\logo.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="EmailTemplates\emailNotification.html" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="EmailTemplates\emailNotification.html" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="EasyNetQ" Version="7.8.0" />
-    <PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
-    <PackageReference Include="Mapster" Version="7.4.0" />
-    <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.6" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="DocX" Version="4.0.25105.5786" />
+		<PackageReference Include="EasyNetQ" Version="7.8.0" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
+		<PackageReference Include="Mapster" Version="7.4.0" />
+		<PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.6" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.6" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\eTouristAgencyAPI.Models\eTouristAgencyAPI.Models.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\eTouristAgencyAPI.Models\eTouristAgencyAPI.Models.csproj" />
+	</ItemGroup>
 
 </Project>

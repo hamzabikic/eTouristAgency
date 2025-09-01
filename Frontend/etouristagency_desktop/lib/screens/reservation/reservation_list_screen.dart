@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:etouristagency_desktop/consts/app_colors.dart';
 import 'package:etouristagency_desktop/consts/screen_names.dart';
 import 'package:etouristagency_desktop/helpers/dialog_helper.dart';
@@ -7,13 +9,15 @@ import 'package:etouristagency_desktop/models/offer/offer.dart';
 import 'package:etouristagency_desktop/models/paginated_list.dart';
 import 'package:etouristagency_desktop/models/reservation/reservation.dart';
 import 'package:etouristagency_desktop/providers/entity_code_value_provider.dart';
+import 'package:etouristagency_desktop/providers/passenger_provider.dart';
 import 'package:etouristagency_desktop/providers/reservation_provider.dart';
 import 'package:etouristagency_desktop/screens/master_screen.dart';
 import 'package:etouristagency_desktop/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_desktop/screens/reservation/update_reservation_screen.dart';
-import 'package:etouristagency_desktop/screens/reservation_review/reservation_review_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ReservationListScreen extends StatefulWidget {
   final Offer offer;
@@ -26,6 +30,7 @@ class ReservationListScreen extends StatefulWidget {
 class _ReservationListScreenState extends State<ReservationListScreen> {
   late final ReservationProvider reservationProvider;
   late final EntityCodeValueProvider entityCodeValueProvider;
+  late final PassengerProvider passengerProvider;
   final ScrollController horizontalScrollController = ScrollController();
   Map<String, dynamic> queryStrings = {
     "page": 1,
@@ -41,6 +46,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
     queryStrings["offerId"] = widget.offer.id;
     reservationProvider = ReservationProvider();
     entityCodeValueProvider = EntityCodeValueProvider();
+    passengerProvider = PassengerProvider();
     fetchData();
     fetchReservationStatus();
     super.initState();
@@ -78,7 +84,7 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                         ),
                         SizedBox(height: 20),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Wrap(
                               spacing: 20,
@@ -126,6 +132,26 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
                                 ),
                               ],
                             ),
+                            paginatedList!.listOfRecords!.isNotEmpty? Column(
+                              children: [
+                                ElevatedButton(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    spacing: 10,
+                                    children: [
+                                      Icon(
+                                        Icons.download,
+                                        color: AppColors.primary,
+                                      ),
+                                      Text("Preuzmi listu putnika"),
+                                    ],
+                                  ),
+                                  onPressed: openDocumentOfPassengers,
+                                ),
+                                SizedBox(height:5),
+                                Text("Dokument sadrži putnike sa rezervacija sa statusom 'Uplaćeno'.")
+                              ],
+                            ) : SizedBox(),
                           ],
                         ),
                       ],
@@ -325,5 +351,25 @@ class _ReservationListScreenState extends State<ReservationListScreen> {
     }
 
     return list;
+  }
+
+  Future openDocumentOfPassengers() async {
+    try {
+      var documentOfPassengers = await passengerProvider
+          .getDocumentOfPassegersByOfferId(widget.offer.id!);
+      if (!mounted) return;
+
+      Directory dir = await getTemporaryDirectory();
+      String savePath = "${dir.path}/${documentOfPassengers.documentName}";
+
+      File file = File(savePath);
+      await file.writeAsBytes(documentOfPassengers.documentBytes!);
+
+      await OpenFile.open(savePath);
+    } on Exception catch (ex) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(ex.toString())),
+      );
+    }
   }
 }

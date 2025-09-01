@@ -28,5 +28,21 @@ namespace eTouristAgencyAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("{offerId}/passengers-document")]
+        public async Task<ActionResult> GetDocumentOfPassengersByOfferId(Guid offerId)
+        {
+            try
+            {
+                var passengersDocument = await _passengerService.GetDocumentOfPassengersByOfferIdAsync(offerId);
+
+                Response.Headers.Add("DocumentName", passengersDocument.DocumentName);
+                return File(passengersDocument.DocumentBytes, "application/octet-stream", passengersDocument.DocumentName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

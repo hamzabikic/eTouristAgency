@@ -36,6 +36,7 @@ namespace eTouristAgencyAPI.Services.IoC
             services.AddTransient<IOfferService, OfferService>();
             services.AddTransient<IEntityCodeValueService, EntityCodeValueService>();
             services.AddTransient<IRoomTypeService, RoomTypeService>();
+            services.AddTransient<IWordGeneratorService, WordGeneratorService>();
             services.AddTransient<IPassengerService, PassengerService>();
             services.AddTransient<IReservationService, ReservationService>();
             services.AddTransient<IReservationReviewService, ReservationReviewService>();

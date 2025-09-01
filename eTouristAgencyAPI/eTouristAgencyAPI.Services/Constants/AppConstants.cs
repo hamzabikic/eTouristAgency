@@ -23,6 +23,7 @@ namespace eTouristAgencyAPI.Services.Constants
         public static readonly Guid FixedReservationStatusNotPaid = new Guid("C55BC19B-7276-416C-8BB1-B7CD78245AC0");
         public static readonly Guid FixedReservationStatusCancelled = new Guid("962A3C05-FA18-4183-B0FE-84A3E88FD4AA");
         public static readonly Guid FixedReservationStatusLatePayment = new Guid("F6159BF6-5061-4583-8714-B40BD0A24476");
+        public static readonly Guid FixedReservationStatusPaid = new Guid("39F2FFFD-D1F6-4BEC-A4DD-0C99B4037928");
 
         public static readonly List<Guid> ForbiddenReservationStatusForReservationUpdate = new List<Guid> { FixedReservationStatusCancelled, FixedReservationStatusLatePayment };
 
