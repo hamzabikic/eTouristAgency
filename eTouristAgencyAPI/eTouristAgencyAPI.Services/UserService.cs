@@ -1,4 +1,5 @@
-﻿using EasyNetQ;
+﻿using Azure.Core;
+using EasyNetQ;
 using eTouristAgencyAPI.Models.RequestModels.User;
 using eTouristAgencyAPI.Models.ResponseModels.User;
 using eTouristAgencyAPI.Models.SearchModels;
@@ -10,6 +11,7 @@ using eTouristAgencyAPI.Services.Helpers;
 using eTouristAgencyAPI.Services.Interfaces;
 using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using MapsterMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -21,6 +23,7 @@ namespace eTouristAgencyAPI.Services
         private readonly IVerificationCodeService _verificationCodeService;
         private readonly IEmailContentService _emailContentService;
         private readonly IUserFirebaseTokenService _userFirebaseTokenService;
+        private readonly IHttpContextAccessor _httpContext;
         private readonly IBus _bus;
 
         private readonly bool _isAdmin;
@@ -32,11 +35,13 @@ namespace eTouristAgencyAPI.Services
                            IVerificationCodeService verificationCodeService,
                            IEmailContentService emailContentService,
                            IUserFirebaseTokenService userFirebaseTokenService,
+                           IHttpContextAccessor httpContext,
                            IBus bus) : base(dbContext, mapper)
         {
             _verificationCodeService = verificationCodeService;
             _emailContentService = emailContentService;
             _userFirebaseTokenService = userFirebaseTokenService;
+            _httpContext = httpContext;
 
             _isAdmin = userContextService.UserHasRole(Roles.Admin);
             _userId = userContextService.GetUserId();
@@ -144,6 +149,18 @@ namespace eTouristAgencyAPI.Services
             if (_isAdmin && !user.Roles.Any(x => x.Id == AppConstants.FixedRoleAdminId)) throw new Exception("Deactivation is only allowed for admin users.");
             if (!_isAdmin && userId != _userId) throw new Exception("This method is only allowed for your account.");
 
+            if (!_isAdmin)
+            {
+                var userHasActiveReservations = await _dbContext.Reservations.Include(x => x.Room.Offer).AnyAsync(x => x.UserId == userId && !AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(x.ReservationStatusId) && x.Room.Offer.TripEndDate.Date > DateTime.Now.Date);
+
+                if (userHasActiveReservations)
+                {
+                    throw new Exception("Deaktiviranje korisničkog naloga nije moguće dok imate aktivne rezervacije.");
+                }
+
+                await _userFirebaseTokenService.RemoveAllTokensExceptAsync(null, userId);
+            }
+
             user.IsActive = false;
             await _dbContext.SaveChangesAsync();
         }
@@ -244,7 +261,9 @@ namespace eTouristAgencyAPI.Services
             {
                 if (!_isAdmin)
                 {
-                    await _userFirebaseTokenService.RemoveAllTokensExceptAsync(updateModel.FirebaseToken, _userId ?? Guid.Empty);
+                    var firebaseToken = _httpContext.HttpContext.Request.Headers["FirebaseToken"].FirstOrDefault();
+
+                    await _userFirebaseTokenService.RemoveAllTokensExceptAsync(firebaseToken, _userId ?? Guid.Empty);
                 }
 
                 dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, updateModel.Password);

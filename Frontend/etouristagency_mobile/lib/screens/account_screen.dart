@@ -327,7 +327,13 @@ class _AccountScreenState extends State<AccountScreen> {
     insertModel["roleIds"] = [insertModel["role"]];
 
     try {
-      var response = await userProvider.update(user!.id!, insertModel);
+      var firebaseToken = await firebaseTokenService.getToken();
+
+      await userProvider.updateWithFirebaseToken(
+        user!.id!,
+        insertModel,
+        firebaseToken,
+      );
 
       if (!mounted) return;
 
@@ -527,6 +533,7 @@ class _AccountScreenState extends State<AccountScreen> {
           if (!mounted) return;
           await authService.clearCredentials();
           await firebaseTokenService.removeToken();
+
           Navigator.of(context).pop();
           DialogHelper.openDialog(
             context,

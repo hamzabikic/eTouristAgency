@@ -106,6 +106,37 @@ class UserProvider extends BaseProvider<User> {
     }
   }
 
+  Future updateWithFirebaseToken(
+    String id,
+    Map<String, dynamic> updateModel,
+    String? firebaseToken,
+  ) async {
+    var headers = {
+      "Authorization": (await authService.getBasicKey())!,
+      "Content-Type": "application/json",
+    };
+
+    if (firebaseToken != null) {
+      headers["FirebaseToken"] = firebaseToken;
+    }
+
+    var url = Uri.parse("${controllerUrl}/${id}");
+    var response = await http.put(
+      url,
+      headers: headers,
+      body: jsonEncode(updateModel),
+    );
+
+    if (response.statusCode == 401) {
+      await AuthNavigationHelper.handleUnauthorized();
+      return;
+    }
+
+    if (response.statusCode != 200) {
+      throw Exception("Dogodila se greška: ${response.body}");
+    }
+  }
+
   @override
   User jsonToModel(Map<String, dynamic> json) {
     return User.fromJson(json);

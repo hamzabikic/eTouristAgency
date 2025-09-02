@@ -88,7 +88,7 @@ abstract class BaseProvider<TResponseModel> {
     }
 
     if (response.statusCode != 200) {
-      throw Exception("Dogodila se greska: ${response.body}");
+      throw Exception("Dogodila se greška: ${response.body}");
     }
   }
 
