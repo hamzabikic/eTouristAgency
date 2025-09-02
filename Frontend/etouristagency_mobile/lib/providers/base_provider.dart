@@ -1,3 +1,4 @@
+import 'package:etouristagency_mobile/config/app_config.dart';
 import 'package:etouristagency_mobile/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_mobile/models/paginated_list.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
@@ -11,7 +12,7 @@ abstract class BaseProvider<TResponseModel> {
   BaseProvider(String controller) {
     var baseUrl = String.fromEnvironment(
       "baseUrl",
-      defaultValue: "http://10.0.2.2:5001",
+      defaultValue: AppConfig.apiBaseUrl,
     );
     controllerUrl = "${baseUrl}/api/${controller}";
     authService = AuthService();
@@ -88,7 +89,7 @@ abstract class BaseProvider<TResponseModel> {
     }
 
     if (response.statusCode != 200) {
-      throw Exception("Dogodila se greska: ${response.body}");
+      throw Exception("Dogodila se greška: ${response.body}");
     }
   }
 

@@ -1,3 +1,4 @@
+import 'package:etouristagency_mobile/config/app_config.dart';
 import 'package:etouristagency_mobile/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_mobile/models/passenger/passenger_document.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
@@ -10,7 +11,7 @@ class PassengerProvider {
   PassengerProvider() {
     var baseUrl = String.fromEnvironment(
       "baseUrl",
-      defaultValue: "http://10.0.2.2:5001",
+      defaultValue: AppConfig.apiBaseUrl,
     );
 
     controllerUrl = "${baseUrl}/api/passenger";

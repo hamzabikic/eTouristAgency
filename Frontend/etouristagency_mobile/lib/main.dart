@@ -1,10 +1,12 @@
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/consts/screen_names.dart';
+import 'package:etouristagency_mobile/providers/user_firebase_token_provider.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/add_update_reservation_screen.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
+import 'package:etouristagency_mobile/services/firebase_token_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -72,9 +74,28 @@ Future initializeFirebase() async {
     return;
   }
 
-  var userProvider = UserProvider();
+  var firebaseTokenService = FirebaseTokenService();
+
   String? token = await FirebaseMessaging.instance.getToken();
-  await userProvider.updateFirebaseToken({"firebaseToken": token});
+
+  if (token == null) {
+    await firebaseTokenService.removeToken();
+    return;
+  }
+
+  var userFirebaseProvider = UserFirebaseTokenProvider();
+  String? oldToken = await firebaseTokenService.getToken();
+
+  if (oldToken != null) {
+    await userFirebaseProvider.update({
+      "oldFirebaseToken": oldToken,
+      "newFirebaseToken": token,
+    });
+  } else {
+    await userFirebaseProvider.add({"firebaseToken": token});
+  }
+
+  await firebaseTokenService.storeToken(token);
 
   FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
     var authServ = AuthService();
@@ -82,8 +103,20 @@ Future initializeFirebase() async {
       return;
     }
 
-    var userProv = UserProvider();
-    await userProv.updateFirebaseToken({"firebaseToken": newToken});
+    var firebaseTokenServ = FirebaseTokenService();
+    var userFirebaseProv = UserFirebaseTokenProvider();
+    String? oldToken = await firebaseTokenServ.getToken();
+
+    if (oldToken != null) {
+      await userFirebaseProv.update({
+        "newFirebaseToken": newToken,
+        "oldFirebaseToken": oldToken,
+      });
+    } else {
+      await userFirebaseProvider.add({"firebaseToken": token});
+    }
+
+    await firebaseTokenServ.storeToken(newToken);
   });
 
   FirebaseMessaging.onMessageOpenedApp.listen((message) {

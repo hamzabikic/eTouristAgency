@@ -1,4 +1,5 @@
-﻿using EasyNetQ;
+﻿using Azure.Core;
+using EasyNetQ;
 using eTouristAgencyAPI.Models.RequestModels.User;
 using eTouristAgencyAPI.Models.ResponseModels.User;
 using eTouristAgencyAPI.Models.SearchModels;
@@ -10,6 +11,7 @@ using eTouristAgencyAPI.Services.Helpers;
 using eTouristAgencyAPI.Services.Interfaces;
 using eTouristAgencyAPI.Services.Messaging.RabbitMQ;
 using MapsterMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -20,6 +22,8 @@ namespace eTouristAgencyAPI.Services
     {
         private readonly IVerificationCodeService _verificationCodeService;
         private readonly IEmailContentService _emailContentService;
+        private readonly IUserFirebaseTokenService _userFirebaseTokenService;
+        private readonly IHttpContextAccessor _httpContext;
         private readonly IBus _bus;
 
         private readonly bool _isAdmin;
@@ -30,10 +34,14 @@ namespace eTouristAgencyAPI.Services
                            IUserContextService userContextService,
                            IVerificationCodeService verificationCodeService,
                            IEmailContentService emailContentService,
+                           IUserFirebaseTokenService userFirebaseTokenService,
+                           IHttpContextAccessor httpContext,
                            IBus bus) : base(dbContext, mapper)
         {
             _verificationCodeService = verificationCodeService;
             _emailContentService = emailContentService;
+            _userFirebaseTokenService = userFirebaseTokenService;
+            _httpContext = httpContext;
 
             _isAdmin = userContextService.UserHasRole(Roles.Admin);
             _userId = userContextService.GetUserId();
@@ -76,6 +84,8 @@ namespace eTouristAgencyAPI.Services
             user.PasswordHash = passwordHasher.HashPassword(user, generatedPassword);
             await _dbContext.SaveChangesAsync();
 
+            await _userFirebaseTokenService.RemoveAllTokensExceptAsync(null, userId);
+
             var emailTitle = await _emailContentService.GetGeneratedPasswordTitleAsync();
             var emailText = await _emailContentService.GetGeneratedPasswordTextAsync(generatedPassword);
             var emailNotification = new RabbitMQEmailNotification
@@ -93,7 +103,7 @@ namespace eTouristAgencyAPI.Services
 
         public async Task ResetPasswordAsync(ResetPasswordRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email && x.IsActive);
+            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Email == request.Email && x.IsActive);
 
             if (user == null) throw new Exception("User with provided email is not found.");
 
@@ -103,6 +113,11 @@ namespace eTouristAgencyAPI.Services
             user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
 
             await _dbContext.SaveChangesAsync();
+
+            if (user.Roles.Any(x => x.Id == AppConstants.FixedRoleClientId))
+            {
+                await _userFirebaseTokenService.RemoveAllTokensExceptAsync(null, user.Id);
+            }
         }
 
         public async Task VerifyAsync(Guid userId)
@@ -134,16 +149,19 @@ namespace eTouristAgencyAPI.Services
             if (_isAdmin && !user.Roles.Any(x => x.Id == AppConstants.FixedRoleAdminId)) throw new Exception("Deactivation is only allowed for admin users.");
             if (!_isAdmin && userId != _userId) throw new Exception("This method is only allowed for your account.");
 
+            if (!_isAdmin)
+            {
+                var userHasActiveReservations = await _dbContext.Reservations.Include(x => x.Room.Offer).AnyAsync(x => x.UserId == userId && !AppConstants.ForbiddenReservationStatusForReservationUpdate.Contains(x.ReservationStatusId) && x.Room.Offer.TripEndDate.Date > DateTime.Now.Date);
+
+                if (userHasActiveReservations)
+                {
+                    throw new Exception("Deaktiviranje korisničkog naloga nije moguće dok imate aktivne rezervacije.");
+                }
+
+                await _userFirebaseTokenService.RemoveAllTokensExceptAsync(null, userId);
+            }
+
             user.IsActive = false;
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task UpdateFirebaseTokenAsync(UpdateFirebaseTokenRequest request)
-        {
-            var user = await _dbContext.Users.FindAsync(_userId ?? Guid.Empty);
-
-            user.FirebaseToken = request.FirebaseToken;
-
             await _dbContext.SaveChangesAsync();
         }
 
@@ -237,9 +255,17 @@ namespace eTouristAgencyAPI.Services
                 if (dbModel.Roles.Any(x => x.Name == Roles.Client)) dbModel.IsVerified = false;
             }
 
-            if (_userId == dbModel.Id)
+            var passwordHasher = new PasswordHasher<User>();
+
+            if (_userId == dbModel.Id && passwordHasher.VerifyHashedPassword(dbModel, dbModel.PasswordHash, updateModel.Password) != PasswordVerificationResult.Success)
             {
-                var passwordHasher = new PasswordHasher<User>();
+                if (!_isAdmin)
+                {
+                    var firebaseToken = _httpContext.HttpContext.Request.Headers["FirebaseToken"].FirstOrDefault();
+
+                    await _userFirebaseTokenService.RemoveAllTokensExceptAsync(firebaseToken, _userId ?? Guid.Empty);
+                }
+
                 dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, updateModel.Password);
             }
 

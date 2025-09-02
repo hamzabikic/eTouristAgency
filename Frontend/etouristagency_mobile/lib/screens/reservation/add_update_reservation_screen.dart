@@ -608,13 +608,37 @@ class _AddUpdateReservationScreenState
 
       list.add(
         AccordionSection(
-          header: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Putnik ${counter}",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+          header: SizedBox(
+            height:55,
+            child: Padding(
+              padding: const EdgeInsets.only(left:16,top:8, bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Putnik ${counter}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  formBuilderKeys.length > 1 && _isEditable
+                      ? IconButton(
+                          icon: Icon(
+                            Icons.delete_forever,
+                            color: AppColors.darkRed,
+                            size: 25,
+                          ),
+                          onPressed: () {
+                            formBuilderKeys.removeAt(index);
+                            initialValues.removeAt(index);
+                            passengerDocuments.removeAt(index);
+            
+                            setState(() {});
+                          },
+                        )
+                      : SizedBox(),
+                ],
               ),
             ),
           ),
@@ -624,6 +648,7 @@ class _AddUpdateReservationScreenState
             child: Padding(
               padding: const EdgeInsets.only(left: 8.0, right: 8.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Visibility(
                     visible: false,
@@ -669,62 +694,39 @@ class _AddUpdateReservationScreenState
                     ]),
                   ),
                   SizedBox(height: 5),
+                  Text("Pasoš/lična karta", style: TextStyle(fontSize: 14)),
                   Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.description,
-                                        color: AppColors.primary,
-                                      ),
-                                      onPressed: () async {
-                                        await openPassengerDocument(index);
-                                      },
-                                    ),
-                                    SizedBox(width: 20),
-                                    _isEditable ? ElevatedButton(
-                                      onPressed: () async {
-                                        await pickAndUploadPassengerDocument(
-                                          index,
-                                        );
-                                      },
-                                      child: Icon(
-                                        Icons.upload,
-                                        color: AppColors.primary,
-                                      ),
-                                    ) : SizedBox(),
-                                  ],
-                                ),
-                                _isEditable ? SizedBox(height: 5) : SizedBox(),
-                                _isEditable ? Text(
-                                  "Ovdje učitajte prvu stranicu putovnice.",
-                                  style: TextStyle(fontSize: 14),
-                                ) : SizedBox(),
-                              ],
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.description,
+                              color: AppColors.primary,
                             ),
-                            formBuilderKeys.length > 1 && _isEditable ? IconButton(
-                              icon: Icon(
-                                Icons.delete_forever,
-                                color: AppColors.darkRed,
-                                size: 30,
-                              ),
-                              onPressed: () {
-                                formBuilderKeys.removeAt(index);
-                                initialValues.removeAt(index);
-                                passengerDocuments.removeAt(index);
-
-                                setState(() {});
-                              },
-                            ) : SizedBox(),
-                          ],
-                        )
+                            onPressed: () async {
+                              await openPassengerDocument(index);
+                            },
+                          ),
+                          SizedBox(width: 20),
+                          _isEditable
+                              ? ElevatedButton(
+                                  onPressed: () async {
+                                    await pickAndUploadPassengerDocument(index);
+                                  },
+                                  child: Icon(
+                                    Icons.upload,
+                                    color: AppColors.primary,
+                                  ),
+                                )
+                              : SizedBox(),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -880,11 +882,7 @@ class _AddUpdateReservationScreenState
       if (passengerDocument.documentBytes == null ||
           passengerDocument.documentName == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Upload putovnice putnika je obavezan.",
-            ),
-          ),
+          SnackBar(content: Text("Upload putovnice putnika je obavezan.")),
         );
 
         isValid = false;

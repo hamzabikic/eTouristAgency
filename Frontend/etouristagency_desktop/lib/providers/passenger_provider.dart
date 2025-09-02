@@ -1,3 +1,4 @@
+import 'package:etouristagency_desktop/config/app_config.dart';
 import 'package:etouristagency_desktop/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_desktop/models/passenger/passenger_document.dart';
 import 'package:etouristagency_desktop/models/passenger/passenger_list_document.dart';
@@ -11,7 +12,7 @@ class PassengerProvider {
   PassengerProvider() {
     const baseUrl = String.fromEnvironment(
       "baseUrl",
-      defaultValue: "https://localhost:5000",
+      defaultValue: AppConfig.apiBaseUrl,
     );
 
     controllerUrl = "${baseUrl}/api/passenger";

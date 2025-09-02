@@ -1,11 +1,13 @@
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
+import 'package:etouristagency_mobile/providers/user_firebase_token_provider.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/providers/verification_code_provider.dart';
 import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
+import 'package:etouristagency_mobile/services/firebase_token_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -24,6 +26,8 @@ class _AccountScreenState extends State<AccountScreen> {
   late final UserProvider userProvider;
   late final VerificationCodeProvider verificationCodeProvider;
   late final AuthService authService;
+  late final UserFirebaseTokenProvider userFirebaseTokenProvider;
+  late final FirebaseTokenService firebaseTokenService;
   final TextEditingController verificationCodeController =
       TextEditingController();
   String? operationErrorMessage;
@@ -37,6 +41,8 @@ class _AccountScreenState extends State<AccountScreen> {
     verificationCodeProvider = VerificationCodeProvider();
     userProvider = UserProvider();
     authService = AuthService();
+    userFirebaseTokenProvider = UserFirebaseTokenProvider();
+    firebaseTokenService = FirebaseTokenService();
     fetchUserData();
     super.initState();
   }
@@ -186,7 +192,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                       ),
                                 FormBuilderTextField(
                                   name: "phoneNumber",
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
                                   decoration: InputDecoration(
                                     labelText: "Broj telefona",
                                   ),
@@ -270,9 +278,11 @@ class _AccountScreenState extends State<AccountScreen> {
                         child: Text("Odjavi se"),
                         onPressed: () async {
                           try {
-                            await userProvider.updateFirebaseToken({
-                              "firebaseToken": null,
-                            });
+                            String? token = await firebaseTokenService
+                                .getToken();
+
+                            await firebaseTokenService.removeToken();
+                            await userFirebaseTokenProvider.delete(token ?? "");
                           } on Exception catch (ex) {}
 
                           await authService.clearCredentials();
@@ -317,10 +327,16 @@ class _AccountScreenState extends State<AccountScreen> {
     insertModel["roleIds"] = [insertModel["role"]];
 
     try {
-      var response = await userProvider.update(user!.id!, insertModel);
+      var firebaseToken = await firebaseTokenService.getToken();
+
+      await userProvider.updateWithFirebaseToken(
+        user!.id!,
+        insertModel,
+        firebaseToken,
+      );
 
       if (!mounted) return;
-      
+
       await authService.clearCredentials();
       await authService.storeCredetials(
         insertModel["username"],
@@ -369,7 +385,7 @@ class _AccountScreenState extends State<AccountScreen> {
   Future fetchUserData() async {
     var userId = await authService.getUserId();
 
-    if(userId == null) return;
+    if (userId == null) return;
 
     var userJson = await userProvider.getById(userId);
     if (!mounted) return;
@@ -516,6 +532,8 @@ class _AccountScreenState extends State<AccountScreen> {
 
           if (!mounted) return;
           await authService.clearCredentials();
+          await firebaseTokenService.removeToken();
+
           Navigator.of(context).pop();
           DialogHelper.openDialog(
             context,

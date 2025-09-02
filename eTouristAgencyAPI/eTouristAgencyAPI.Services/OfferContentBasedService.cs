@@ -21,12 +21,12 @@ namespace eTouristAgencyAPI.Services
             var cityId = offer.Hotel.CityId.ToString();
             var countryId = offer.Hotel.City.CountryId.ToString();
 
-            var userTags = await _dbContext.UserTags.Include(x => x.User).Where(x => x.User.IsActive &&
-                                                                                     x.CreatedOn > DateTime.Now.AddYears(-1) &&
-                                                                                     (x.Tag == boardTypeId ||
-                                                                                     x.Tag == hotelId ||
-                                                                                     x.Tag == cityId ||
-                                                                                     x.Tag == countryId)).ToListAsync();
+            var userTags = await _dbContext.UserTags.Include(x => x.User.UserFirebaseTokens).Where(x => x.User.IsActive &&
+                                                                                                   x.CreatedOn > DateTime.Now.AddYears(-1) &&
+                                                                                                   (x.Tag == boardTypeId ||
+                                                                                                   x.Tag == hotelId ||
+                                                                                                   x.Tag == cityId ||
+                                                                                                   x.Tag == countryId)).ToListAsync();
 
             var users = userTags.DistinctBy(x=> x.UserId).Select(x => x.User).ToList();
             List<KeyValuePair<User, int>> countOfMutualTagsPerUser = new List<KeyValuePair<User, int>>();

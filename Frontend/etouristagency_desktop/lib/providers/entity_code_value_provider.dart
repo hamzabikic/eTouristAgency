@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:etouristagency_desktop/config/app_config.dart';
 import 'package:etouristagency_desktop/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_desktop/models/entity_code_value/entity_code_value.dart';
 import 'package:etouristagency_desktop/services/auth_service.dart';
@@ -12,7 +13,7 @@ class EntityCodeValueProvider {
   EntityCodeValueProvider() {
     const baseUrl = String.fromEnvironment(
       "baseUrl",
-      defaultValue: "https://localhost:5000",
+      defaultValue: AppConfig.apiBaseUrl,
     );
     controllerUrl = "${baseUrl}/api/entitycodevalue";
     authService = AuthService();

@@ -40,6 +40,7 @@ namespace eTouristAgencyAPI.Services.IoC
             services.AddTransient<IPassengerService, PassengerService>();
             services.AddTransient<IReservationService, ReservationService>();
             services.AddTransient<IReservationReviewService, ReservationReviewService>();
+            services.AddTransient<IUserFirebaseTokenService, UserFirebaseTokenService>();
             services.AddSingleton<IBus>((provider) =>
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();

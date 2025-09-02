@@ -13,6 +13,5 @@ namespace eTouristAgencyAPI.Services.Interfaces
         Task VerifyAsync(Guid userId);
         Task VerifyAsync(string verificationKey);
         Task DeactivateAsync(Guid userId);
-        Task UpdateFirebaseTokenAsync(UpdateFirebaseTokenRequest request);
     }
 }
