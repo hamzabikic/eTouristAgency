@@ -274,7 +274,7 @@ namespace eTouristAgencyAPI.Services
 
             await _dbContext.SaveChangesAsync();
 
-            reservation = await _dbContext.Reservations.Include(x => x.User).Include(x => x.ReservationStatus).Include(x => x.Room).FirstAsync(x => x.Id == reservationId);
+            reservation = await _dbContext.Reservations.Include(x => x.User.UserFirebaseTokens).Include(x => x.ReservationStatus).Include(x => x.Room).FirstAsync(x => x.Id == reservationId);
             await SendReservationStatusChangeNotificationsAsync(reservation);
         }
 
@@ -291,16 +291,18 @@ namespace eTouristAgencyAPI.Services
                 Recipients = [reservation.User.Email]
             };
 
+            var userFirebaseTokens = reservation.User.UserFirebaseTokens.Where(x => x.ModifiedOn >= DateTime.Now.AddYears(-1)).Select(x => x.FirebaseToken).ToList();
+
             RabbitMQFirebaseNotification firebaseNotification = null;
 
-            if (reservation.User.FirebaseToken != null)
+            if (userFirebaseTokens.Any())
             {
                 var notificationTitle = "Promjena statusa rezervacije";
                 var notificationText = $"Status Vaše rezervacije sa brojem {reservation.ReservationNo} je promijenjen. Kliknite ovdje za više detalja.";
 
                 firebaseNotification = new RabbitMQFirebaseNotification
                 {
-                    FirebaseTokens = [reservation.User.FirebaseToken],
+                    FirebaseTokens = userFirebaseTokens,
                     Title = notificationTitle,
                     Text = notificationText,
                     Data = new FirebaseNotificationData

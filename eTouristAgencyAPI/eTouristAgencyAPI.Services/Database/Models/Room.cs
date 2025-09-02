@@ -60,8 +60,8 @@ public partial class Room
     public bool IsAvalible { get; set; }
 
     [NotMapped]
-    public decimal DiscountedPrice { get; set; }
+    public int RemainingQuantity { get; set; }
 
     [NotMapped]
-    public int RemainingQuantity { get; set; }
+    public decimal DiscountedPrice { get; set; }
 }

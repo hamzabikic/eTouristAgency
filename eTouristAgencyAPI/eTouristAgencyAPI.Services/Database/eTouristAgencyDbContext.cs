@@ -56,6 +56,8 @@ public partial class eTouristAgencyDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserFirebaseToken> UserFirebaseTokens { get; set; }
+
     public virtual DbSet<UserTag> UserTags { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -455,6 +457,19 @@ public partial class eTouristAgencyDbContext : DbContext
                         j.HasKey("UserId", "RoleId").HasName("PK__UserRole__AF2760ADD5D51AE1");
                         j.ToTable("UserRole");
                     });
+        });
+
+        modelBuilder.Entity<UserFirebaseToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserFire__3214EC07549D845B");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.ModifiedOn).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserFirebaseTokens)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserFireb__UserI__41B8C09B");
         });
 
         modelBuilder.Entity<UserTag>(entity =>

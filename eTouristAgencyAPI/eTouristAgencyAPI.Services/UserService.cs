@@ -20,6 +20,7 @@ namespace eTouristAgencyAPI.Services
     {
         private readonly IVerificationCodeService _verificationCodeService;
         private readonly IEmailContentService _emailContentService;
+        private readonly IUserFirebaseTokenService _userFirebaseTokenService;
         private readonly IBus _bus;
 
         private readonly bool _isAdmin;
@@ -30,10 +31,12 @@ namespace eTouristAgencyAPI.Services
                            IUserContextService userContextService,
                            IVerificationCodeService verificationCodeService,
                            IEmailContentService emailContentService,
+                           IUserFirebaseTokenService userFirebaseTokenService,
                            IBus bus) : base(dbContext, mapper)
         {
             _verificationCodeService = verificationCodeService;
             _emailContentService = emailContentService;
+            _userFirebaseTokenService = userFirebaseTokenService;
 
             _isAdmin = userContextService.UserHasRole(Roles.Admin);
             _userId = userContextService.GetUserId();
@@ -76,6 +79,8 @@ namespace eTouristAgencyAPI.Services
             user.PasswordHash = passwordHasher.HashPassword(user, generatedPassword);
             await _dbContext.SaveChangesAsync();
 
+            await _userFirebaseTokenService.RemoveAllTokensExceptAsync(null, userId);
+
             var emailTitle = await _emailContentService.GetGeneratedPasswordTitleAsync();
             var emailText = await _emailContentService.GetGeneratedPasswordTextAsync(generatedPassword);
             var emailNotification = new RabbitMQEmailNotification
@@ -93,7 +98,7 @@ namespace eTouristAgencyAPI.Services
 
         public async Task ResetPasswordAsync(ResetPasswordRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email && x.IsActive);
+            var user = await _dbContext.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Email == request.Email && x.IsActive);
 
             if (user == null) throw new Exception("User with provided email is not found.");
 
@@ -103,6 +108,11 @@ namespace eTouristAgencyAPI.Services
             user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
 
             await _dbContext.SaveChangesAsync();
+
+            if (user.Roles.Any(x => x.Id == AppConstants.FixedRoleClientId))
+            {
+                await _userFirebaseTokenService.RemoveAllTokensExceptAsync(null, user.Id);
+            }
         }
 
         public async Task VerifyAsync(Guid userId)
@@ -135,15 +145,6 @@ namespace eTouristAgencyAPI.Services
             if (!_isAdmin && userId != _userId) throw new Exception("This method is only allowed for your account.");
 
             user.IsActive = false;
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task UpdateFirebaseTokenAsync(UpdateFirebaseTokenRequest request)
-        {
-            var user = await _dbContext.Users.FindAsync(_userId ?? Guid.Empty);
-
-            user.FirebaseToken = request.FirebaseToken;
-
             await _dbContext.SaveChangesAsync();
         }
 
@@ -237,9 +238,15 @@ namespace eTouristAgencyAPI.Services
                 if (dbModel.Roles.Any(x => x.Name == Roles.Client)) dbModel.IsVerified = false;
             }
 
-            if (_userId == dbModel.Id)
+            var passwordHasher = new PasswordHasher<User>();
+
+            if (_userId == dbModel.Id && passwordHasher.VerifyHashedPassword(dbModel, dbModel.PasswordHash, updateModel.Password) != PasswordVerificationResult.Success)
             {
-                var passwordHasher = new PasswordHasher<User>();
+                if (!_isAdmin)
+                {
+                    await _userFirebaseTokenService.RemoveAllTokensExceptAsync(updateModel.FirebaseToken, _userId ?? Guid.Empty);
+                }
+
                 dbModel.PasswordHash = passwordHasher.HashPassword(dbModel, updateModel.Password);
             }
 

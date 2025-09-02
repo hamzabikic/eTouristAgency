@@ -4,11 +4,13 @@ import 'package:etouristagency_mobile/helpers/auth_navigation_helper.dart';
 import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/main.dart';
 import 'package:etouristagency_mobile/models/user/user.dart';
+import 'package:etouristagency_mobile/providers/user_firebase_token_provider.dart';
 import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/forgot_password_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/registration_screen.dart';
 import 'package:etouristagency_mobile/services/auth_service.dart';
+import 'package:etouristagency_mobile/services/firebase_token_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -27,12 +29,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final formBuilderKey = GlobalKey<FormBuilderState>();
   late final AuthService authService;
   late final UserProvider userProvider;
+  late final FirebaseTokenService firebaseTokenService;
+  late final UserFirebaseTokenProvider userFirebaseTokenProvider;
   bool _isLoggedIn = true;
 
   @override
   void initState() {
     userProvider = UserProvider();
     authService = AuthService();
+    firebaseTokenService = FirebaseTokenService();
+    userFirebaseTokenProvider = UserFirebaseTokenProvider();
     checkIsUserLoged();
     super.initState();
 
@@ -182,7 +188,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (isFirebaseInitialized) {
         String? token = await FirebaseMessaging.instance.getToken();
-        await userProvider.updateFirebaseToken({"firebaseToken": token});
+
+        if (token != null) {
+          String? oldToken = await firebaseTokenService.getToken();
+
+          if (oldToken != null) {
+            userFirebaseTokenProvider.update({
+              "oldFirebaseToken": oldToken,
+              "newFirebaseToken": token,
+            });
+          } else {
+            userFirebaseTokenProvider.add({"firebaseToken": token});
+          }
+
+          firebaseTokenService.storeToken(token);
+        } else {
+          await firebaseTokenService.removeToken();
+        }
       } else {
         await initializeFirebase();
       }

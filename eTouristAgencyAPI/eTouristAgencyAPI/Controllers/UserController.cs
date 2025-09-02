@@ -136,20 +136,5 @@ namespace eTouristAgencyAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-        [Authorize(Roles = Roles.Client)]
-        [HttpPatch("firebase-token")]
-        public async Task<ActionResult> UpdateFirebaseToken(UpdateFirebaseTokenRequest request)
-        {
-            try
-            {
-                await _service.UpdateFirebaseTokenAsync(request);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
     }
 }

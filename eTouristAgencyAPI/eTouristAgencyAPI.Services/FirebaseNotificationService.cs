@@ -12,10 +12,12 @@ namespace eTouristAgencyAPI.Services
     public class FirebaseNotificationService : IFirebaseNotificationService
     {
         private readonly FirebaseConfig _firebaseConfig;
+        private readonly HttpClient _httpClient;
 
         public FirebaseNotificationService(IOptions<FirebaseConfig> firebaseConfigOptions)
         {
             _firebaseConfig = firebaseConfigOptions.Value;
+            _httpClient = new HttpClient();
         }
 
         private async Task<string> GetAccessTokenAsync()
@@ -30,8 +32,7 @@ namespace eTouristAgencyAPI.Services
         {
             var accessToken = await GetAccessTokenAsync();
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var payload = new
             {
@@ -52,7 +53,7 @@ namespace eTouristAgencyAPI.Services
 
             var url = $"https://fcm.googleapis.com/v1/projects/{_firebaseConfig.FirebaseProjectId}/messages:send";
 
-            await client.PostAsync(url, content);
+            await _httpClient.PostAsync(url, content);
         }
     }
 }

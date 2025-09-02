@@ -89,21 +89,6 @@ class UserProvider extends BaseProvider<User> {
     if (response.statusCode != 200) throw Exception(response.body);
   }
 
-  Future updateFirebaseToken(Map<String, dynamic> json) async {
-    var url = Uri.parse("${controllerUrl}/firebase-token");
-
-    var response = await http.patch(
-      url,
-      body: jsonEncode(json),
-      headers: {
-        "Authorization": (await authService.getBasicKey())!,
-        "Content-Type": "application/json",
-      },
-    );
-
-    if (response.statusCode != 200) throw Exception(response.body);
-  }
-
   @override
   Future add(Map<String, dynamic> insertModel) async {
     var url = Uri.parse("${controllerUrl}");

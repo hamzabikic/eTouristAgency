@@ -91,14 +91,19 @@ namespace eTouristAgencyAPI.Services
                 Recipients = recipients.Select(x => x.Email).ToList()
             };
 
-            var recipientsWithToken = recipients.Where(x => x.FirebaseToken != null).ToList();
+            var userFirebaseTokens = new List<string>();
+
+            foreach (var recipient in recipients)
+            {
+                userFirebaseTokens.AddRange(recipient.UserFirebaseTokens.Where(x => x.ModifiedOn <= DateTime.Now.AddYears(-1)).Select(x => x.FirebaseToken));
+            }
 
             var notificationTitle = "Napravili smo ponudu samo za Vas!";
             var notificationText = "Kliknite ovdje za više detalja.";
 
             var firebaseNotification = new RabbitMQFirebaseNotification
             {
-                FirebaseTokens = recipientsWithToken.Select(x => x.FirebaseToken).ToList(),
+                FirebaseTokens = userFirebaseTokens,
                 Title = notificationTitle,
                 Text = notificationText,
                 Data = new FirebaseNotificationData
@@ -257,7 +262,7 @@ namespace eTouristAgencyAPI.Services
             var lastMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
             dbModel.IsLastMinuteDiscountActive = lastMinuteDiscount != null;
             dbModel.IsFirstMinuteDiscountActive = firstMinuteDiscount != null;
-            
+
             var discount = firstMinuteDiscount?.Discount ?? lastMinuteDiscount?.Discount ?? 0;
             var minPricePerPerson = dbModel.Rooms.Min(y => y.PricePerPerson);
             dbModel.MinimumPricePerPerson = minPricePerPerson - minPricePerPerson * (discount / 100);
@@ -272,7 +277,7 @@ namespace eTouristAgencyAPI.Services
             dbModel.IsReviewable = dbModel.OfferStatusId != AppConstants.FixedOfferStatusInactive &&
                                    dbModel.TripEndDate.Date <= DateTime.Now.Date;
 
-            foreach(var disc in dbModel.OfferDiscounts)
+            foreach (var disc in dbModel.OfferDiscounts)
             {
                 disc.IsEditable = dbModel.IsEditable && disc.ValidTo.Date >= DateTime.Now.Date;
                 disc.IsRemovable = dbModel.IsEditable && disc.ValidFrom.Date > DateTime.Now.Date;
