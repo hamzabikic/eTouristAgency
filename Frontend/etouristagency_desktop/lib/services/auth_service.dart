@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:etouristagency_desktop/config/app_config.dart';
 import 'package:etouristagency_desktop/models/user/user.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +12,7 @@ class AuthService {
   AuthService() {
     var baseUrl = String.fromEnvironment(
       "baseUrl",
-      defaultValue: "https://localhost:5000",
+      defaultValue: AppConfig.apiBaseUrl,
     );
 
     _controllerUrL = "${baseUrl}/api/User";

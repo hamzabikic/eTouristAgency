@@ -1,3 +1,4 @@
+import 'package:etouristagency_desktop/config/app_config.dart';
 import 'package:etouristagency_desktop/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 
@@ -8,7 +9,7 @@ class VerificationCodeProvider {
   VerificationCodeProvider(){
     var baseUrl = String.fromEnvironment(
       "baseUrl",
-      defaultValue: "https://localhost:5000",
+      defaultValue: AppConfig.apiBaseUrl,
     );
 
      _controllerUrl = "${baseUrl}/api/VerificationCode";
