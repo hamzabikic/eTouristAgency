@@ -3,6 +3,7 @@ import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -34,31 +35,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         child: Column(
           children: [
             Container(
-              height: 300,
+              height: 300.h,
               color: AppColors.primary,
               child: Center(child: Image.asset("lib/assets/images/logo.png")),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Text(
               "Registracija korisnika",
               style: TextStyle(
                 color: AppColors.primary,
-                fontSize: 17,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.w),
               child: FormBuilder(
                 key: formBuilderKey,
                 autovalidateMode: AutovalidateMode.onUnfocus,
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadiusGeometry.all(Radius.circular(20)),
+                    borderRadius: BorderRadiusGeometry.all(Radius.circular(20.r)),
                     color: AppColors.primaryTransparent,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(16.w),
                     child: Column(
                       children: [
                         operationErrorMessage != null
@@ -174,14 +176,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             ),
                           ]),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 20.h),
                         ElevatedButton(
                           onPressed: !_isProcessing ? registration : null,
                           child: !_isProcessing
                               ? Text("Registruj se")
                               : SizedBox(
-                                  height: 20,
-                                  width: 20,
+                                  height: 20.h,
+                                  width: 20.w,
                                   child: Transform.scale(
                                     scale: 0.6,
                                     child: const CircularProgressIndicator(
@@ -210,7 +212,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 );
               },
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 40.h),
           ],
         ),
       ),
@@ -239,7 +241,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: Text("Uspješna registracija", style: TextStyle(fontSize: 18)),
+          title: Text("Uspješna registracija", style: TextStyle(fontSize: 18.sp)),
           icon: Icon(Icons.check_circle, color: AppColors.primary),
           actions: [
             Center(

@@ -14,6 +14,7 @@ import 'package:etouristagency_mobile/services/firebase_token_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -57,25 +58,25 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   Container(
-                    height: 300,
+                    height: 300.h,
                     color: AppColors.primary,
                     child: Center(
                       child: Image.asset("lib/assets/images/logo.png"),
                     ),
                   ),
-                  SizedBox(height: 40),
+                  SizedBox(height: 20.h),
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(16.w),
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadiusGeometry.all(
-                          Radius.circular(20),
+                          Radius.circular(20.r),
                         ),
                         color: AppColors.primaryTransparent,
                       ),
-                      width: 500,
+                      width: 500.w,
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: EdgeInsets.all(16.w),
                         child: FormBuilder(
                           key: formBuilderKey,
                           child: Column(
@@ -99,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ]),
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               FormBuilderTextField(
                                 obscureText: true,
                                 decoration: InputDecoration(
@@ -112,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ]),
                               ),
-                              SizedBox(height: 20),
+                              SizedBox(height: 20.h),
                               ElevatedButton(
                                 onPressed: _authorize,
                                 child: Text("Prijavi se"),
@@ -155,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                   ),
-                  SizedBox(height: 40),
+                  SizedBox(height: 40.h),
                 ],
               ),
             ),

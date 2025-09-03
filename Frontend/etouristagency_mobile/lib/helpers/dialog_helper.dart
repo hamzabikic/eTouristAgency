@@ -1,5 +1,6 @@
 import 'package:etouristagency_mobile/consts/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DialogHelper {
   static void openDialog(
@@ -23,7 +24,7 @@ class DialogHelper {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text(text, style: TextStyle(fontSize: 18)),
+        title: Text(text, style: TextStyle(fontSize: 18.sp)),
         icon: dialogIcon,
         actions: [
           Center(
@@ -54,7 +55,7 @@ class DialogHelper {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(onPressed: onPressedMethod, child: Text("DA")),
-              SizedBox(width: 20),
+              SizedBox(width: 20.w),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -70,13 +71,13 @@ class DialogHelper {
 
   static Widget openSpinner(BuildContext context, String text) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height - 70,
+      height: MediaQuery.of(context).size.height - 70.h,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
-            SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Text(text),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:etouristagency_mobile/providers/verification_code_provider.dart'
 import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:etouristagency_mobile/screens/reset_password_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -35,45 +36,47 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         child: Column(
           children: [
             Container(
-              height: 300,
+              height: 300.h,
               color: AppColors.primary,
               child: Center(child: Image.asset("lib/assets/images/logo.png")),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Text(
               "Zahtjev za promjenu lozinke",
               style: TextStyle(
                 color: AppColors.primary,
-                fontSize: 17,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.w),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadiusGeometry.all(Radius.circular(20)),
+                  borderRadius: BorderRadiusGeometry.all(Radius.circular(20.r)),
                   color: AppColors.primaryTransparent,
                 ),
-                width: 500,
+                width: 500.w,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(16.w),
                   child: Column(
                     children: [
                       operationErrorMessage == null
                           ? SizedBox()
                           : Text(
                               operationErrorMessage!,
+
                               style: TextStyle(color: AppColors.darkRed),
                             ),
                       operationErrorMessage != null
-                          ? SizedBox(height: 20)
+                          ? SizedBox(height: 20.h)
                           : SizedBox(),
                       TextField(
                         controller: emailEditingController,
                         decoration: InputDecoration(labelText: "Email"),
                       ),
-                      SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       ElevatedButton(
                         onPressed: !_isProcessing
                             ? sendResetPasswordVerificationCode
@@ -81,8 +84,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         child: !_isProcessing
                             ? Text("Pošalji zahtjev")
                             : SizedBox(
-                                height: 20,
-                                width: 20,
+                                height: 20.h,
+                                width: 20.w,
                                 child: Transform.scale(
                                   scale: 0.6,
                                   child: const CircularProgressIndicator(
@@ -110,7 +113,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 );
               },
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20.h),
           ],
         ),
       ),
@@ -150,22 +153,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         bool isActionInProcess = false;
         return StatefulBuilder(
           builder: (context, setStateDialog) => Dialog(
-            child: SizedBox(
-              height: 300,
+            child: IntrinsicHeight(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.w),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       "Zahtjev za promjenu lozinke",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w500,
                         color: Colors.blueGrey,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 50),
+                    SizedBox(height: 50.h),
                     localErrorMessage != null
                         ? Text(
                             localErrorMessage!,
@@ -183,7 +186,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         labelText: "Verifikacijski kod",
                       ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     ElevatedButton(
                       onPressed: !isActionInProcess
                           ? () async {
@@ -196,17 +199,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 });
                                 return;
                               }
-
+              
                               setStateDialog(() {
                                 isActionInProcess = true;
                               });
-
+              
                               try {
                                 var exists = await verificationCodeProvider
                                     .resetPasswordVerificationCodeExists(
                                       verificationCodeEditingController.text,
                                     );
-
+              
                                 if (!exists) {
                                   setStateDialog(() {
                                     isActionInProcess = false;
@@ -215,7 +218,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   });
                                   return;
                                 }
-
+              
                                 Navigator.of(context).pop();
                                 Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
@@ -234,17 +237,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   },
                                   type: DialogType.error,
                                 );
-
+              
                                 setStateDialog(() {
                                   isActionInProcess = false;
                                 });
                               }
                             }
                           : null,
+              
                       child: isActionInProcess
                           ? SizedBox(
-                              height: 20,
-                              width: 20,
+                              height: 20.h,
+                              width: 20.w,
                               child: Transform.scale(
                                 scale: 0.6,
                                 child: const CircularProgressIndicator(

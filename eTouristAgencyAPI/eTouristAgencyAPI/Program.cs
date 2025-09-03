@@ -66,25 +66,25 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-//var retry = 0;
-//var maxRetry = 10;
-//while (retry < maxRetry)
-//{
-//    try
-//    {
-//        using var scope = app.Services.CreateScope();
-//        var db = scope.ServiceProvider.GetRequiredService<eTouristAgencyDbContext>();
+var retry = 0;
+var maxRetry = 10;
+while (retry < maxRetry)
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<eTouristAgencyDbContext>();
 
-//        db.Database.Migrate();
-//        DatabaseSeeder.SeedDatabase(db);
-//        break;
-//    }
-//    catch (SqlException)
-//    {
-//        retry++;
-//        Thread.Sleep(5000);
-//    }
-//}
+        db.Database.Migrate();
+        DatabaseSeeder.SeedDatabase(db);
+        break;
+    }
+    catch (SqlException)
+    {
+        retry++;
+        Thread.Sleep(5000);
+    }
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();

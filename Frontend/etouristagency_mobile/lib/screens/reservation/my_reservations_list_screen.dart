@@ -8,6 +8,7 @@ import 'package:etouristagency_mobile/providers/reservation_provider.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/add_update_reservation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MyReservationsListScreen extends StatefulWidget {
   const MyReservationsListScreen({super.key});
@@ -36,7 +37,7 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+        _scrollController.position.maxScrollExtent - 200.h) {
       if (!_isLoadingMore && queryStrings["page"] < paginatedList!.totalPages) {
         queryStrings["page"] += 1;
         populateReservations();
@@ -56,16 +57,16 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
                         paginatedList!.listOfRecords.length +
                         (_isLoadingMore ? 1 : 0),
                     padding: EdgeInsetsGeometry.only(
-                      left: 46.0,
-                      right: 46.0,
-                      top: 16.0,
-                      bottom: 16.0,
+                      left: 46.w,
+                      right: 46.w,
+                      top: 16.h,
+                      bottom: 16.h,
                     ),
-                    separatorBuilder: (context, index) => SizedBox(height: 15),
+                    separatorBuilder: (context, index) => SizedBox(height: 15.h),
                     itemBuilder: (context, index) {
                       if (index == paginatedList!.listOfRecords.length) {
                         return SizedBox(
-                          height: 100,
+                          height: 100.h,
                           child: DialogHelper.openSpinner(context, ""),
                         );
                       }
@@ -74,36 +75,36 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
 
                       return Card(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                         elevation: 4,
                         color: AppColors.lighterBlue,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(16.w),
                           child: Column(
                             children: [
                               Image.network(
                                 "${offerProvider.controllerUrl}/${reservation.room!.offerId!}/image",
-                                height: 200,
+                                height: 200.h,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               Text(
                                 "#${reservation.reservationNo ?? ""}",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17,
+                                  fontSize: 17.sp,
                                 ),
                               ),
-                              SizedBox(height: 5),
+                              SizedBox(height: 5.h),
                               Text(
                                 reservation.room!.offer!.hotel!.name ?? "",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17,
+                                  fontSize: 17.sp,
                                 ),
                               ),
                               Row(
@@ -117,16 +118,16 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               Text(
                                 "${reservation.room!.offer!.formattedStartDate} - ${reservation.room!.offer!.formattedEndDate}",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17,
+                                  fontSize: 17.sp,
                                 ),
                               ),
                               Text(
@@ -134,16 +135,16 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                                  fontSize: 15.sp,
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               Text(
                                 "Status",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                                  fontSize: 15.sp,
                                 ),
                               ),
                               Text(
@@ -155,10 +156,10 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
                                   ),
                                   fontWeight: FontWeight.bold,
                                   fontStyle: FontStyle.italic,
-                                  fontSize: 15,
+                                  fontSize: 15.sp,
                                 ),
                               ),
-                              SizedBox(height: 5),
+                              SizedBox(height: 5.h),
                               ElevatedButton(
                                 child: Text("Detalji"),
                                 onPressed: () {
@@ -184,10 +185,11 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text("🙁", style: TextStyle(fontSize: 40)),
+                        Text("🙁", style: TextStyle(fontSize: 40.sp), textAlign: TextAlign.center),
                         Text(
                           "Još uvijek nemate kreiranih rezervacija.",
-                          style: TextStyle(fontSize: 15),
+                          style: TextStyle(fontSize: 15.sp),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),

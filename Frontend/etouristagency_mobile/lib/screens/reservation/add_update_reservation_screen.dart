@@ -29,6 +29,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
@@ -114,33 +115,33 @@ class _AddUpdateReservationScreenState
       offer != null
           ? SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsetsGeometry.all(32.0),
+                padding: EdgeInsetsGeometry.all(32.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Card(
                       color: AppColors.lighterBlue,
                       child: Padding(
-                        padding: EdgeInsetsGeometry.all(16),
+                        padding: EdgeInsetsGeometry.all(16.w),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             offerImageInfo != null
                                 ? Image.memory(
                                     offerImageInfo!.imageBytes!,
-                                    height: 200,
+                                    height: 200.h,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   )
                                 : SizedBox(),
-                            SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             Center(
                               child: Text(
                                 "${offer!.hotel?.name ?? ""}",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17,
+                                  fontSize: 17.sp,
                                 ),
                               ),
                             ),
@@ -156,17 +157,17 @@ class _AddUpdateReservationScreenState
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
                             ),
-                            SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             Text(
                               "Datum polaska: ${offer!.formattedStartDateTime}",
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -174,7 +175,7 @@ class _AddUpdateReservationScreenState
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -182,7 +183,7 @@ class _AddUpdateReservationScreenState
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -190,7 +191,7 @@ class _AddUpdateReservationScreenState
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -198,7 +199,7 @@ class _AddUpdateReservationScreenState
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -206,7 +207,7 @@ class _AddUpdateReservationScreenState
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             (offer!.offerStatusId!.toLowerCase() ==
@@ -217,7 +218,7 @@ class _AddUpdateReservationScreenState
                                     style: TextStyle(
                                       color: AppColors.darkRed,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                      fontSize: 15.sp,
                                     ),
                                   )
                                 : SizedBox(),
@@ -227,20 +228,20 @@ class _AddUpdateReservationScreenState
                                     style: TextStyle(
                                       color: AppColors.primary,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                      fontSize: 15.sp,
                                     ),
                                   )
                                 : SizedBox(),
                             reservation != null
                                 ? Row(
-                                    spacing: 5,
+                                    spacing: 5.w,
                                     children: [
                                       Text(
                                         "Status rezervacije:",
                                         style: TextStyle(
                                           color: AppColors.primary,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 15,
+                                          fontSize: 15.sp,
                                         ),
                                       ),
                                       Text(
@@ -253,7 +254,7 @@ class _AddUpdateReservationScreenState
                                           ),
                                           fontWeight: FontWeight.bold,
                                           fontStyle: FontStyle.italic,
-                                          fontSize: 15,
+                                          fontSize: 15.sp,
                                         ),
                                       ),
                                     ],
@@ -261,14 +262,14 @@ class _AddUpdateReservationScreenState
                                 : SizedBox(),
                             reservation != null
                                 ? Row(
-                                    spacing: 5,
+                                    spacing: 5.w,
                                     children: [
                                       Text(
                                         "Rok za prvu ratu (30%):",
                                         style: TextStyle(
                                           color: AppColors.primary,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 15,
+                                          fontSize: 15.sp,
                                         ),
                                       ),
                                       Text(
@@ -276,7 +277,7 @@ class _AddUpdateReservationScreenState
                                         style: TextStyle(
                                           color: AppColors.primary,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 15,
+                                          fontSize: 15.sp,
                                         ),
                                       ),
                                     ],
@@ -284,14 +285,14 @@ class _AddUpdateReservationScreenState
                                 : SizedBox(),
                             reservation != null
                                 ? Row(
-                                    spacing: 5,
+                                    spacing: 5.w,
                                     children: [
                                       Text(
                                         "Krajnji rok za uplatu:",
                                         style: TextStyle(
                                           color: AppColors.primary,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 15,
+                                          fontSize: 15.sp,
                                         ),
                                       ),
                                       Text(
@@ -299,13 +300,13 @@ class _AddUpdateReservationScreenState
                                         style: TextStyle(
                                           color: AppColors.primary,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 15,
+                                          fontSize: 15.sp,
                                         ),
                                       ),
                                     ],
                                   )
                                 : SizedBox(),
-                            SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -315,7 +316,7 @@ class _AddUpdateReservationScreenState
                                         icon: Icon(
                                           Icons.description,
                                           color: AppColors.primary,
-                                          size: 40,
+                                          size: 40.sp,
                                         ),
                                         onPressed: () async {
                                           await saveAndOpenDocument(
@@ -325,7 +326,7 @@ class _AddUpdateReservationScreenState
                                           );
                                         },
                                       )
-                                    : SizedBox(width: 40),
+                                    : SizedBox(width: 40.w),
                                 reservation != null
                                     ? Column(
                                         children: [
@@ -334,7 +335,7 @@ class _AddUpdateReservationScreenState
                                             style: TextStyle(
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 15,
+                                              fontSize: 15.sp,
                                             ),
                                           ),
                                           Text(
@@ -342,7 +343,7 @@ class _AddUpdateReservationScreenState
                                             style: TextStyle(
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 15,
+                                              fontSize: 15.sp,
                                             ),
                                           ),
                                         ],
@@ -353,7 +354,7 @@ class _AddUpdateReservationScreenState
                                   icon: Icon(
                                     Icons.image,
                                     color: AppColors.primary,
-                                    size: 40,
+                                    size: 40.sp,
                                   ),
                                   onPressed: () async {
                                     await showDialog(
@@ -369,22 +370,22 @@ class _AddUpdateReservationScreenState
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Text(
                       "Opis putovanja",
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w500,
-                        fontSize: 15,
+                        fontSize: 15.sp,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     SizedBox(
                       width: double.infinity,
                       child: Card(
                         color: AppColors.lighterBlue,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(16.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [Text(offer!.description!)],
@@ -392,29 +393,29 @@ class _AddUpdateReservationScreenState
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Text(
                       "Odabrana soba",
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w500,
-                        fontSize: 15,
+                        fontSize: 15.sp,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Card(
                       color: AppColors.lighterBlue,
                       child: SizedBox(
                         width: double.infinity,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(16.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
                                   Text(room!.roomType!.name!),
-                                  SizedBox(width: 5),
+                                  SizedBox(width: 5.w),
                                   Row(
                                     children: getPersonIconsForRoom(
                                       room!.roomType!.roomCapacity!,
@@ -422,9 +423,9 @@ class _AddUpdateReservationScreenState
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 5),
+                              SizedBox(height: 5.h),
                               Text(room!.shortDescription ?? ""),
-                              SizedBox(height: 5),
+                              SizedBox(height: 5.h),
                               Text(
                                 "Cijena po osobi: ${FormatHelper.formatNumber(room!.discountedPrice!)} KM",
                               ),
@@ -433,13 +434,13 @@ class _AddUpdateReservationScreenState
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Text(
                       "Putnici",
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w500,
-                        fontSize: 15,
+                        fontSize: 15.sp,
                       ),
                     ),
                     Accordion(
@@ -459,7 +460,7 @@ class _AddUpdateReservationScreenState
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text("Dodaj putnika"),
-                                  SizedBox(width: 2),
+                                  SizedBox(width: 2.w),
                                   Icon(
                                     Icons.add,
                                     color: const Color.fromARGB(
@@ -469,36 +470,36 @@ class _AddUpdateReservationScreenState
                                       179,
                                     ),
                                     weight: 100,
-                                    size: 23,
+                                    size: 23.sp,
                                   ),
                                 ],
                               ),
                             ),
                           )
                         : SizedBox(),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     widget.reservationId != null
                         ? Text(
                             "Uplate",
                             style: TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w500,
-                              fontSize: 15,
+                              fontSize: 15.sp,
                             ),
                           )
                         : SizedBox(),
                     widget.reservationId != null
-                        ? SizedBox(height: 10)
+                        ? SizedBox(height: 10.h)
                         : SizedBox(),
                     widget.reservationId != null
                         ? Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
+                            spacing: 10.w,
+                            runSpacing: 10.h,
                             children: getDocumentElements(),
                           )
                         : SizedBox(),
                     widget.reservationId != null
-                        ? SizedBox(height: 10)
+                        ? SizedBox(height: 10.h)
                         : SizedBox(),
                     TextField(
                       minLines: 3,
@@ -507,11 +508,11 @@ class _AddUpdateReservationScreenState
                       controller: noteEditingController,
                       decoration: InputDecoration(labelText: "Napomena"),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        !_isEditable
+                        !_isEditable || widget.reservationId == null
                             ? SizedBox()
                             : ElevatedButton(
                                 onPressed: cancelReservation,
@@ -532,10 +533,10 @@ class _AddUpdateReservationScreenState
                                             : "Sačuvaj promjene",
                                       )
                                     : SizedBox(
-                                        height: 20,
-                                        width: 20,
+                                        height: 20.h,
+                                        width: 20.w,
                                         child: CircularProgressIndicator(
-                                          strokeWidth: 2,
+                                          strokeWidth: 2.w,
                                           color: AppColors.primary,
                                         ),
                                       ),
@@ -609,9 +610,9 @@ class _AddUpdateReservationScreenState
       list.add(
         AccordionSection(
           header: SizedBox(
-            height:55,
+            height: 55.h,
             child: Padding(
-              padding: const EdgeInsets.only(left:16,top:8, bottom: 8),
+              padding: EdgeInsets.only(left: 16.w, top: 8.h, bottom: 8.h),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -627,13 +628,13 @@ class _AddUpdateReservationScreenState
                           icon: Icon(
                             Icons.delete_forever,
                             color: AppColors.darkRed,
-                            size: 25,
+                            size: 25.sp,
                           ),
                           onPressed: () {
                             formBuilderKeys.removeAt(index);
                             initialValues.removeAt(index);
                             passengerDocuments.removeAt(index);
-            
+
                             setState(() {});
                           },
                         )
@@ -646,7 +647,7 @@ class _AddUpdateReservationScreenState
             key: item,
             initialValue: initialValues[counter - 1],
             child: Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+              padding: EdgeInsets.only(left: 8.w, right: 8.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -693,8 +694,8 @@ class _AddUpdateReservationScreenState
                       ),
                     ]),
                   ),
-                  SizedBox(height: 5),
-                  Text("Pasoš/lična karta", style: TextStyle(fontSize: 14)),
+                  SizedBox(height: 5.h),
+                  Text("Pasoš/lična karta", style: TextStyle(fontSize: 14.sp)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
@@ -711,7 +712,7 @@ class _AddUpdateReservationScreenState
                               await openPassengerDocument(index);
                             },
                           ),
-                          SizedBox(width: 20),
+                          SizedBox(width: 20.w),
                           _isEditable
                               ? ElevatedButton(
                                   onPressed: () async {
@@ -1014,7 +1015,7 @@ class _AddUpdateReservationScreenState
           InkWell(
             child: Column(
               children: [
-                Icon(Icons.receipt, color: AppColors.primary, size: 30),
+                Icon(Icons.receipt, color: AppColors.primary, size: 30.sp),
                 Text(
                   item.documentName?.substring(
                         0,
@@ -1043,7 +1044,7 @@ class _AddUpdateReservationScreenState
             InkWell(
               child: Column(
                 children: [
-                  Icon(Icons.receipt, color: AppColors.primary, size: 30),
+                  Icon(Icons.receipt, color: AppColors.primary, size: 30.sp),
                   Text(
                     item.documentName?.substring(
                           0,
@@ -1061,9 +1062,9 @@ class _AddUpdateReservationScreenState
                 );
               },
             ),
-            SizedBox(height: 5),
+            SizedBox(height: 5.h),
             InkWell(
-              child: Icon(Icons.clear, size: 15, color: AppColors.darkRed),
+              child: Icon(Icons.clear, size: 15.sp, color: AppColors.darkRed),
               onTap: () {
                 var indexToRemove = addedPayments.indexOf(item);
                 addedPayments.removeAt(indexToRemove);
@@ -1165,25 +1166,25 @@ class _AddUpdateReservationScreenState
           builder: (context, setStateDialog) => Dialog(
             child: IntrinsicHeight(
               child: Padding(
-                padding: const EdgeInsets.all(15.0),
+                padding: EdgeInsets.all(15.w),
                 child: Column(
                   children: [
                     Text(
                       "Recenzija",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w500,
                         color: Colors.blueGrey,
                       ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     errorMessage.isNotEmpty
                         ? Text(
                             errorMessage,
                             style: TextStyle(color: AppColors.darkRed),
                           )
                         : SizedBox(),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Text(
                       "Ocjena za smještaj",
                       style: TextStyle(color: AppColors.primary),
@@ -1194,7 +1195,7 @@ class _AddUpdateReservationScreenState
                       direction: Axis.horizontal,
                       allowHalfRating: false,
                       itemCount: 5,
-                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                      itemPadding: EdgeInsets.symmetric(horizontal: 4.w),
                       itemBuilder: (context, _) =>
                           Icon(Icons.star, color: Colors.amber),
                       onRatingUpdate: (rating) {
@@ -1202,7 +1203,7 @@ class _AddUpdateReservationScreenState
                             .toInt();
                       },
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Text(
                       "Ocjena za uslugu",
                       style: TextStyle(color: AppColors.primary),
@@ -1213,14 +1214,14 @@ class _AddUpdateReservationScreenState
                       direction: Axis.horizontal,
                       allowHalfRating: false,
                       itemCount: 5,
-                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                      itemPadding: EdgeInsets.symmetric(horizontal: 4.w),
                       itemBuilder: (context, _) =>
                           Icon(Icons.star, color: Colors.amber),
                       onRatingUpdate: (rating) {
                         reviewRequestModel["serviceRating"] = rating.toInt();
                       },
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     TextField(
                       decoration: InputDecoration(
                         labelText: "Ukratko opišite Vaše iskustvo",
@@ -1231,15 +1232,15 @@ class _AddUpdateReservationScreenState
                         reviewRequestModel["description"] = value;
                       },
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     ElevatedButton(
                       child: !isReviewInProcess
                           ? Text("Pošalji")
                           : SizedBox(
-                              height: 20,
-                              width: 20,
+                              height: 20.h,
+                              width: 20.w,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
+                                strokeWidth: 2.w,
                                 color: AppColors.primary,
                               ),
                             ),

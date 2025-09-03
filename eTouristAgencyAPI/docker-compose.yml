@@ -44,6 +44,8 @@ services:
     - ASPNETCORE_URLS=https://+:5000;http://+:5001
     - ASPNETCORE_Kestrel__Certificates__Default__Password=YourPassword123
     - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/aspnetapp.pfx
+    - ConnectionStrings__DbConnection=Server=etouristagency-sql;Database=eTouristAgencyDB;User=sa;Password=Admin123!@#;TrustServerCertificate=True;MultipleActiveResultSets=True;
+    - RabbitMQConfig__Host=etouristagency-rabbitmq
   networks:
     - etouristnet
   depends_on:
@@ -63,6 +65,8 @@ services:
        condition: service_started
      etouristagency-rabbitmq:
        condition: service_healthy
+   environment:
+     - RabbitMQConfig__Host=etouristagency-rabbitmq
 
 networks:
  etouristnet:

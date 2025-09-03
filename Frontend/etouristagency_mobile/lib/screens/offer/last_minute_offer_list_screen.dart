@@ -8,6 +8,7 @@ import 'package:etouristagency_mobile/providers/offer_provider.dart';
 import 'package:etouristagency_mobile/screens/master_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LastMinuteOfferListScreen extends StatefulWidget {
   const LastMinuteOfferListScreen({super.key});
@@ -39,7 +40,7 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+        _scrollController.position.maxScrollExtent - 200.h) {
       if (!_isLoadingMore && queryStrings["page"] < paginatedList!.totalPages) {
         queryStrings["page"] += 1;
         populateOffers();
@@ -59,16 +60,16 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                         paginatedList!.listOfRecords.length +
                         (_isLoadingMore ? 1 : 0),
                     padding: EdgeInsetsGeometry.only(
-                      left: 30.0,
-                      right: 30.0,
-                      top: 16.0,
-                      bottom: 16.0,
+                      left: 30.w,
+                      right: 30.w,
+                      top: 16.h,
+                      bottom: 16.h,
                     ),
-                    separatorBuilder: (context, index) => SizedBox(height: 15),
+                    separatorBuilder: (context, index) => SizedBox(height: 15.h),
                     itemBuilder: (context, index) {
                       if (index == paginatedList!.listOfRecords.length) {
                         return SizedBox(
-                          height: 100,
+                          height: 100.h,
                           child: DialogHelper.openSpinner(context, ""),
                         );
                       }
@@ -77,29 +78,29 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
 
                       return Card(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                         elevation: 4,
                         color: AppColors.lighterBlue,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(16.w),
                           child: Column(
                             children: [
                               Stack(
                                 children: [
                                   Image.network(
                                     "${offerProvider.controllerUrl}/${offer.id}/image",
-                                    height: 200,
+                                    height: 200.h,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   ),
                                   Positioned(
-                                    right: 7,
-                                    top: 7,
+                                    right: 7.w,
+                                    top: 7.h,
                                     child: Container(
                                       color: Color.fromARGB(186, 255, 153, 0),
                                       child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
+                                        padding: EdgeInsets.all(8.w),
                                         child: Text(
                                           "LAST MINUTE",
                                           style: TextStyle(
@@ -112,13 +113,13 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               Text(
                                 offer.hotel!.name ?? "",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17,
+                                  fontSize: 17.sp,
                                 ),
                               ),
                               Text(
@@ -126,16 +127,16 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               Text(
                                 "${offer.formattedStartDate} - ${offer.formattedEndDate}",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17,
+                                  fontSize: 17.sp,
                                 ),
                               ),
                               Text(
@@ -143,16 +144,16 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                                  fontSize: 15.sp,
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               Text(
                                 "Već od ${FormatHelper.formatNumber(offer.minimumPricePerPerson!)} KM",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17,
+                                  fontSize: 17.sp,
                                 ),
                               ),
                               Text(
@@ -162,10 +163,10 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                                       ? const Color.fromARGB(255, 76, 175, 79)
                                       : AppColors.darkRed,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
-                              SizedBox(height: 5),
+                              SizedBox(height: 5.h),
                               ElevatedButton(
                                 onPressed: offer.remainingSpots! < 1
                                     ? null
@@ -193,10 +194,11 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text("🙁", style: TextStyle(fontSize: 40)),
+                        Text("🙁", style: TextStyle(fontSize: 40.sp), textAlign: TextAlign.center),
                         Text(
                           "Trenutno nema dostupnih last minute ponuda.",
-                          style: TextStyle(fontSize: 15),
+                          style: TextStyle(fontSize: 15.sp),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
