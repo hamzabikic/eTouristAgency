@@ -86,13 +86,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                       operationErrorMessage!,
                                       style: TextStyle(
                                         color: AppColors.darkRed,
+                                        fontSize: 14.sp,
                                       ),
                                     )
                                   : SizedBox(),
                               FormBuilderTextField(
                                 decoration: InputDecoration(
                                   labelText: "Korisničko ime",
+                                  labelStyle: TextStyle(fontSize: 14.sp),
                                 ),
+                                style: TextStyle(fontSize: 14.sp),
                                 name: "username",
                                 validator: FormBuilderValidators.compose([
                                   FormBuilderValidators.required(
@@ -105,7 +108,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 obscureText: true,
                                 decoration: InputDecoration(
                                   labelText: "Lozinka",
+                                  labelStyle: TextStyle(fontSize: 14.sp),
                                 ),
+                                style: TextStyle(fontSize: 14.sp),
                                 name: "password",
                                 validator: FormBuilderValidators.compose([
                                   FormBuilderValidators.required(
@@ -116,6 +121,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: 20.h),
                               ElevatedButton(
                                 onPressed: _authorize,
+                                style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 14.sp),
+                                ),
                                 child: Text("Prijavi se"),
                               ),
                             ],
@@ -130,6 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         color: AppColors.primary,
                         decoration: TextDecoration.underline,
+                        fontSize: 14.sp,
                       ),
                     ),
                     onTap: () {
@@ -146,6 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         color: AppColors.primary,
                         decoration: TextDecoration.underline,
+                        fontSize: 14.sp,
                       ),
                     ),
                     onTap: () {
@@ -251,6 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
       SnackBar(
         content: Text(
           "Vaš uređaj je odjavljen sa korisničkog naloga. Molimo Vas da se opet prijavite.",
+          style: TextStyle(fontSize: 14.sp),
         ),
       ),
     );

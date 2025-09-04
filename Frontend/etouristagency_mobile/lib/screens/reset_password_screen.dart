@@ -72,7 +72,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             ? SizedBox()
                             : Text(
                                 operationErrorMessage!,
-                                style: TextStyle(color: AppColors.darkRed),
+                                style: TextStyle(
+                                  color: AppColors.darkRed,
+                                  fontSize: 14.sp,
+                                ),
                               ),
                         operationErrorMessage != null
                             ? SizedBox(height: 20.h)
@@ -83,7 +86,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Nova lozinka",
+                            labelStyle: TextStyle(fontSize: 14.sp),
                           ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: "Ovo polje je obavezno",
@@ -102,7 +107,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           controller: repeatPasswordEditingController,
                           decoration: InputDecoration(
                             labelText: "Potvrda lozinke",
+                            labelStyle: TextStyle(fontSize: 14.sp),
                           ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: "Ovo polje je obavezno",
@@ -124,6 +131,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         SizedBox(height: 20.h),
                         ElevatedButton(
                           onPressed: !isProcessing ? resetPassword : null,
+                          style: ElevatedButton.styleFrom(
+                            textStyle: TextStyle(fontSize: 14.sp),
+                          ),
                           child: !isProcessing
                               ? Text("Potvrdi")
                               : SizedBox(
@@ -149,6 +159,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 style: TextStyle(
                   color: AppColors.primary,
                   decoration: TextDecoration.underline,
+                  fontSize: 14.sp,
                 ),
               ),
               onTap: () {

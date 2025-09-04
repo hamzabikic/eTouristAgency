@@ -66,21 +66,30 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ? SizedBox()
                           : Text(
                               operationErrorMessage!,
-
-                              style: TextStyle(color: AppColors.darkRed),
+                              style: TextStyle(
+                                color: AppColors.darkRed,
+                                fontSize: 14.sp,
+                              ),
                             ),
                       operationErrorMessage != null
                           ? SizedBox(height: 20.h)
                           : SizedBox(),
                       TextField(
                         controller: emailEditingController,
-                        decoration: InputDecoration(labelText: "Email"),
+                        decoration: InputDecoration(
+                          labelText: "Email",
+                          labelStyle: TextStyle(fontSize: 14.sp),
+                        ),
+                        style: TextStyle(fontSize: 14.sp),
                       ),
                       SizedBox(height: 20.h),
                       ElevatedButton(
                         onPressed: !_isProcessing
                             ? sendResetPasswordVerificationCode
                             : null,
+                        style: ElevatedButton.styleFrom(
+                          textStyle: TextStyle(fontSize: 14.sp),
+                        ),
                         child: !_isProcessing
                             ? Text("Pošalji zahtjev")
                             : SizedBox(
@@ -105,6 +114,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 style: TextStyle(
                   color: AppColors.primary,
                   decoration: TextDecoration.underline,
+                  fontSize: 14.sp,
                 ),
               ),
               onTap: () {
@@ -172,11 +182,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     localErrorMessage != null
                         ? Text(
                             localErrorMessage!,
-                            style: TextStyle(color: AppColors.darkRed),
+                            style: TextStyle(
+                              color: AppColors.darkRed,
+                              fontSize: 14.sp,
+                            ),
                           )
                         : Text(
                             "Verifikacijski kod je poslan na Vašu email adresu. Ovdje ga unesite.",
-                            style: TextStyle(color: Colors.blueGrey),
+                            style: TextStyle(
+                              color: Colors.blueGrey,
+                              fontSize: 14.sp,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                     TextField(
@@ -184,7 +200,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         labelText: "Verifikacijski kod",
+                        labelStyle: TextStyle(fontSize: 14.sp),
                       ),
+                      style: TextStyle(fontSize: 14.sp),
                     ),
                     SizedBox(height: 20.h),
                     ElevatedButton(
@@ -244,7 +262,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               }
                             }
                           : null,
-              
+                      style: ElevatedButton.styleFrom(
+                        textStyle: TextStyle(fontSize: 14.sp),
+                      ),
                       child: isActionInProcess
                           ? SizedBox(
                               height: 20.h,

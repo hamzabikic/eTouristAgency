@@ -91,12 +91,17 @@ class _AccountScreenState extends State<AccountScreen> {
                                         operationErrorMessage!,
                                         style: TextStyle(
                                           color: AppColors.darkRed,
+                                          fontSize: 14.sp,
                                         ),
                                       )
                                     : SizedBox(),
                                 FormBuilderTextField(
                                   name: "firstName",
-                                  decoration: InputDecoration(labelText: "Ime"),
+                                  decoration: InputDecoration(
+                                    labelText: "Ime",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
+                                  ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
@@ -107,7 +112,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   name: "lastName",
                                   decoration: InputDecoration(
                                     labelText: "Prezime",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
@@ -118,7 +125,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   name: "username",
                                   decoration: InputDecoration(
                                     labelText: "Korisničko ime",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
@@ -137,11 +146,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                   name: "email",
                                   decoration: InputDecoration(
                                     labelText: "Email",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                     suffixIcon: Icon(
                                       Icons.verified_user,
                                       color: !user!.isVerified!
                                           ? AppColors.darkRed
                                           : AppColors.primary,
+                                      size: 24.w,
                                     ),
                                     helperText: !user!.isVerified!
                                         ? "Email nije verifikovan."
@@ -150,8 +161,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                       color: !user!.isVerified!
                                           ? AppColors.darkRed
                                           : Colors.blueAccent,
+                                      fontSize: 12.sp,
                                     ),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
@@ -178,6 +191,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                                 await verify();
                                               }
                                             : null,
+                                        style: ElevatedButton.styleFrom(
+                                          textStyle: TextStyle(fontSize: 14.sp),
+                                        ),
                                         child: !_isVerificationCalled
                                             ? Text("Verifikuj")
                                             : SizedBox(
@@ -199,7 +215,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   ],
                                   decoration: InputDecoration(
                                     labelText: "Broj telefona",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.minLength(
                                       6,
@@ -217,7 +235,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   obscureText: true,
                                   decoration: InputDecoration(
                                     labelText: "Lozinka",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.minLength(
                                       8,
@@ -231,7 +251,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   obscureText: true,
                                   decoration: InputDecoration(
                                     labelText: "Potvrda lozinke",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.minLength(
                                       8,
@@ -255,6 +277,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                     onPressed: !_isProcessing
                                         ? updateUser
                                         : null,
+                                    style: ElevatedButton.styleFrom(
+                                      textStyle: TextStyle(fontSize: 14.sp),
+                                    ),
                                     child: !_isProcessing
                                         ? Text("Sačuvaj promjene")
                                         : SizedBox(
@@ -277,6 +302,9 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       SizedBox(height: 10.h),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          textStyle: TextStyle(fontSize: 14.sp),
+                        ),
                         child: Text("Odjavi se"),
                         onPressed: () async {
                           try {
@@ -298,6 +326,9 @@ class _AccountScreenState extends State<AccountScreen> {
                       SizedBox(height: 20.h),
                       ElevatedButton(
                         onPressed: deactivateAccount,
+                        style: ElevatedButton.styleFrom(
+                          textStyle: TextStyle(fontSize: 14.sp),
+                        ),
                         child: Text("Deaktiviraj nalog"),
                       ),
                     ],
@@ -449,7 +480,10 @@ class _AccountScreenState extends State<AccountScreen> {
                     SizedBox(height: 50.h),
                     Text(
                       "Verifikacijski kod je poslan na Vašu email adresu. Ovdje ga unesite.",
-                      style: TextStyle(color: Colors.blueGrey),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14.sp,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     TextField(
@@ -457,7 +491,9 @@ class _AccountScreenState extends State<AccountScreen> {
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         labelText: "Verifikacijski kod",
+                        labelStyle: TextStyle(fontSize: 14.sp),
                       ),
+                      style: TextStyle(fontSize: 14.sp),
                     ),
                     SizedBox(height: 20.h),
                     ElevatedButton(
@@ -500,6 +536,9 @@ class _AccountScreenState extends State<AccountScreen> {
                               });
                             }
                           : null,
+                      style: ElevatedButton.styleFrom(
+                        textStyle: TextStyle(fontSize: 14.sp),
+                      ),
                       child: !isVerificationInProcess
                           ? Text("Potvrdi")
                           : SizedBox(

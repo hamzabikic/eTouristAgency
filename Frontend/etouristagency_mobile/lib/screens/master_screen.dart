@@ -47,7 +47,11 @@ class _MasterScreenState extends State<MasterScreen> {
         leadingWidth: 70.w,
         leading: widget.isBackButtonVisible
             ? IconButton(
-                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                icon: Icon(
+                  Icons.arrow_back_ios, 
+                  color: Colors.white,
+                  size: 24.w,
+                ),
                 onPressed: widget.onClickMethod,
               )
             : Image.asset("lib/assets/images/logo.png", width: 70.w, height: 70.h),
@@ -121,7 +125,11 @@ class _MasterScreenState extends State<MasterScreen> {
           Icon(icon, color: Colors.white, size: 25.sp),
           Text(
             text,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400),
+            style: TextStyle(
+              color: Colors.white, 
+              fontWeight: FontWeight.w400,
+              fontSize: 12.sp,
+            ),
           ),
         ],
       ),

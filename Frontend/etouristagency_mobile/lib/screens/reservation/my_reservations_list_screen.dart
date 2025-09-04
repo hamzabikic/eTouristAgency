@@ -161,6 +161,9 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
                               ),
                               SizedBox(height: 5.h),
                               ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 14.sp),
+                                ),
                                 child: Text("Detalji"),
                                 onPressed: () {
                                   Navigator.of(context).pushReplacement(
@@ -233,7 +236,11 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfStars; i++) {
-      list.add(Icon(Icons.star, color: Colors.amber));
+      list.add(Icon(
+        Icons.star, 
+        color: Colors.amber,
+        size: 24.w,
+      ));
     }
 
     return list;
