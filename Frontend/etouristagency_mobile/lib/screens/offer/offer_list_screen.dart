@@ -54,7 +54,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+        _scrollController.position.maxScrollExtent - 200.h) {
       if (!_isLoadingMore && queryStrings["page"] < paginatedList!.totalPages) {
         queryStrings["page"] += 1;
         populateOffers();
@@ -78,7 +78,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                         icon: Icon(
                           Icons.filter_list,
                           color: AppColors.primary,
-                          size: 35.sp,
+                          size: 35.w,
                         ),
                         onPressed: () {
                           isFiltersWidgetOpen = !isFiltersWidgetOpen;
@@ -154,6 +154,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
+                                                              fontSize: 14.sp,
                                                             ),
                                                           ),
                                                         ),
@@ -184,6 +185,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
+                                                              fontSize: 14.sp,
                                                             ),
                                                           ),
                                                         ),
@@ -274,6 +276,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                       ),
                                                     );
                                                   },
+                                            style: ElevatedButton.styleFrom(
+                                              textStyle: TextStyle(fontSize: 14.sp),
+                                            ),
                                             child: Text(
                                               "Pregledaj i rezerviši",
                                             ),
@@ -288,11 +293,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text("🙁", style: TextStyle(fontSize: 40.sp), textAlign: TextAlign.center,),
+                                    Text("🙁", style: TextStyle(fontSize: 40.sp)),
                                     Text(
                                       "Nema dostupnih ponuda.",
                                       style: TextStyle(fontSize: 15.sp),
-                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ),
@@ -315,7 +319,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Color(0xFFF0F4F8),
-                                borderRadius: BorderRadiusGeometry.circular(20),
+                                borderRadius: BorderRadiusGeometry.circular(20.r),
                                 border: Border(
                                   top: BorderSide(
                                     color: Color.fromARGB(255, 228, 228, 228),
@@ -343,6 +347,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     DropdownButtonFormField(
                                       value: queryStrings["countryId"] ?? "",
                                       items: getCountryDropdownItems(),
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: Colors.black,
+                                      ),
                                       onChanged: (value) async {
                                         queryStrings["page"] = 1;
                                         queryStrings["countryId"] = value;
@@ -351,6 +359,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     DropdownButtonFormField(
                                       value: queryStrings["boardTypeId"] ?? "",
                                       items: getBoardTypes(),
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: Colors.black,
+                                      ),
                                       onChanged: (value) async {
                                         queryStrings["page"] = 1;
                                         queryStrings["boardTypeId"] = value;
@@ -366,15 +378,20 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                             )
                                           : null,
                                       format: DateFormat("dd.MM.yyyy"),
-                                      style: TextStyle(color: Colors.black),
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14.sp,
+                                      ),
                                       decoration: InputDecoration(
                                         labelStyle: TextStyle(
                                           color: Colors.black,
+                                          fontSize: 14.sp,
                                         ),
                                         labelText: "Od datuma",
                                         suffixIcon: Icon(
                                           Icons.date_range,
                                           color: AppColors.primary,
+                                          size: 24.w,
                                         ),
                                       ),
                                       onChanged: (value) {
@@ -395,15 +412,20 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                             )
                                           : null,
                                       format: DateFormat("dd.MM.yyyy"),
-                                      style: TextStyle(color: Colors.black),
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14.sp,
+                                      ),
                                       decoration: InputDecoration(
                                         labelStyle: TextStyle(
                                           color: Colors.black,
+                                          fontSize: 14.sp,
                                         ),
                                         labelText: "Do datuma",
                                         suffixIcon: Icon(
                                           Icons.date_range,
                                           color: AppColors.primary,
+                                          size: 24.w,
                                         ),
                                       ),
                                       onChanged: (value) {
@@ -424,8 +446,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                           RegExp(r'[0-9]'),
                                         ),
                                       ],
+                                      style: TextStyle(fontSize: 14.sp),
                                       decoration: InputDecoration(
                                         labelText: "Od cijene",
+                                        labelStyle: TextStyle(fontSize: 14.sp),
                                       ),
                                       onChanged: (value) {
                                         queryStrings["page"] = 1;
@@ -442,8 +466,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                           RegExp(r'[0-9]'),
                                         ),
                                       ],
+                                      style: TextStyle(fontSize: 14.sp),
                                       decoration: InputDecoration(
                                         labelText: "Do cijene",
+                                        labelStyle: TextStyle(fontSize: 14.sp),
                                       ),
                                       onChanged: (value) {
                                         queryStrings["page"] = 1;
@@ -456,10 +482,16 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            textStyle: TextStyle(fontSize: 14.sp),
+                                          ),
                                           child: Text("Primijeni"),
                                           onPressed: fetchData,
                                         ),
                                         ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            textStyle: TextStyle(fontSize: 14.sp),
+                                          ),
                                           child: Text("Poništi"),
                                           onPressed: removeFilters,
                                         ),
@@ -497,14 +529,23 @@ class _OfferListScreenState extends State<OfferListScreen> {
   }
 
   List<DropdownMenuItem> getCountryDropdownItems() {
-    var list = [DropdownMenuItem(value: "", child: Text("-- Destinacija --"))];
+    var list = [DropdownMenuItem(
+      value: "", 
+      child: Text(
+        "-- Destinacija --",
+        style: TextStyle(fontSize: 14.sp),
+      ),
+    )];
 
     if (countries == null) return list;
 
     for (var country in countries!) {
       var dropdownItem = DropdownMenuItem(
         value: country.id,
-        child: Text(country.name ?? ""),
+        child: Text(
+          country.name ?? "",
+          style: TextStyle(fontSize: 14.sp),
+        ),
       );
       list.add(dropdownItem);
     }
@@ -514,7 +555,13 @@ class _OfferListScreenState extends State<OfferListScreen> {
 
   List<DropdownMenuItem> getBoardTypes() {
     var list = [
-      DropdownMenuItem(value: "", child: Text("-- Vrsta pansiona --")),
+      DropdownMenuItem(
+        value: "", 
+        child: Text(
+          "-- Vrsta pansiona --",
+          style: TextStyle(fontSize: 14.sp),
+        ),
+      ),
     ];
 
     if (boardTypes == null) return list;
@@ -522,7 +569,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
     for (var boardType in boardTypes!) {
       var dropdownItem = DropdownMenuItem(
         value: boardType.id,
-        child: Text(boardType.name ?? ""),
+        child: Text(
+          boardType.name ?? "",
+          style: TextStyle(fontSize: 14.sp),
+        ),
       );
       list.add(dropdownItem);
     }
@@ -568,7 +618,11 @@ class _OfferListScreenState extends State<OfferListScreen> {
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfStars; i++) {
-      list.add(Icon(Icons.star, color: Colors.amber));
+      list.add(Icon(
+        Icons.star, 
+        color: Colors.amber,
+        size: 24.w,
+      ));
     }
 
     return list;

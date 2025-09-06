@@ -208,7 +208,12 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                           padding: EdgeInsets.all(16.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [Text(offer!.description!)],
+                            children: [
+                              Text(
+                                offer!.description!,
+                                style: TextStyle(fontSize: 14.sp),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -249,7 +254,10 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
               children: [
                 Row(
                   children: [
-                    Text(item.roomType!.name ?? ""),
+                    Text(
+                      item.roomType!.name ?? "",
+                      style: TextStyle(fontSize: 14.sp),
+                    ),
                     SizedBox(width: 10.w),
                     Row(
                       children: getPersonIconsForRoom(
@@ -259,10 +267,14 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                   ],
                 ),
                 SizedBox(height: 5.h),
-                Text(item.shortDescription ?? ""),
+                Text(
+                  item.shortDescription ?? "",
+                  style: TextStyle(fontSize: 14.sp),
+                ),
                 SizedBox(height: 5.h),
                 Text(
                   "Cijena po osobi: ${FormatHelper.formatNumber(item.discountedPrice ?? 0)} KM",
+                  style: TextStyle(fontSize: 14.sp),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -274,6 +286,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                             ? const Color.fromARGB(255, 76, 175, 79)
                             : AppColors.darkRed,
                         fontWeight: FontWeight.bold,
+                        fontSize: 14.sp,
                       ),
                     ),
                     item.isAvalible!
@@ -292,6 +305,9 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                                 ),
                               );
                             },
+                            style: ElevatedButton.styleFrom(
+                              textStyle: TextStyle(fontSize: 14.sp),
+                            ),
                             child: Text("Odaberi"),
                           )
                         : SizedBox(),
@@ -329,7 +345,11 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfPerson; i++) {
-      list.add(Icon(Icons.person, color: AppColors.primary));
+      list.add(Icon(
+        Icons.person, 
+        color: AppColors.primary,
+        size: 24.w,
+      ));
     }
 
     return list;
@@ -339,7 +359,11 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfStars; i++) {
-      list.add(Icon(Icons.star, color: Colors.amber));
+      list.add(Icon(
+        Icons.star, 
+        color: Colors.amber,
+        size: 24.w,
+      ));
     }
 
     return list;
@@ -360,7 +384,12 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Greška pri radu sa fajlom: $e")));
+      ).showSnackBar(SnackBar(
+        content: Text(
+          "Greška pri radu sa fajlom: $e",
+          style: TextStyle(fontSize: 14.sp),
+        ),
+      ));
     }
   }
 

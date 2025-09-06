@@ -388,7 +388,12 @@ class _AddUpdateReservationScreenState
                           padding: EdgeInsets.all(16.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [Text(offer!.description!)],
+                            children: [
+                              Text(
+                                offer!.description!,
+                                style: TextStyle(fontSize: 14.sp),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -414,7 +419,10 @@ class _AddUpdateReservationScreenState
                             children: [
                               Row(
                                 children: [
-                                  Text(room!.roomType!.name!),
+                                  Text(
+                                    room!.roomType!.name!,
+                                    style: TextStyle(fontSize: 14.sp),
+                                  ),
                                   SizedBox(width: 5.w),
                                   Row(
                                     children: getPersonIconsForRoom(
@@ -424,10 +432,14 @@ class _AddUpdateReservationScreenState
                                 ],
                               ),
                               SizedBox(height: 5.h),
-                              Text(room!.shortDescription ?? ""),
+                              Text(
+                                room!.shortDescription ?? "",
+                                style: TextStyle(fontSize: 14.sp),
+                              ),
                               SizedBox(height: 5.h),
                               Text(
                                 "Cijena po osobi: ${FormatHelper.formatNumber(room!.discountedPrice!)} KM",
+                                style: TextStyle(fontSize: 14.sp),
                               ),
                             ],
                           ),
@@ -456,6 +468,9 @@ class _AddUpdateReservationScreenState
                         ? Center(
                             child: ElevatedButton(
                               onPressed: addNewPassenger,
+                              style: ElevatedButton.styleFrom(
+                                textStyle: TextStyle(fontSize: 14.sp),
+                              ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -495,6 +510,7 @@ class _AddUpdateReservationScreenState
                         ? Wrap(
                             spacing: 10.w,
                             runSpacing: 10.h,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: getDocumentElements(),
                           )
                         : SizedBox(),
@@ -506,7 +522,11 @@ class _AddUpdateReservationScreenState
                       maxLines: 6,
                       enabled: _isEditable,
                       controller: noteEditingController,
-                      decoration: InputDecoration(labelText: "Napomena"),
+                      decoration: InputDecoration(
+                        labelText: "Napomena",
+                        labelStyle: TextStyle(fontSize: 14.sp),
+                      ),
+                      style: TextStyle(fontSize: 14.sp),
                     ),
                     SizedBox(height: 20.h),
                     Row(
@@ -516,6 +536,9 @@ class _AddUpdateReservationScreenState
                             ? SizedBox()
                             : ElevatedButton(
                                 onPressed: cancelReservation,
+                                style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 14.sp),
+                                ),
                                 child: Text(
                                   "Otkaži",
                                   style: TextStyle(color: AppColors.darkRed),
@@ -526,6 +549,9 @@ class _AddUpdateReservationScreenState
                                 onPressed: !_isProcessStarted
                                     ? createUpdateReservation
                                     : null,
+                                style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 14.sp),
+                                ),
                                 child: _isProcessStarted == false
                                     ? Text(
                                         widget.reservationId == null
@@ -548,6 +574,9 @@ class _AddUpdateReservationScreenState
                         ? Row(
                             children: [
                               ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 14.sp),
+                                ),
                                 child: Text("Ostavi recenziju"),
                                 onPressed: openReservationReviewDialog,
                               ),
@@ -584,7 +613,7 @@ class _AddUpdateReservationScreenState
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfPerson; i++) {
-      list.add(Icon(Icons.person, color: AppColors.primary));
+      list.add(Icon(Icons.person, color: AppColors.primary, size: 24.w));
     }
 
     return list;
@@ -594,7 +623,7 @@ class _AddUpdateReservationScreenState
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfStars; i++) {
-      list.add(Icon(Icons.star, color: Colors.amber));
+      list.add(Icon(Icons.star, color: Colors.amber, size: 24.w));
     }
 
     return list;
@@ -612,15 +641,17 @@ class _AddUpdateReservationScreenState
           header: SizedBox(
             height: 55.h,
             child: Padding(
-              padding: EdgeInsets.only(left: 16.w, top: 8.h, bottom: 8.h),
+              padding: EdgeInsets.only(left: 16.w, right: 8.w),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     "Putnik ${counter}",
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
                     ),
                   ),
                   formBuilderKeys.length > 1 && _isEditable
@@ -634,7 +665,6 @@ class _AddUpdateReservationScreenState
                             formBuilderKeys.removeAt(index);
                             initialValues.removeAt(index);
                             passengerDocuments.removeAt(index);
-
                             setState(() {});
                           },
                         )
@@ -658,7 +688,11 @@ class _AddUpdateReservationScreenState
                   FormBuilderTextField(
                     enabled: _isEditable,
                     name: "fullName",
-                    decoration: InputDecoration(labelText: "Ime i prezime"),
+                    decoration: InputDecoration(
+                      labelText: "Ime i prezime",
+                      labelStyle: TextStyle(fontSize: 14.sp),
+                    ),
+                    style: TextStyle(fontSize: 14.sp),
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(
                         errorText: "Ovo polje je obavezno",
@@ -668,7 +702,11 @@ class _AddUpdateReservationScreenState
                   FormBuilderDateTimePicker(
                     enabled: _isEditable,
                     name: "dateOfBirth",
-                    decoration: InputDecoration(labelText: "Datum rođenja"),
+                    decoration: InputDecoration(
+                      labelText: "Datum rođenja",
+                      labelStyle: TextStyle(fontSize: 14.sp),
+                    ),
+                    style: TextStyle(fontSize: 14.sp),
                     format: DateFormat("dd.MM.yyyy"),
                     inputType: InputType.date,
                     validator: FormBuilderValidators.compose([
@@ -680,7 +718,11 @@ class _AddUpdateReservationScreenState
                   FormBuilderTextField(
                     enabled: _isEditable,
                     name: "phoneNumber",
-                    decoration: InputDecoration(labelText: "Broj telefona"),
+                    decoration: InputDecoration(
+                      labelText: "Broj telefona",
+                      labelStyle: TextStyle(fontSize: 14.sp),
+                    ),
+                    style: TextStyle(fontSize: 14.sp),
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(
                         errorText: "Ovo polje je obavezno",
@@ -707,6 +749,7 @@ class _AddUpdateReservationScreenState
                             icon: Icon(
                               Icons.description,
                               color: AppColors.primary,
+                              size: 24.w,
                             ),
                             onPressed: () async {
                               await openPassengerDocument(index);
@@ -718,9 +761,14 @@ class _AddUpdateReservationScreenState
                                   onPressed: () async {
                                     await pickAndUploadPassengerDocument(index);
                                   },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.all(8.w),
+                                    textStyle: TextStyle(fontSize: 14.sp),
+                                  ),
                                   child: Icon(
                                     Icons.upload,
                                     color: AppColors.primary,
+                                    size: 24.w,
                                   ),
                                 )
                               : SizedBox(),
@@ -758,6 +806,7 @@ class _AddUpdateReservationScreenState
         SnackBar(
           content: Text(
             "Neuspješna validacija: Neka od obaveznih polja nisu unesena ili su unesena u neispravnom formatu.",
+            style: TextStyle(fontSize: 14.sp),
           ),
         ),
       );
@@ -862,6 +911,7 @@ class _AddUpdateReservationScreenState
         SnackBar(
           content: Text(
             "Da biste mogli uređivati podatke o rezervaciji, Vaš e-mail nalog mora biti verifikovan.",
+            style: TextStyle(fontSize: 14.sp),
           ),
         ),
       );
@@ -883,7 +933,12 @@ class _AddUpdateReservationScreenState
       if (passengerDocument.documentBytes == null ||
           passengerDocument.documentName == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Upload putovnice putnika je obavezan.")),
+          SnackBar(
+            content: Text(
+              "Upload putovnice putnika je obavezan.",
+              style: TextStyle(fontSize: 14.sp),
+            ),
+          ),
         );
 
         isValid = false;
@@ -981,9 +1036,14 @@ class _AddUpdateReservationScreenState
 
       await OpenFile.open(savePath);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Greška pri radu sa fajlom: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Greška pri radu sa fajlom: $e",
+            style: TextStyle(fontSize: 14.sp),
+          ),
+        ),
+      );
     }
   }
 
@@ -992,9 +1052,14 @@ class _AddUpdateReservationScreenState
 
     if (passengerDocument.documentBytes == null ||
         passengerDocument.documentName == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Ovaj putnik nema dokument.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Ovaj putnik nema dokument.",
+            style: TextStyle(fontSize: 14.sp),
+          ),
+        ),
+      );
 
       return;
     }
@@ -1022,6 +1087,7 @@ class _AddUpdateReservationScreenState
                         min(15, item.documentName!.length),
                       ) ??
                       "",
+                  style: TextStyle(fontSize: 12.sp),
                 ),
               ],
             ),
@@ -1051,6 +1117,7 @@ class _AddUpdateReservationScreenState
                           min(15, item.documentName!.length),
                         ) ??
                         "",
+                    style: TextStyle(fontSize: 12.sp),
                   ),
                 ],
               ),
@@ -1079,7 +1146,7 @@ class _AddUpdateReservationScreenState
     if (_isEditable) {
       documents.add(
         IconButton(
-          icon: Icon(Icons.add_circle, color: AppColors.primary),
+          icon: Icon(Icons.add_circle, color: AppColors.primary, size: 40.w),
           onPressed: pickAndUploadFile,
         ),
       );
@@ -1181,13 +1248,19 @@ class _AddUpdateReservationScreenState
                     errorMessage.isNotEmpty
                         ? Text(
                             errorMessage,
-                            style: TextStyle(color: AppColors.darkRed),
+                            style: TextStyle(
+                              color: AppColors.darkRed,
+                              fontSize: 14.sp,
+                            ),
                           )
                         : SizedBox(),
                     SizedBox(height: 10.h),
                     Text(
                       "Ocjena za smještaj",
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 14.sp,
+                      ),
                     ),
                     RatingBar.builder(
                       initialRating: 0,
@@ -1195,6 +1268,7 @@ class _AddUpdateReservationScreenState
                       direction: Axis.horizontal,
                       allowHalfRating: false,
                       itemCount: 5,
+                      itemSize: 40.w,
                       itemPadding: EdgeInsets.symmetric(horizontal: 4.w),
                       itemBuilder: (context, _) =>
                           Icon(Icons.star, color: Colors.amber),
@@ -1206,7 +1280,10 @@ class _AddUpdateReservationScreenState
                     SizedBox(height: 10.h),
                     Text(
                       "Ocjena za uslugu",
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 14.sp,
+                      ),
                     ),
                     RatingBar.builder(
                       initialRating: 0,
@@ -1214,6 +1291,7 @@ class _AddUpdateReservationScreenState
                       direction: Axis.horizontal,
                       allowHalfRating: false,
                       itemCount: 5,
+                      itemSize: 40.w,
                       itemPadding: EdgeInsets.symmetric(horizontal: 4.w),
                       itemBuilder: (context, _) =>
                           Icon(Icons.star, color: Colors.amber),
@@ -1225,7 +1303,9 @@ class _AddUpdateReservationScreenState
                     TextField(
                       decoration: InputDecoration(
                         labelText: "Ukratko opišite Vaše iskustvo",
+                        labelStyle: TextStyle(fontSize: 14.sp),
                       ),
+                      style: TextStyle(fontSize: 14.sp),
                       minLines: 5,
                       maxLines: 5,
                       onChanged: (value) {
@@ -1234,6 +1314,9 @@ class _AddUpdateReservationScreenState
                     ),
                     SizedBox(height: 20.h),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        textStyle: TextStyle(fontSize: 14.sp),
+                      ),
                       child: !isReviewInProcess
                           ? Text("Pošalji")
                           : SizedBox(

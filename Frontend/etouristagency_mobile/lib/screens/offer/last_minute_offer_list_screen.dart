@@ -106,6 +106,7 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
+                                            fontSize: 14.sp,
                                           ),
                                         ),
                                       ),
@@ -182,6 +183,9 @@ class _LastMinuteOfferListScreenState extends State<LastMinuteOfferListScreen> {
                                           ),
                                         );
                                       },
+                                style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 14.sp),
+                                ),
                                 child: Text("Pregledaj i rezerviši"),
                               ),
                             ],
