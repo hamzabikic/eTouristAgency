@@ -14,6 +14,7 @@ import 'package:etouristagency_mobile/services/firebase_token_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -57,25 +58,25 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   Container(
-                    height: 300,
+                    height: 300.h,
                     color: AppColors.primary,
                     child: Center(
                       child: Image.asset("lib/assets/images/logo.png"),
                     ),
                   ),
-                  SizedBox(height: 40),
+                  SizedBox(height: 20.h),
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(16.w),
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadiusGeometry.all(
-                          Radius.circular(20),
+                          Radius.circular(20.r),
                         ),
                         color: AppColors.primaryTransparent,
                       ),
-                      width: 500,
+                      width: 500.w,
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: EdgeInsets.all(16.w),
                         child: FormBuilder(
                           key: formBuilderKey,
                           child: Column(
@@ -85,13 +86,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                       operationErrorMessage!,
                                       style: TextStyle(
                                         color: AppColors.darkRed,
+                                        fontSize: 14.sp,
                                       ),
                                     )
                                   : SizedBox(),
                               FormBuilderTextField(
                                 decoration: InputDecoration(
                                   labelText: "Korisničko ime",
+                                  labelStyle: TextStyle(fontSize: 14.sp),
                                 ),
+                                style: TextStyle(fontSize: 14.sp),
                                 name: "username",
                                 validator: FormBuilderValidators.compose([
                                   FormBuilderValidators.required(
@@ -99,12 +103,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ]),
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               FormBuilderTextField(
                                 obscureText: true,
                                 decoration: InputDecoration(
                                   labelText: "Lozinka",
+                                  labelStyle: TextStyle(fontSize: 14.sp),
                                 ),
+                                style: TextStyle(fontSize: 14.sp),
                                 name: "password",
                                 validator: FormBuilderValidators.compose([
                                   FormBuilderValidators.required(
@@ -112,9 +118,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ]),
                               ),
-                              SizedBox(height: 20),
+                              SizedBox(height: 20.h),
                               ElevatedButton(
                                 onPressed: _authorize,
+                                style: ElevatedButton.styleFrom(
+                                  textStyle: TextStyle(fontSize: 14.sp),
+                                ),
                                 child: Text("Prijavi se"),
                               ),
                             ],
@@ -129,6 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         color: AppColors.primary,
                         decoration: TextDecoration.underline,
+                        fontSize: 14.sp,
                       ),
                     ),
                     onTap: () {
@@ -145,6 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         color: AppColors.primary,
                         decoration: TextDecoration.underline,
+                        fontSize: 14.sp,
                       ),
                     ),
                     onTap: () {
@@ -155,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                   ),
-                  SizedBox(height: 40),
+                  SizedBox(height: 40.h),
                 ],
               ),
             ),
@@ -213,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => OfferListScreen()),
       );
     } on Exception catch (e) {
-      operationErrorMessage = e.toString();
+      operationErrorMessage = e.toString().replaceFirst("Exception: ", "");
 
       await authService.clearCredentials();
       setState(() {});
@@ -250,6 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
       SnackBar(
         content: Text(
           "Vaš uređaj je odjavljen sa korisničkog naloga. Molimo Vas da se opet prijavite.",
+          style: TextStyle(fontSize: 14.sp),
         ),
       ),
     );

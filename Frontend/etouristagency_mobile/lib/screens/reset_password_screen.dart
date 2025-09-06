@@ -4,6 +4,7 @@ import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -39,29 +40,30 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         child: Column(
           children: [
             Container(
-              height: 300,
+              height: 300.h,
               color: AppColors.primary,
               child: Center(child: Image.asset("lib/assets/images/logo.png")),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Text(
               "Promjena lozinke",
               style: TextStyle(
                 color: AppColors.primary,
-                fontSize: 17,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.w),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadiusGeometry.all(Radius.circular(20)),
+                  borderRadius: BorderRadiusGeometry.all(Radius.circular(20.r)),
                   color: AppColors.primaryTransparent,
                 ),
-                width: 500,
+                width: 500.w,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(16.w),
                   child: FormBuilder(
                     key: formbuilderKey,
                     child: Column(
@@ -70,10 +72,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             ? SizedBox()
                             : Text(
                                 operationErrorMessage!,
-                                style: TextStyle(color: AppColors.darkRed),
+                                style: TextStyle(
+                                  color: AppColors.darkRed,
+                                  fontSize: 14.sp,
+                                ),
                               ),
                         operationErrorMessage != null
-                            ? SizedBox(height: 20)
+                            ? SizedBox(height: 20.h)
                             : SizedBox(),
                         FormBuilderTextField(
                           name: "newPassword",
@@ -81,7 +86,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Nova lozinka",
+                            labelStyle: TextStyle(fontSize: 14.sp),
                           ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: "Ovo polje je obavezno",
@@ -93,14 +100,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             ),
                           ]),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 20.h),
                         FormBuilderTextField(
                           name: "repeatPassword",
                           obscureText: true,
                           controller: repeatPasswordEditingController,
                           decoration: InputDecoration(
                             labelText: "Potvrda lozinke",
+                            labelStyle: TextStyle(fontSize: 14.sp),
                           ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: "Ovo polje je obavezno",
@@ -119,14 +128,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             },
                           ]),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 20.h),
                         ElevatedButton(
                           onPressed: !isProcessing ? resetPassword : null,
+                          style: ElevatedButton.styleFrom(
+                            textStyle: TextStyle(fontSize: 14.sp),
+                          ),
                           child: !isProcessing
                               ? Text("Potvrdi")
                               : SizedBox(
-                                  height: 20,
-                                  width: 20,
+                                  height: 20.h,
+                                  width: 20.w,
                                   child: Transform.scale(
                                     scale: 0.6,
                                     child: const CircularProgressIndicator(
@@ -147,6 +159,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 style: TextStyle(
                   color: AppColors.primary,
                   decoration: TextDecoration.underline,
+                  fontSize: 14.sp,
                 ),
               ),
               onTap: () {
@@ -155,8 +168,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 );
               },
             ),
-            SizedBox(height: 20),
-            SizedBox(height: 20),
+            SizedBox(height: 40.h),
           ],
         ),
       ),

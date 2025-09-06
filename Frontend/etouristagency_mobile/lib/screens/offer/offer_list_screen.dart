@@ -14,6 +14,7 @@ import 'package:etouristagency_mobile/screens/offer/offer_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
 class OfferListScreen extends StatefulWidget {
@@ -53,7 +54,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+        _scrollController.position.maxScrollExtent - 200.h) {
       if (!_isLoadingMore && queryStrings["page"] < paginatedList!.totalPages) {
         queryStrings["page"] += 1;
         populateOffers();
@@ -69,7 +70,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
           ? Stack(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(16.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -77,7 +78,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                         icon: Icon(
                           Icons.filter_list,
                           color: AppColors.primary,
-                          size: 35,
+                          size: 35.w,
                         ),
                         onPressed: () {
                           isFiltersWidgetOpen = !isFiltersWidgetOpen;
@@ -92,18 +93,18 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     paginatedList!.listOfRecords.length +
                                     (_isLoadingMore ? 1 : 0),
                                 padding: EdgeInsetsGeometry.only(
-                                  left: 30.0,
-                                  right: 30.0,
-                                  top: 16.0,
-                                  bottom: 16.0,
+                                  left: 30.w,
+                                  right: 30.w,
+                                  top: 16.h,
+                                  bottom: 16.h,
                                 ),
                                 separatorBuilder: (context, index) =>
-                                    SizedBox(height: 15),
+                                    SizedBox(height: 15.h),
                                 itemBuilder: (context, index) {
                                   if (index ==
                                       paginatedList!.listOfRecords.length) {
                                     return SizedBox(
-                                      height: 100,
+                                      height: 100.h,
                                       child: DialogHelper.openSpinner(
                                         context,
                                         "",
@@ -117,21 +118,21 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                   return Card(
                                     color: AppColors.lighterBlue,
                                     child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
+                                      padding: EdgeInsets.all(16.w),
                                       child: Column(
                                         children: [
                                           Stack(
                                             children: [
                                               Image.network(
                                                 "${offerProvider.controllerUrl}/${offer.id}/image",
-                                                height: 200,
+                                                height: 200.h,
                                                 width: double.infinity,
                                                 fit: BoxFit.cover,
                                               ),
                                               offer.isFirstMinuteDiscountActive!
                                                   ? Positioned(
-                                                      right: 7,
-                                                      top: 7,
+                                                      right: 7.w,
+                                                      top: 7.h,
                                                       child: Container(
                                                         color:
                                                             const Color.fromARGB(
@@ -142,8 +143,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                             ),
                                                         child: Padding(
                                                           padding:
-                                                              const EdgeInsets.all(
-                                                                8.0,
+                                                              EdgeInsets.all(
+                                                                8.w,
                                                               ),
                                                           child: Text(
                                                             "FIRST MINUTE",
@@ -153,6 +154,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
+                                                              fontSize: 14.sp,
                                                             ),
                                                           ),
                                                         ),
@@ -161,8 +163,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                   : offer
                                                         .isLastMinuteDiscountActive!
                                                   ? Positioned(
-                                                      right: 7,
-                                                      top: 7,
+                                                      right: 7.w,
+                                                      top: 7.h,
                                                       child: Container(
                                                         color: Color.fromARGB(
                                                           186,
@@ -172,8 +174,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                         ),
                                                         child: Padding(
                                                           padding:
-                                                              const EdgeInsets.all(
-                                                                8.0,
+                                                              EdgeInsets.all(
+                                                                8.w,
                                                               ),
                                                           child: Text(
                                                             "LAST MINUTE",
@@ -183,6 +185,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
+                                                              fontSize: 14.sp,
                                                             ),
                                                           ),
                                                         ),
@@ -191,13 +194,13 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                   : SizedBox(),
                                             ],
                                           ),
-                                          SizedBox(height: 10),
+                                          SizedBox(height: 10.h),
                                           Text(
                                             offer.hotel!.name ?? "",
                                             style: TextStyle(
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 17,
+                                              fontSize: 17.sp,
                                             ),
                                           ),
                                           Row(
@@ -211,16 +214,16 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                             style: TextStyle(
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 12,
+                                              fontSize: 12.sp,
                                             ),
                                           ),
-                                          SizedBox(height: 10),
+                                          SizedBox(height: 10.h),
                                           Text(
                                             "${offer.formattedStartDate} - ${offer.formattedEndDate}",
                                             style: TextStyle(
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 17,
+                                              fontSize: 17.sp,
                                             ),
                                           ),
                                           Text(
@@ -228,16 +231,16 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                             style: TextStyle(
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 15,
+                                              fontSize: 15.sp,
                                             ),
                                           ),
-                                          SizedBox(height: 10),
+                                          SizedBox(height: 10.h),
                                           Text(
                                             "Već od ${FormatHelper.formatNumber(offer.minimumPricePerPerson!)} KM",
                                             style: TextStyle(
                                               color: AppColors.primary,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 17,
+                                              fontSize: 17.sp,
                                             ),
                                           ),
                                           Text(
@@ -252,10 +255,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                     )
                                                   : AppColors.darkRed,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 12,
+                                              fontSize: 12.sp,
                                             ),
                                           ),
-                                          SizedBox(height: 5),
+                                          SizedBox(height: 5.h),
                                           ElevatedButton(
                                             onPressed: offer.remainingSpots! < 1
                                                 ? null
@@ -273,6 +276,9 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                                       ),
                                                     );
                                                   },
+                                            style: ElevatedButton.styleFrom(
+                                              textStyle: TextStyle(fontSize: 14.sp),
+                                            ),
                                             child: Text(
                                               "Pregledaj i rezerviši",
                                             ),
@@ -287,10 +293,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text("🙁", style: TextStyle(fontSize: 40)),
+                                    Text("🙁", style: TextStyle(fontSize: 40.sp)),
                                     Text(
                                       "Nema dostupnih ponuda.",
-                                      style: TextStyle(fontSize: 15),
+                                      style: TextStyle(fontSize: 15.sp),
                                     ),
                                   ],
                                 ),
@@ -301,46 +307,50 @@ class _OfferListScreenState extends State<OfferListScreen> {
                 ),
                 isFiltersWidgetOpen
                     ? Positioned(
-                        top: 65,
+                        top: 65.h,
                         left: 0,
                         right: 0,
                         child: SizedBox(
                           child: Padding(
-                            padding: const EdgeInsets.only(
-                              left: 16.0,
-                              right: 16.0,
+                            padding: EdgeInsets.only(
+                              left: 16.w,
+                              right: 16.w,
                             ),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Color(0xFFF0F4F8),
-                                borderRadius: BorderRadiusGeometry.circular(20),
+                                borderRadius: BorderRadiusGeometry.circular(20.r),
                                 border: Border(
                                   top: BorderSide(
                                     color: Color.fromARGB(255, 228, 228, 228),
-                                    width: 1,
+                                    width: 1.w,
                                   ),
                                   right: BorderSide(
                                     color: Color.fromARGB(255, 228, 228, 228),
-                                    width: 1,
+                                    width: 1.w,
                                   ),
                                   bottom: BorderSide(
                                     color: Color.fromARGB(255, 228, 228, 228),
-                                    width: 1,
+                                    width: 1.w,
                                   ),
                                   left: BorderSide(
                                     color: Color.fromARGB(255, 228, 228, 228),
-                                    width: 1.5,
+                                    width: 1.5.w,
                                   ),
                                 ),
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(16.0),
+                                padding: EdgeInsets.all(16.w),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     DropdownButtonFormField(
                                       value: queryStrings["countryId"] ?? "",
                                       items: getCountryDropdownItems(),
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: Colors.black,
+                                      ),
                                       onChanged: (value) async {
                                         queryStrings["page"] = 1;
                                         queryStrings["countryId"] = value;
@@ -349,6 +359,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                     DropdownButtonFormField(
                                       value: queryStrings["boardTypeId"] ?? "",
                                       items: getBoardTypes(),
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: Colors.black,
+                                      ),
                                       onChanged: (value) async {
                                         queryStrings["page"] = 1;
                                         queryStrings["boardTypeId"] = value;
@@ -364,15 +378,20 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                             )
                                           : null,
                                       format: DateFormat("dd.MM.yyyy"),
-                                      style: TextStyle(color: Colors.black),
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14.sp,
+                                      ),
                                       decoration: InputDecoration(
                                         labelStyle: TextStyle(
                                           color: Colors.black,
+                                          fontSize: 14.sp,
                                         ),
                                         labelText: "Od datuma",
                                         suffixIcon: Icon(
                                           Icons.date_range,
                                           color: AppColors.primary,
+                                          size: 24.w,
                                         ),
                                       ),
                                       onChanged: (value) {
@@ -393,15 +412,20 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                             )
                                           : null,
                                       format: DateFormat("dd.MM.yyyy"),
-                                      style: TextStyle(color: Colors.black),
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14.sp,
+                                      ),
                                       decoration: InputDecoration(
                                         labelStyle: TextStyle(
                                           color: Colors.black,
+                                          fontSize: 14.sp,
                                         ),
                                         labelText: "Do datuma",
                                         suffixIcon: Icon(
                                           Icons.date_range,
                                           color: AppColors.primary,
+                                          size: 24.w,
                                         ),
                                       ),
                                       onChanged: (value) {
@@ -422,8 +446,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                           RegExp(r'[0-9]'),
                                         ),
                                       ],
+                                      style: TextStyle(fontSize: 14.sp),
                                       decoration: InputDecoration(
                                         labelText: "Od cijene",
+                                        labelStyle: TextStyle(fontSize: 14.sp),
                                       ),
                                       onChanged: (value) {
                                         queryStrings["page"] = 1;
@@ -440,24 +466,32 @@ class _OfferListScreenState extends State<OfferListScreen> {
                                           RegExp(r'[0-9]'),
                                         ),
                                       ],
+                                      style: TextStyle(fontSize: 14.sp),
                                       decoration: InputDecoration(
                                         labelText: "Do cijene",
+                                        labelStyle: TextStyle(fontSize: 14.sp),
                                       ),
                                       onChanged: (value) {
                                         queryStrings["page"] = 1;
                                         queryStrings["offerPriceTo"] = value;
                                       },
                                     ),
-                                    SizedBox(height: 10),
+                                    SizedBox(height: 10.h),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            textStyle: TextStyle(fontSize: 14.sp),
+                                          ),
                                           child: Text("Primijeni"),
                                           onPressed: fetchData,
                                         ),
                                         ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            textStyle: TextStyle(fontSize: 14.sp),
+                                          ),
                                           child: Text("Poništi"),
                                           onPressed: removeFilters,
                                         ),
@@ -470,7 +504,7 @@ class _OfferListScreenState extends State<OfferListScreen> {
                           ),
                         ),
                       )
-                    : SizedBox(width: 1, height: 1),
+                    : SizedBox(width: 1.w, height: 1.h),
               ],
             )
           : DialogHelper.openSpinner(context, "Učitavam ponude..."),
@@ -495,14 +529,23 @@ class _OfferListScreenState extends State<OfferListScreen> {
   }
 
   List<DropdownMenuItem> getCountryDropdownItems() {
-    var list = [DropdownMenuItem(value: "", child: Text("-- Destinacija --"))];
+    var list = [DropdownMenuItem(
+      value: "", 
+      child: Text(
+        "-- Destinacija --",
+        style: TextStyle(fontSize: 14.sp),
+      ),
+    )];
 
     if (countries == null) return list;
 
     for (var country in countries!) {
       var dropdownItem = DropdownMenuItem(
         value: country.id,
-        child: Text(country.name ?? ""),
+        child: Text(
+          country.name ?? "",
+          style: TextStyle(fontSize: 14.sp),
+        ),
       );
       list.add(dropdownItem);
     }
@@ -512,7 +555,13 @@ class _OfferListScreenState extends State<OfferListScreen> {
 
   List<DropdownMenuItem> getBoardTypes() {
     var list = [
-      DropdownMenuItem(value: "", child: Text("-- Vrsta pansiona --")),
+      DropdownMenuItem(
+        value: "", 
+        child: Text(
+          "-- Vrsta pansiona --",
+          style: TextStyle(fontSize: 14.sp),
+        ),
+      ),
     ];
 
     if (boardTypes == null) return list;
@@ -520,7 +569,10 @@ class _OfferListScreenState extends State<OfferListScreen> {
     for (var boardType in boardTypes!) {
       var dropdownItem = DropdownMenuItem(
         value: boardType.id,
-        child: Text(boardType.name ?? ""),
+        child: Text(
+          boardType.name ?? "",
+          style: TextStyle(fontSize: 14.sp),
+        ),
       );
       list.add(dropdownItem);
     }
@@ -566,7 +618,11 @@ class _OfferListScreenState extends State<OfferListScreen> {
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfStars; i++) {
-      list.add(Icon(Icons.star, color: Colors.amber));
+      list.add(Icon(
+        Icons.star, 
+        color: Colors.amber,
+        size: 24.w,
+      ));
     }
 
     return list;

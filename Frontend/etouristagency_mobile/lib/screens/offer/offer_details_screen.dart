@@ -14,6 +14,7 @@ import 'package:etouristagency_mobile/screens/offer/last_minute_offer_list_scree
 import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/add_update_reservation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -57,33 +58,33 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
       offer != null
           ? SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsetsGeometry.all(32.0),
+                padding: EdgeInsetsGeometry.all(32.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Card(
                       color: AppColors.lighterBlue,
                       child: Padding(
-                        padding: EdgeInsetsGeometry.all(16),
+                        padding: EdgeInsetsGeometry.all(16.w),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             offerImageInfo != null
                                 ? Image.memory(
                                     offerImageInfo!.imageBytes!,
-                                    height: 200,
+                                    height: 200.h,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   )
                                 : SizedBox(),
-                            SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             Center(
                               child: Text(
                                 offer?.hotel?.name ?? "",
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 17,
+                                  fontSize: 17.sp,
                                 ),
                               ),
                             ),
@@ -99,17 +100,17 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
                             ),
-                            SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             Text(
                               "Datum polaska: ${offer!.formattedStartDateTime}",
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -117,7 +118,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -125,7 +126,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -133,7 +134,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -141,7 +142,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Text(
@@ -149,7 +150,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                               style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                               ),
                             ),
                             Row(
@@ -161,19 +162,19 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                                         icon: Icon(
                                           Icons.description,
                                           color: AppColors.primary,
-                                          size: 40,
+                                          size: 40.sp,
                                         ),
                                         onPressed: () async {
                                           await saveAndOpenDocument(context);
                                         },
                                       )
-                                    : SizedBox(width: 40),
+                                    : SizedBox(width: 40.w),
                                 IconButton(
                                   padding: EdgeInsets.all(0),
                                   icon: Icon(
                                     Icons.image,
                                     color: AppColors.primary,
-                                    size: 40,
+                                    size: 40.sp,
                                   ),
                                   onPressed: () async {
                                     await showDialog(
@@ -189,39 +190,44 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Text(
                       "Opis putovanja",
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w500,
-                        fontSize: 15,
+                        fontSize: 15.sp,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     SizedBox(
                       width: double.infinity,
                       child: Card(
                         color: AppColors.lighterBlue,
                         child: Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(16.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [Text(offer!.description!)],
+                            children: [
+                              Text(
+                                offer!.description!,
+                                style: TextStyle(fontSize: 14.sp),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Text(
                       "Odaberite sobu...",
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w500,
-                        fontSize: 15,
+                        fontSize: 15.sp,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Column(children: getRoomElements()),
                   ],
                 ),
@@ -242,14 +248,17 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
         child: Card(
           color: AppColors.lighterBlue,
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(item.roomType!.name ?? ""),
-                    SizedBox(width: 10),
+                    Text(
+                      item.roomType!.name ?? "",
+                      style: TextStyle(fontSize: 14.sp),
+                    ),
+                    SizedBox(width: 10.w),
                     Row(
                       children: getPersonIconsForRoom(
                         item.roomType!.roomCapacity!,
@@ -257,11 +266,15 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 5),
-                Text(item.shortDescription ?? ""),
-                SizedBox(height: 5),
+                SizedBox(height: 5.h),
+                Text(
+                  item.shortDescription ?? "",
+                  style: TextStyle(fontSize: 14.sp),
+                ),
+                SizedBox(height: 5.h),
                 Text(
                   "Cijena po osobi: ${FormatHelper.formatNumber(item.discountedPrice ?? 0)} KM",
+                  style: TextStyle(fontSize: 14.sp),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -273,6 +286,7 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                             ? const Color.fromARGB(255, 76, 175, 79)
                             : AppColors.darkRed,
                         fontWeight: FontWeight.bold,
+                        fontSize: 14.sp,
                       ),
                     ),
                     item.isAvalible!
@@ -291,6 +305,9 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
                                 ),
                               );
                             },
+                            style: ElevatedButton.styleFrom(
+                              textStyle: TextStyle(fontSize: 14.sp),
+                            ),
                             child: Text("Odaberi"),
                           )
                         : SizedBox(),
@@ -328,7 +345,11 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfPerson; i++) {
-      list.add(Icon(Icons.person, color: AppColors.primary));
+      list.add(Icon(
+        Icons.person, 
+        color: AppColors.primary,
+        size: 24.w,
+      ));
     }
 
     return list;
@@ -338,7 +359,11 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     List<Widget> list = [];
 
     for (int i = 0; i < numberOfStars; i++) {
-      list.add(Icon(Icons.star, color: Colors.amber));
+      list.add(Icon(
+        Icons.star, 
+        color: Colors.amber,
+        size: 24.w,
+      ));
     }
 
     return list;
@@ -359,7 +384,12 @@ class _OfferDetailsScreenState extends State<OfferDetailsScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Greška pri radu sa fajlom: $e")));
+      ).showSnackBar(SnackBar(
+        content: Text(
+          "Greška pri radu sa fajlom: $e",
+          style: TextStyle(fontSize: 14.sp),
+        ),
+      ));
     }
   }
 

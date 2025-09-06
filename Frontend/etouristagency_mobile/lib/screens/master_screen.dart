@@ -1,12 +1,10 @@
 import 'package:etouristagency_mobile/consts/app_colors.dart';
-import 'package:etouristagency_mobile/helpers/dialog_helper.dart';
 import 'package:etouristagency_mobile/screens/account_screen.dart';
-import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/last_minute_offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/offer/offer_list_screen.dart';
 import 'package:etouristagency_mobile/screens/reservation/my_reservations_list_screen.dart';
-import 'package:etouristagency_mobile/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MasterScreen extends StatefulWidget {
   final Widget _widget;
@@ -40,19 +38,23 @@ class _MasterScreenState extends State<MasterScreen> {
           widget._screenTitle,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 20,
+            fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: AppColors.primary,
         centerTitle: true,
-        leadingWidth: 70,
+        leadingWidth: 70.w,
         leading: widget.isBackButtonVisible
             ? IconButton(
-                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                icon: Icon(
+                  Icons.arrow_back_ios, 
+                  color: Colors.white,
+                  size: 24.w,
+                ),
                 onPressed: widget.onClickMethod,
               )
-            : Image.asset("lib/assets/images/logo.png", width: 70, height: 70),
+            : Image.asset("lib/assets/images/logo.png", width: 70.w, height: 70.h),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -68,7 +70,7 @@ class _MasterScreenState extends State<MasterScreen> {
 
   Widget buildMobileNavbar() {
     return Container(
-      height: 75,
+      height: 75.h,
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(color: AppColors.primary),
       child: Row(
@@ -117,13 +119,17 @@ class _MasterScreenState extends State<MasterScreen> {
 
   Widget buildNavbarItem(IconData icon, String text) {
     return Padding(
-      padding: const EdgeInsets.only(top: 5),
+      padding: EdgeInsets.only(top: 5.h),
       child: Column(
         children: [
-          Icon(icon, color: Colors.white, size: 25),
+          Icon(icon, color: Colors.white, size: 25.sp),
           Text(
             text,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400),
+            style: TextStyle(
+              color: Colors.white, 
+              fontWeight: FontWeight.w400,
+              fontSize: 12.sp,
+            ),
           ),
         ],
       ),

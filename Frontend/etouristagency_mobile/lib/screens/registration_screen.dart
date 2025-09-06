@@ -3,6 +3,7 @@ import 'package:etouristagency_mobile/providers/user_provider.dart';
 import 'package:etouristagency_mobile/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -34,42 +35,50 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         child: Column(
           children: [
             Container(
-              height: 300,
+              height: 300.h,
               color: AppColors.primary,
               child: Center(child: Image.asset("lib/assets/images/logo.png")),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Text(
               "Registracija korisnika",
               style: TextStyle(
                 color: AppColors.primary,
-                fontSize: 17,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.w),
               child: FormBuilder(
                 key: formBuilderKey,
                 autovalidateMode: AutovalidateMode.onUnfocus,
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadiusGeometry.all(Radius.circular(20)),
+                    borderRadius: BorderRadiusGeometry.all(Radius.circular(20.r)),
                     color: AppColors.primaryTransparent,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(16.w),
                     child: Column(
                       children: [
                         operationErrorMessage != null
                             ? Text(
                                 operationErrorMessage!,
-                                style: TextStyle(color: AppColors.darkRed),
+                                style: TextStyle(
+                                  color: AppColors.darkRed,
+                                  fontSize: 14.sp,
+                                ),
                               )
                             : SizedBox(),
                         FormBuilderTextField(
                           name: "firstName",
-                          decoration: InputDecoration(labelText: "Ime"),
+                          decoration: InputDecoration(
+                            labelText: "Ime",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: "Ovo polje je obavezno.",
@@ -78,7 +87,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         FormBuilderTextField(
                           name: "lastName",
-                          decoration: InputDecoration(labelText: "Prezime"),
+                          decoration: InputDecoration(
+                            labelText: "Prezime",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: "Ovo polje je obavezno.",
@@ -89,7 +102,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           name: "username",
                           decoration: InputDecoration(
                             labelText: "Korisničko ime",
+                            labelStyle: TextStyle(fontSize: 14.sp),
                           ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: "Ovo polje je obavezno.",
@@ -105,7 +120,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         FormBuilderTextField(
                           name: "email",
-                          decoration: InputDecoration(labelText: "Email"),
+                          decoration: InputDecoration(
+                            labelText: "Email",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: "Ovo polje je obavezno.",
@@ -126,7 +145,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           name: "phoneNumber",
                           decoration: InputDecoration(
                             labelText: "Broj telefona",
+                            labelStyle: TextStyle(fontSize: 14.sp),
                           ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.minLength(
                               6,
@@ -142,7 +163,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         FormBuilderTextField(
                           name: "password",
                           obscureText: true,
-                          decoration: InputDecoration(labelText: "Lozinka"),
+                          decoration: InputDecoration(
+                            labelText: "Lozinka",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.minLength(
                               8,
@@ -156,7 +181,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           obscureText: true,
                           decoration: InputDecoration(
                             labelText: "Potvrda lozinke",
+                            labelStyle: TextStyle(fontSize: 14.sp),
                           ),
+                          style: TextStyle(fontSize: 14.sp),
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.minLength(
                               8,
@@ -174,14 +201,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             ),
                           ]),
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 20.h),
                         ElevatedButton(
                           onPressed: !_isProcessing ? registration : null,
+                          style: ElevatedButton.styleFrom(
+                            textStyle: TextStyle(fontSize: 14.sp),
+                          ),
                           child: !_isProcessing
                               ? Text("Registruj se")
                               : SizedBox(
-                                  height: 20,
-                                  width: 20,
+                                  height: 20.h,
+                                  width: 20.w,
                                   child: Transform.scale(
                                     scale: 0.6,
                                     child: const CircularProgressIndicator(
@@ -202,6 +232,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 style: TextStyle(
                   color: AppColors.primary,
                   decoration: TextDecoration.underline,
+                  fontSize: 14.sp,
                 ),
               ),
               onTap: () {
@@ -210,7 +241,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 );
               },
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 40.h),
           ],
         ),
       ),
@@ -239,8 +270,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: Text("Uspješna registracija", style: TextStyle(fontSize: 18)),
-          icon: Icon(Icons.check_circle, color: AppColors.primary),
+          title: Text("Uspješna registracija", style: TextStyle(fontSize: 18.sp)),
+          icon: Icon(
+            Icons.check_circle, 
+            color: AppColors.primary,
+            size: 48.w,
+          ),
           actions: [
             Center(
               child: ElevatedButton(
@@ -250,6 +285,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     MaterialPageRoute(builder: (context) => LoginScreen()),
                   );
                 },
+                style: ElevatedButton.styleFrom(
+                  textStyle: TextStyle(fontSize: 14.sp),
+                ),
                 child: Text("Idi na prijavu"),
               ),
             ),

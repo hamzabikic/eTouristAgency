@@ -11,6 +11,7 @@ import 'package:etouristagency_mobile/services/firebase_token_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -54,21 +55,21 @@ class _AccountScreenState extends State<AccountScreen> {
       Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsetsGeometry.all(16.0),
+            padding: EdgeInsetsGeometry.all(16.w),
             child: user != null
                 ? Column(
                     children: [
                       Container(
                         decoration: BoxDecoration(
                           color: AppColors.primaryTransparent,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: FormBuilder(
                           key: updateUserFormBuilder,
                           initialValue: user!.toJson(),
                           autovalidateMode: AutovalidateMode.onUnfocus,
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: EdgeInsets.all(16.w),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -78,10 +79,11 @@ class _AccountScreenState extends State<AccountScreen> {
                                   child: Text(
                                     "Podaci o korisničkom nalogu",
                                     style: TextStyle(
-                                      fontSize: 20,
+                                      fontSize: 20.sp,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.blueGrey,
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                                 operationErrorMessage != null
@@ -89,12 +91,17 @@ class _AccountScreenState extends State<AccountScreen> {
                                         operationErrorMessage!,
                                         style: TextStyle(
                                           color: AppColors.darkRed,
+                                          fontSize: 14.sp,
                                         ),
                                       )
                                     : SizedBox(),
                                 FormBuilderTextField(
                                   name: "firstName",
-                                  decoration: InputDecoration(labelText: "Ime"),
+                                  decoration: InputDecoration(
+                                    labelText: "Ime",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
+                                  ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
@@ -105,7 +112,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   name: "lastName",
                                   decoration: InputDecoration(
                                     labelText: "Prezime",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
@@ -116,7 +125,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   name: "username",
                                   decoration: InputDecoration(
                                     labelText: "Korisničko ime",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
@@ -135,11 +146,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                   name: "email",
                                   decoration: InputDecoration(
                                     labelText: "Email",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                     suffixIcon: Icon(
                                       Icons.verified_user,
                                       color: !user!.isVerified!
                                           ? AppColors.darkRed
                                           : AppColors.primary,
+                                      size: 24.w,
                                     ),
                                     helperText: !user!.isVerified!
                                         ? "Email nije verifikovan."
@@ -148,8 +161,10 @@ class _AccountScreenState extends State<AccountScreen> {
                                       color: !user!.isVerified!
                                           ? AppColors.darkRed
                                           : Colors.blueAccent,
+                                      fontSize: 12.sp,
                                     ),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.required(
                                       errorText: "Ovo polje je obavezno.",
@@ -176,11 +191,14 @@ class _AccountScreenState extends State<AccountScreen> {
                                                 await verify();
                                               }
                                             : null,
+                                        style: ElevatedButton.styleFrom(
+                                          textStyle: TextStyle(fontSize: 14.sp),
+                                        ),
                                         child: !_isVerificationCalled
                                             ? Text("Verifikuj")
                                             : SizedBox(
-                                                height: 20,
-                                                width: 20,
+                                                height: 20.h,
+                                                width: 20.w,
                                                 child: Transform.scale(
                                                   scale: 0.6,
                                                   child:
@@ -197,7 +215,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   ],
                                   decoration: InputDecoration(
                                     labelText: "Broj telefona",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.minLength(
                                       6,
@@ -215,7 +235,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   obscureText: true,
                                   decoration: InputDecoration(
                                     labelText: "Lozinka",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.minLength(
                                       8,
@@ -229,7 +251,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                   obscureText: true,
                                   decoration: InputDecoration(
                                     labelText: "Potvrda lozinke",
+                                    labelStyle: TextStyle(fontSize: 14.sp),
                                   ),
+                                  style: TextStyle(fontSize: 14.sp),
                                   validator: FormBuilderValidators.compose([
                                     FormBuilderValidators.minLength(
                                       8,
@@ -247,17 +271,20 @@ class _AccountScreenState extends State<AccountScreen> {
                                     ),
                                   ]),
                                 ),
-                                SizedBox(height: 20),
+                                SizedBox(height: 20.h),
                                 Center(
                                   child: ElevatedButton(
                                     onPressed: !_isProcessing
                                         ? updateUser
                                         : null,
+                                    style: ElevatedButton.styleFrom(
+                                      textStyle: TextStyle(fontSize: 14.sp),
+                                    ),
                                     child: !_isProcessing
                                         ? Text("Sačuvaj promjene")
                                         : SizedBox(
-                                            height: 20,
-                                            width: 20,
+                                            height: 20.h,
+                                            width: 20.w,
                                             child: Transform.scale(
                                               scale: 0.6,
                                               child:
@@ -273,8 +300,11 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 10),
+                      SizedBox(height: 10.h),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          textStyle: TextStyle(fontSize: 14.sp),
+                        ),
                         child: Text("Odjavi se"),
                         onPressed: () async {
                           try {
@@ -293,9 +323,12 @@ class _AccountScreenState extends State<AccountScreen> {
                           );
                         },
                       ),
-                      SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       ElevatedButton(
                         onPressed: deactivateAccount,
+                        style: ElevatedButton.styleFrom(
+                          textStyle: TextStyle(fontSize: 14.sp),
+                        ),
                         child: Text("Deaktiviraj nalog"),
                       ),
                     ],
@@ -429,25 +462,28 @@ class _AccountScreenState extends State<AccountScreen> {
 
         return StatefulBuilder(
           builder: (context, setStateDialog) => Dialog(
-            child: SizedBox(
-              height: 300,
+            child: IntrinsicHeight(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.w),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       "Verifikacija email naloga",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w500,
                         color: Colors.blueGrey,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 50),
+                    SizedBox(height: 50.h),
                     Text(
                       "Verifikacijski kod je poslan na Vašu email adresu. Ovdje ga unesite.",
-                      style: TextStyle(color: Colors.blueGrey),
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 14.sp,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     TextField(
@@ -455,9 +491,11 @@ class _AccountScreenState extends State<AccountScreen> {
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         labelText: "Verifikacijski kod",
+                        labelStyle: TextStyle(fontSize: 14.sp),
                       ),
+                      style: TextStyle(fontSize: 14.sp),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     ElevatedButton(
                       onPressed: !isVerificationInProcess
                           ? () async {
@@ -498,11 +536,14 @@ class _AccountScreenState extends State<AccountScreen> {
                               });
                             }
                           : null,
+                      style: ElevatedButton.styleFrom(
+                        textStyle: TextStyle(fontSize: 14.sp),
+                      ),
                       child: !isVerificationInProcess
                           ? Text("Potvrdi")
                           : SizedBox(
-                              height: 20,
-                              width: 20,
+                              height: 20.h,
+                              width: 20.w,
                               child: Transform.scale(
                                 scale: 0.6,
                                 child: const CircularProgressIndicator(

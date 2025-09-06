@@ -28,7 +28,7 @@ namespace eTouristAgencyAPI.InitialData
                     Id = new Guid("AE8F4CC0-6E84-41CC-B34A-A5AE8221E785"),
                     FirstName = "Hamza",
                     LastName = "Bikić",
-                    Username = "Hamza",
+                    Username = "hamza",
                     PhoneNumber = "066261961",
                     Email = "hamza.bikic@edu.fit.ba",
                     IsActive = true,
