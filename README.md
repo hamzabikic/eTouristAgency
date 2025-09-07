@@ -14,7 +14,6 @@ Korisnicko ime: mobile
 
 Lozinka: test
 
-
 ## Desktop app
 
 ### Login screen
@@ -291,8 +290,6 @@ The Reservations section displays all created reservations in the form of cards.
 - Each card shows key details about the associated offer and the reservation status.
 - Every card includes a Details button, which navigates the user to the Reservation Details screen for more in-depth information.
 
-### Reservation details screen
-
 <img src="/Screenshots/mobile-reservation-details-1.png">
 
 The Reservation Details screen provides a comprehensive view of a specific reservation and allows for limited editing.
@@ -305,6 +302,7 @@ The Reservation Details screen provides a comprehensive view of a specific reser
 - Additional Notes – users can add remarks, similar to the Create Reservation form.
 
 This screen essentially serves as both a reservation overview and an edit interface for allowed fields.
+Note: Editing of the reservation is no longer possible once the final payment deadline has passed.
 
 At the bottom of the screen, there is a Cancel Reservation button.
 Cancellation is only possible if:
@@ -313,3 +311,78 @@ Cancellation is only possible if:
 - The reservation status is not “Late Payment”, which can be set by a travel agency employee.
 
 <img src="/Screenshots/mobile-reservation-details-2.png">
+
+Once the return date has passed, an additional button becomes visible, allowing the user to leave a review for the offer.
+
+<img src="/Screenshots/mobile-reservation-details-3.png">
+
+Clicking Leave review button opens a modal/dialog where the user can:
+- Select a rating for service and accommodation using a star-based system.
+- Provide a short written comment about their experience.
+
+<img src="/Screenshots/mobile-review-modal.png">
+
+### Account details
+
+<img src="/Screenshots/mobile-account.png">
+
+The Account Details section displays the information of the currently logged-in user.
+It also provides the option to update and edit personal details.
+
+Additional functionality:
+- Email Verification – if the email address is not yet verified, a Verify button is displayed below the email field.
+Clicking this button sends a verification code to the user’s email address.
+At the same time, a modal/dialog is opened in the application where the user can enter the code to complete the verification process.
+- Deactivate Account button – permanently deletes the user account.
+- Log Out button – signs the user out of the application.
+
+<img src="/Screenshots/mobile-account-not-verified.png">
+
+## How to Run the Application
+
+There are multiple ways to run the project depending on your environment and preference.
+1. Run the API via Docker
+
+Open a terminal/console.
+
+Navigate to the eTouristAgencyAPI folder:
+
+cd eTouristAgencyAPI
+
+Run the following command to start the API:
+
+docker-compose up
+
+2. Run the API via Visual Studio
+
+Open the solution in Visual Studio.
+
+Before running, update the Server name inside the Connection String in appsettings.json according to your SQL Server instance.
+
+Start the application from Visual Studio.
+
+On first run, the application will automatically apply database migrations and seed the initial data.
+
+3. Run the Desktop or Mobile Application
+
+Inside the fit-build folder you can find:
+
+.exe file for testing the desktop application.
+
+.apk file for testing the mobile application.
+
+### Default Credentials
+
+For testing purposes, you can use the following default accounts:
+
+#### Desktop application
+
+Username: desktop
+
+Password: test
+
+#### Mobile application
+
+Username: mobile
+
+Password: test

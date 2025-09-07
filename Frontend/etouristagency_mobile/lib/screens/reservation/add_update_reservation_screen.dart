@@ -91,7 +91,6 @@ class _AddUpdateReservationScreenState
     passengerProvider = PassengerProvider();
     fetchOfferData();
     fetchReservationData();
-    verifyUser();
     super.initState();
   }
 
@@ -896,13 +895,13 @@ class _AddUpdateReservationScreenState
     }
   }
 
-  Future verifyUser() async {
+  Future<bool> verifyUser() async {
     var userId = await authService.getUserId();
 
-    if (userId == null) return;
+    if (userId == null) return false;
 
     var userJson = await userProvider.getById(userId);
-    if (!mounted) return;
+    if (!mounted) return false;
 
     var user = User.fromJson(userJson);
 
@@ -910,14 +909,18 @@ class _AddUpdateReservationScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "Da biste mogli uređivati podatke o rezervaciji, Vaš e-mail nalog mora biti verifikovan.",
+            widget.reservationId != null
+                ? "Da biste mogli uređivati podatke o rezervaciji, Vaš e-mail nalog mora biti verifikovan."
+                : "Da biste mogli kreirati rezervaciju, Vaš e-mail nalog mora biti verifikovan.",
             style: TextStyle(fontSize: 14.sp),
           ),
         ),
       );
+
+      return false;
     }
 
-    setState(() {});
+    return true;
   }
 
   bool validatePassengers() {
@@ -941,7 +944,7 @@ class _AddUpdateReservationScreenState
           ),
         );
 
-        isValid = false;
+        return false;
       }
     }
 
@@ -949,9 +952,12 @@ class _AddUpdateReservationScreenState
   }
 
   Future fetchReservationData() async {
+    bool isUserVerified = await verifyUser();
+
     if (widget.reservationId == null) {
-      _isEditable = true;
+      _isEditable = isUserVerified;
       setState(() {});
+
       return;
     }
 
@@ -984,8 +990,8 @@ class _AddUpdateReservationScreenState
       formBuilderKeys.add(GlobalKey<FormBuilderState>());
     }
 
-    _isEditable = reservation!.isEditable!;
-    _isReviewable = reservation!.isReviewable!;
+    _isEditable = reservation!.isEditable! && isUserVerified;
+    _isReviewable = reservation!.isReviewable! && isUserVerified;
 
     await loadReservationPayments();
 
