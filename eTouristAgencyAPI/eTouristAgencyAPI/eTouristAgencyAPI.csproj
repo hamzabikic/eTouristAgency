@@ -21,4 +21,8 @@
 		<ProjectReference Include="..\eTouristAgencyAPI.Services\eTouristAgencyAPI.Services.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Include="InitialData\Images\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
 </Project>
