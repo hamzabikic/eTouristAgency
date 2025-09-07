@@ -342,7 +342,7 @@ class _AddUpdateHotelScreenState extends State<AddUpdateHotelScreen> {
 
     try {
       if (widget.hotel == null) {
-        jsonModel["images"] = images?.map((e) => e.imageBytes).toList();
+        jsonModel["images"] = images?.map((e) => e.toJson()).toList();
         await hotelProvider.add(jsonModel);
       } else {
         jsonModel["images"] = images?.map((e) => e.toJson()).toList() ?? [];
