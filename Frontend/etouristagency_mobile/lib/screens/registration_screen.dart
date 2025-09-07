@@ -1,0 +1,332 @@
+import 'package:etouristagency_mobile/consts/app_colors.dart';
+import 'package:etouristagency_mobile/providers/user_provider.dart';
+import 'package:etouristagency_mobile/screens/login_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
+
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
+
+  @override
+  State<RegistrationScreen> createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen> {
+  bool _isProcessing = false;
+  bool emailIsValid = true;
+  bool usernameIsValid = true;
+  String? operationErrorMessage;
+  final formBuilderKey = GlobalKey<FormBuilderState>();
+  late final UserProvider userProvider;
+
+  @override
+  void initState() {
+    userProvider = UserProvider();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: 300.h,
+              color: AppColors.primary,
+              child: Center(child: Image.asset("lib/assets/images/logo.png")),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              "Registracija korisnika",
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 17.sp,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: FormBuilder(
+                key: formBuilderKey,
+                autovalidateMode: AutovalidateMode.onUnfocus,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadiusGeometry.all(Radius.circular(20.r)),
+                    color: AppColors.primaryTransparent,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Column(
+                      children: [
+                        operationErrorMessage != null
+                            ? Text(
+                                operationErrorMessage!,
+                                style: TextStyle(
+                                  color: AppColors.darkRed,
+                                  fontSize: 14.sp,
+                                ),
+                              )
+                            : SizedBox(),
+                        FormBuilderTextField(
+                          name: "firstName",
+                          decoration: InputDecoration(
+                            labelText: "Ime",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(
+                              errorText: "Ovo polje je obavezno.",
+                            ),
+                          ]),
+                        ),
+                        FormBuilderTextField(
+                          name: "lastName",
+                          decoration: InputDecoration(
+                            labelText: "Prezime",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(
+                              errorText: "Ovo polje je obavezno.",
+                            ),
+                          ]),
+                        ),
+                        FormBuilderTextField(
+                          name: "username",
+                          decoration: InputDecoration(
+                            labelText: "Korisničko ime",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(
+                              errorText: "Ovo polje je obavezno.",
+                            ),
+                            (value) {
+                              if (!usernameIsValid) {
+                                return "Uneseno korisničko ime se već koristi.";
+                              } else {
+                                return null;
+                              }
+                            },
+                          ]),
+                        ),
+                        FormBuilderTextField(
+                          name: "email",
+                          decoration: InputDecoration(
+                            labelText: "Email",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(
+                              errorText: "Ovo polje je obavezno.",
+                            ),
+                            FormBuilderValidators.email(
+                              errorText: "Email unesen u neispravnom formatu.",
+                            ),
+                            (value) {
+                              if (!emailIsValid) {
+                                return "Uneseni email se već koristi.";
+                              } else {
+                                return null;
+                              }
+                            },
+                          ]),
+                        ),
+                        FormBuilderTextField(
+                          name: "phoneNumber",
+                          decoration: InputDecoration(
+                            labelText: "Broj telefona",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.minLength(
+                              6,
+                              errorText:
+                                  "Broj telefona treba biti u formatu: 061000000",
+                            ),
+                            FormBuilderValidators.numeric(
+                              errorText:
+                                  "Broj telefona treba biti u formatu: 061000000",
+                            ),
+                          ]),
+                        ),
+                        FormBuilderTextField(
+                          name: "password",
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: "Lozinka",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.minLength(
+                              8,
+                              errorText:
+                                  "Lozinka mora sadržavati minimalno 8 karaktera.",
+                            ),
+                          ]),
+                        ),
+                        FormBuilderTextField(
+                          name: "confirmPassword",
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: "Potvrda lozinke",
+                            labelStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          style: TextStyle(fontSize: 14.sp),
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.minLength(
+                              8,
+                              errorText:
+                                  "Lozinka mora sadržavati minimalno 8 karaktera.",
+                            ),
+                            FormBuilderValidators.conditional(
+                              (value) =>
+                                  value !=
+                                  formBuilderKey
+                                      .currentState!
+                                      .fields["password"]!
+                                      .value,
+                              (value) => "Lozinke nisu podudarne.",
+                            ),
+                          ]),
+                        ),
+                        SizedBox(height: 20.h),
+                        ElevatedButton(
+                          onPressed: !_isProcessing ? registration : null,
+                          style: ElevatedButton.styleFrom(
+                            textStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          child: !_isProcessing
+                              ? Text("Registruj se")
+                              : SizedBox(
+                                  height: 20.h,
+                                  width: 20.w,
+                                  child: Transform.scale(
+                                    scale: 0.6,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            InkWell(
+              child: Text(
+                "Povratak na prijavu",
+                style: TextStyle(
+                  color: AppColors.primary,
+                  decoration: TextDecoration.underline,
+                  fontSize: 14.sp,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (x) => LoginScreen()),
+                );
+              },
+            ),
+            SizedBox(height: 40.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future registration() async {
+    await validateEmail();
+    await validateUsername();
+    bool isValid = formBuilderKey.currentState!.validate();
+
+    if (!isValid) {
+      setState(() {});
+      return;
+    }
+
+    _isProcessing = true;
+    setState((){});
+
+    formBuilderKey.currentState!.save();
+    var inserModel = formBuilderKey.currentState!.value;
+
+    try {
+      var response = await userProvider.add(inserModel);
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text("Uspješna registracija", style: TextStyle(fontSize: 18.sp)),
+          icon: Icon(
+            Icons.check_circle, 
+            color: AppColors.primary,
+            size: 48.w,
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  textStyle: TextStyle(fontSize: 14.sp),
+                ),
+                child: Text("Idi na prijavu"),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      return;
+    } on Exception catch (ex) {
+      operationErrorMessage = ex.toString();
+      setState(() {});
+    }
+
+    _isProcessing = false;
+    setState(() {});
+    return;
+  }
+
+  Future validateUsername() async {
+    usernameIsValid = !(await checkEmailAndUsername(
+      "",
+      formBuilderKey.currentState!.fields["username"]!.value ?? "",
+    ));
+    setState(() {});
+  }
+
+  Future validateEmail() async {
+    emailIsValid = !(await checkEmailAndUsername(
+      formBuilderKey.currentState!.fields["email"]!.value ?? "",
+      "",
+    ));
+    setState(() {});
+  }
+
+  Future checkEmailAndUsername(String email, String username) async {
+    if (email.isEmpty && username.isEmpty) return true;
+
+    var response = await userProvider.exists(email, username);
+
+    return response;
+  }
+}

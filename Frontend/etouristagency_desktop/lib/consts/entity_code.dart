@@ -1,0 +1,1 @@
+enum EntityCode { boardType, reservationStatus }
