@@ -74,9 +74,10 @@ while (retry < maxRetry)
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<eTouristAgencyDbContext>();
+        var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 
         db.Database.Migrate();
-        DatabaseSeeder.SeedDatabase(db);
+        DatabaseSeeder.SeedDatabase(db, env);
         break;
     }
     catch (SqlException)

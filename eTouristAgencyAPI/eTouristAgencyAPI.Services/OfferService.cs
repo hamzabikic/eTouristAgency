@@ -240,7 +240,7 @@ namespace eTouristAgencyAPI.Services
 
             if (searchModel.IsLastMinuteDiscountActive)
             {
-                queryable = queryable.Where(x => x.OfferDiscounts.Any(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date));
+                queryable = queryable.Where(x => x.OfferDiscounts.Any(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute && y.ValidFrom.Date <= DateTime.Now.Date && y.ValidTo.Date >= DateTime.Now.Date));
             }
 
             queryable = queryable.OrderByDescending(x => x.CreatedOn);
@@ -258,8 +258,8 @@ namespace eTouristAgencyAPI.Services
 
         protected override async Task AfterFetchRecordAsync(Offer dbModel)
         {
-            var firstMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeFirstMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
-            var lastMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute && y.ValidFrom <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
+            var firstMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeFirstMinute && y.ValidFrom.Date <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
+            var lastMinuteDiscount = dbModel.OfferDiscounts.Where(y => y.DiscountTypeId == AppConstants.FixedOfferDiscountTypeLastMinute && y.ValidFrom.Date <= DateTime.Now.Date && y.ValidTo >= DateTime.Now.Date).FirstOrDefault();
             dbModel.IsLastMinuteDiscountActive = lastMinuteDiscount != null;
             dbModel.IsFirstMinuteDiscountActive = firstMinuteDiscount != null;
 

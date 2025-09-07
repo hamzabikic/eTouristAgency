@@ -1,4 +1,5 @@
-﻿using eTouristAgencyAPI.Services.Database;
+﻿using eTouristAgencyAPI.Services.Constants;
+using eTouristAgencyAPI.Services.Database;
 using eTouristAgencyAPI.Services.Database.Models;
 using Microsoft.AspNetCore.Identity;
 
@@ -6,7 +7,7 @@ namespace eTouristAgencyAPI.InitialData
 {
     public static class DatabaseSeeder
     {
-        static public void SeedDatabase(eTouristAgencyDbContext db)
+        static public void SeedDatabase(eTouristAgencyDbContext db, IWebHostEnvironment env)
         {
             // --- Roles ---
             if (!db.Roles.Any())
@@ -157,6 +158,299 @@ namespace eTouristAgencyAPI.InitialData
                     new RoomType { Id = Guid.Parse("dfe05a3e-80d8-467e-83a5-a103e5eb583a"), Name = "Jednokrevetna", RoomCapacity = 1, CreatedOn = DateTime.Parse("2025-07-20T04:50:56.5800000"), ModifiedOn = DateTime.Parse("2025-07-20T04:51:37.5410229"), CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"), ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785") },
                     new RoomType { Id = Guid.Parse("a57611c4-2585-44c3-a551-b6d080df682d"), Name = "Trokrevetna", RoomCapacity = 3, CreatedOn = DateTime.Parse("2025-07-18T20:04:09.7400000"), ModifiedOn = DateTime.Parse("2025-07-18T20:04:09.7400000") }
                 );
+                db.SaveChanges();
+            }
+
+            // --- Reservations ---
+            if (!db.Hotels.Any() && !db.HotelImages.Any() && !db.Offers.Any() && !db.OfferImages.Any() && !db.Rooms.Any() && !db.Reservations.Any() && !db.Passengers.Any() && !db.PassengerDocuments.Any())
+            {
+                var rootPath = env.ContentRootPath;
+                var imagesPath = Path.Combine(rootPath, "InitialData", "Images");
+
+                Hotel hilton = new Hotel
+                {
+                    Id = Guid.NewGuid(),
+                    CityId = Guid.Parse("202fcfe0-3445-460c-8f9e-e5154f417561"),
+                    Name = "Hotel Hilton",
+                    StarRating = 5,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                };
+
+                hilton.HotelImages.Add(new HotelImage
+                {
+                    Id = Guid.NewGuid(),
+                    DisplayOrderWithinHotel = 1,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ImageName = "hilton1.jpg",
+                    ImageBytes = File.ReadAllBytes(Path.Combine(imagesPath, "hilton1.jpg"))
+                });
+
+                hilton.HotelImages.Add(new HotelImage
+                {
+                    Id = Guid.NewGuid(),
+                    DisplayOrderWithinHotel = 2,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ImageName = "hilton2.webp",
+                    ImageBytes = File.ReadAllBytes(Path.Combine(imagesPath, "hilton2.webp"))
+                });
+
+                hilton.HotelImages.Add(new HotelImage
+                {
+                    Id = Guid.NewGuid(),
+                    DisplayOrderWithinHotel = 3,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ImageName = "hilton3.jpg",
+                    ImageBytes = File.ReadAllBytes(Path.Combine(imagesPath, "hilton3.jpg"))
+                });
+
+                hilton.HotelImages.Add(new HotelImage
+                {
+                    Id = Guid.NewGuid(),
+                    DisplayOrderWithinHotel = 4,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ImageName = "hilton4.jpg",
+                    ImageBytes = File.ReadAllBytes(Path.Combine(imagesPath, "hilton4.jpg"))
+                });
+
+                hilton.HotelImages.Add(new HotelImage
+                {
+                    Id = Guid.NewGuid(),
+                    DisplayOrderWithinHotel = 5,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ImageName = "hilton5.jpg",
+                    ImageBytes = File.ReadAllBytes(Path.Combine(imagesPath, "hilton5.jpg"))
+                });
+
+                Hotel eden = new Hotel
+                {
+                    Id = Guid.NewGuid(),
+                    CityId = Guid.Parse("f9390b86-01bb-4561-87f0-d2fd79b23eaa"),
+                    Name = "Hotel Eden",
+                    StarRating = 4,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                };
+
+                Hotel bosna = new Hotel
+                {
+                    Id = Guid.NewGuid(),
+                    CityId = Guid.Parse("a0b5db51-8e2b-40c1-a932-38523038348c"),
+                    Name = "Hotel Bosna",
+                    StarRating = 4,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                };
+
+                db.Hotels.AddRange(hilton, eden, bosna);
+
+                Offer offerBelgrade = new Offer
+                {
+                    Id = Guid.NewGuid(),
+                    DeparturePlace = "Autobuska stanica Mostar",
+                    TripStartDate = DateTime.Now.AddDays(-10),
+                    TripEndDate = DateTime.Now.AddDays(-8),
+                    NumberOfNights = 2,
+                    OfferStatusId = AppConstants.FixedOfferStatusActive,
+                    BoardTypeId = Guid.Parse("ec1615e7-243c-4193-9d8a-3dbb99956915"),
+                    FirstPaymentDeadline = DateTime.Now.AddDays(-20).Date,
+                    LastPaymentDeadline = DateTime.Now.AddDays(-12).Date,
+                    Carriers = "Autoprevoz Mostar",
+                    Description = "Putujte s nama u balkansku prijestolnicu na ušću Save i Dunava i odsjednite u najluksuznijem hotelu po najpovoljnijoj cijeni.",
+                    HotelId = hilton.Id,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785")
+                };
+
+                offerBelgrade.OfferImage = new OfferImage
+                {
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ImageName = "beograd.jpg",
+                    ImageBytes = File.ReadAllBytes(Path.Combine(imagesPath, "beograd.jpg"))
+                };
+
+                offerBelgrade.Rooms.Add(new Room
+                {
+                    Id = Guid.NewGuid(),
+                    DisplayOrderWithinOffer = 1,
+                    PricePerPerson = 300,
+                    ChildDiscount = 20,
+                    Quantity = 10,
+                    RoomTypeId = Guid.Parse("c4b38c29-968a-49b5-95a0-7bb66436c403"),
+                    ShortDescription = "Terasa, pogled na grad, vlastita kupaonica, tv, klima, bračni krevet",
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785")
+                });
+
+                Offer offerMostar = new Offer
+                {
+                    Id = Guid.NewGuid(),
+                    DeparturePlace = "Autobuska stanica Sarajevo",
+                    TripStartDate = DateTime.Now.AddDays(30),
+                    TripEndDate = DateTime.Now.AddDays(32),
+                    NumberOfNights = 2,
+                    OfferStatusId = AppConstants.FixedOfferStatusActive,
+                    BoardTypeId = Guid.Parse("f1887801-505d-4071-a506-4ce6308f8edf"),
+                    FirstPaymentDeadline = DateTime.Now.AddDays(20).Date,
+                    LastPaymentDeadline = DateTime.Now.AddDays(28).Date,
+                    Carriers = "Centrotrans d.d. Sarajevo",
+                    Description = "Putujte s nama u jedan od najljepših gradova Evrope. Prelijepi Mostar nikoga ne ostavlja ravnodušnim.",
+                    HotelId = eden.Id,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785")
+                };
+
+                offerMostar.OfferImage = new OfferImage
+                {
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ImageName = "mostar.webp",
+                    ImageBytes = File.ReadAllBytes(Path.Combine(imagesPath, "mostar.webp"))
+                };
+
+                offerMostar.Rooms.Add(new Room
+                {
+                    Id = Guid.NewGuid(),
+                    DisplayOrderWithinOffer = 1,
+                    PricePerPerson = 250,
+                    ChildDiscount = 20,
+                    Quantity = 12,
+                    RoomTypeId = Guid.Parse("c4b38c29-968a-49b5-95a0-7bb66436c403"),
+                    ShortDescription = "Terasa, pogled na grad, vlastita kupaonica, tv, klima, bračni krevet",
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785")
+                });
+
+                var firstMinuteDiscount = new OfferDiscount
+                {
+                    Id = Guid.NewGuid(),
+                    DiscountTypeId = AppConstants.FixedOfferDiscountTypeFirstMinute,
+                    Discount = 20,
+                    ValidFrom = DateTime.Now.Date,
+                    ValidTo = DateTime.Now.AddDays(7).Date,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785")
+                };
+
+                offerMostar.OfferDiscounts.Add(firstMinuteDiscount);
+
+                Offer offerBanjaLuka = new Offer
+                {
+                    Id = Guid.NewGuid(),
+                    DeparturePlace = "Autobuska stanica Sarajevo",
+                    TripStartDate = DateTime.Now.AddDays(10),
+                    TripEndDate = DateTime.Now.AddDays(12),
+                    NumberOfNights = 2,
+                    OfferStatusId = AppConstants.FixedOfferStatusActive,
+                    BoardTypeId = Guid.Parse("c9a6519a-2407-4cfe-83d2-96556e0ace76"),
+                    FirstPaymentDeadline = DateTime.Now.AddDays(-5).Date,
+                    LastPaymentDeadline = DateTime.Now.AddDays(8).Date,
+                    Carriers = "Centrotrans d.d. Sarajevo",
+                    Description = "Putujte s nama u 2. grad po veličini u Bosni i Hercegovini, sa bogatom tradicijom i neodoljivim prirodnim ljepotama po najpovoljnijoj cijeni.",
+                    HotelId = bosna.Id,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785")
+                };
+
+                offerBanjaLuka.OfferImage = new OfferImage
+                {
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ImageName = "banjaluka.jpg",
+                    ImageBytes = File.ReadAllBytes(Path.Combine(imagesPath, "banjaluka.jpg"))
+                };
+
+                offerBanjaLuka.Rooms.Add(new Room
+                {
+                    Id = Guid.NewGuid(),
+                    DisplayOrderWithinOffer = 1,
+                    PricePerPerson = 200,
+                    ChildDiscount = 20,
+                    Quantity = 9,
+                    RoomTypeId = Guid.Parse("c4b38c29-968a-49b5-95a0-7bb66436c403"),
+                    ShortDescription = "Terasa, pogled na grad, vlastita kupaonica, tv, klima, bračni krevet",
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785")
+                });
+
+                var lastMinuteDiscount = new OfferDiscount
+                {
+                    Id = Guid.NewGuid(),
+                    DiscountTypeId = AppConstants.FixedOfferDiscountTypeLastMinute,
+                    Discount = 20,
+                    ValidFrom = DateTime.Now.Date,
+                    ValidTo = DateTime.Now.AddDays(7).Date,
+                    CreatedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785"),
+                    ModifiedBy = Guid.Parse("ae8f4cc0-6e84-41cc-b34a-a5ae8221e785")
+                };
+
+                offerBanjaLuka.OfferDiscounts.Add(lastMinuteDiscount);
+
+                db.Offers.AddRange(offerBelgrade, offerMostar, offerBanjaLuka);
+
+                var user = db.Users.First(x => x.Username == "mobile");
+
+                Reservation reservation = new Reservation
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedBy = user.Id,
+                    ModifiedBy = user.Id,
+                    UserId = user.Id,
+                    PaidAmount = 300,
+                    RoomId = offerBelgrade.Rooms.First().Id,
+                    TotalCost = 300,
+                    ReservationStatusId = AppConstants.FixedReservationStatusPaid
+                };
+
+                var passenger1 = new Passenger
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "Neko Nekić",
+                    DateOfBirth = DateTime.Now.AddYears(-30).Date,
+                    PhoneNumber = "060000000",
+                    CreatedBy = user.Id,
+                    ModifiedBy = user.Id,
+                    DisplayOrderWithinReservation = 1
+                };
+
+                passenger1.PassengerDocument = new PassengerDocument
+                {
+                    CreatedBy = user.Id,
+                    ModifiedBy = user.Id,
+                    DocumentBytes = File.ReadAllBytes(Path.Combine(imagesPath, "passport.webp")),
+                    DocumentName = "passport.webp"
+                };
+
+                var passenger2 = new Passenger
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "Maja Majić",
+                    DateOfBirth = DateTime.Now.AddYears(-25).Date,
+                    PhoneNumber = "061111111",
+                    CreatedBy = user.Id,
+                    ModifiedBy = user.Id,
+                    DisplayOrderWithinReservation = 2
+                };
+
+                passenger2.PassengerDocument = new PassengerDocument
+                {
+                    CreatedBy = user.Id,
+                    ModifiedBy = user.Id,
+                    DocumentBytes = File.ReadAllBytes(Path.Combine(imagesPath, "passport.webp")),
+                    DocumentName = "passport.webp"
+                };
+
+                reservation.Passengers.Add(passenger1);
+                reservation.Passengers.Add(passenger2);
+
+                db.Reservations.Add(reservation);
+
                 db.SaveChanges();
             }
         }

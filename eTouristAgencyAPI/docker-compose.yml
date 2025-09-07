@@ -1,73 +1,109 @@
 version: '3.8'
 
 services:
- etouristagency-sql:
-  image: mcr.microsoft.com/mssql/server:2019-latest
-  restart: unless-stopped
-  environment:
-    - ACCEPT_EULA=Y
-    - SA_PASSWORD=Admin123!@#
-    - MSSQL_PID=Developer
-  ports:
-    - "1434:1433"
-  expose:
-    - "1433"
-  networks:
-    - etouristnet
+  etouristagency-sql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Admin123!@#
+      - MSSQL_PID=Developer
+    ports:
+      - "1434:1433"
+    expose:
+      - "1433"
+    networks:
+      - etouristnet
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
 
- etouristagency-rabbitmq:
-   image: rabbitmq:3-management
-   restart: unless-stopped
-   environment:
-     - RABBITMQ_DEFAULT_USER=admin
-     - RABBITMQ_DEFAULT_PASS=admin
-   ports:
-     - "5672:5672"
-     - "15672:15672"
-   networks:
-     - etouristnet
-   healthcheck:
-     test: rabbitmq-diagnostics -q ping
-     interval: 30s
-     timeout: 30s
-     retries: 3
+  etouristagency-rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - etouristnet
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
 
- etouristagency-api:
-  build:
-    context: .
-  container_name: etouristagency-api
-  restart: unless-stopped
-  ports:
-    - "5000:5000"
-    - "5001:5001"
-  environment:
-    - ASPNETCORE_URLS=https://+:5000;http://+:5001
-    - ASPNETCORE_Kestrel__Certificates__Default__Password=YourPassword123
-    - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/aspnetapp.pfx
-    - ConnectionStrings__DbConnection=Server=etouristagency-sql;Database=eTouristAgencyDB;User=sa;Password=Admin123!@#;TrustServerCertificate=True;MultipleActiveResultSets=True;
-    - RabbitMQConfig__Host=etouristagency-rabbitmq
-  networks:
-    - etouristnet
-  depends_on:
-    - etouristagency-sql
-    - etouristagency-rabbitmq
+  etouristagency-api:
+    build:
+      context: .
+    container_name: etouristagency-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_URLS=https://+:5000;http://+:5001
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=YourPassword123
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/aspnetapp.pfx
+      - ConnectionStrings__DbConnection=Server=etouristagency-sql;Database=eTouristAgencyDB;User=sa;Password=Admin123!@#;TrustServerCertificate=True;MultipleActiveResultSets=True;
+      - RabbitMQConfig__Host=etouristagency-rabbitmq
+      - RabbitMQConfig__Username=admin
+      - RabbitMQConfig__Password=admin
+    networks:
+      - etouristnet
+    depends_on:
+      - etouristagency-sql
+      - etouristagency-rabbitmq
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
 
- etouristagency-notifications:
-   build:
-     context: .
-   container_name: etouristagency-notifications
-   restart: unless-stopped
-   entrypoint: ["dotnet", "Notifications/eTouristAgencyAPI.Notifications.dll"]
-   networks:
-     - etouristnet
-   depends_on:
-     etouristagency-api:
-       condition: service_started
-     etouristagency-rabbitmq:
-       condition: service_healthy
-   environment:
-     - RabbitMQConfig__Host=etouristagency-rabbitmq
+  etouristagency-notifications:
+    build:
+      context: .
+    container_name: etouristagency-notifications
+    restart: unless-stopped
+    entrypoint: ["dotnet", "Notifications/eTouristAgencyAPI.Notifications.dll"]
+    networks:
+      - etouristnet
+    depends_on:
+      etouristagency-api:
+        condition: service_started
+      etouristagency-rabbitmq:
+        condition: service_healthy
+    environment:
+      - RabbitMQConfig__Host=etouristagency-rabbitmq
+      - RabbitMQConfig__Username=admin
+      - RabbitMQConfig__Password=admin
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
 networks:
- etouristnet:
-   driver: bridge
+  etouristnet:
+    driver: bridge

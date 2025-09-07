@@ -17,6 +17,7 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((context, config) =>
     {
         config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        config.AddEnvironmentVariables();
     })
     .ConfigureServices((context, services) =>
     {
@@ -37,67 +38,93 @@ var emailNotificationService = host.Services.GetRequiredService<IEmailNotificati
 var firebaseNotificationService = host.Services.GetRequiredService<IFirebaseNotificationService>();
 
 IBus bus = null;
-var maxRetries = 10;
-for (int i = 0; i < maxRetries; i++)
+for (int i = 0; i < 5; i++)
 {
     try
     {
-        bus = RabbitHutch.CreateBus($"host={rabbitMqHost};username={rabbitMqUsername};password={rabbitMqPassword}");
+        bus = RabbitHutch.CreateBus($"host={rabbitMqHost};username={rabbitMqUsername};password={rabbitMqPassword};timeout=30");
+        Console.WriteLine("Connected to RabbitMQ successfully.");
         break;
     }
     catch (Exception ex)
     {
-        if (i == maxRetries - 1) throw;
-        await Task.Delay(5000);
+        Console.WriteLine($"Connection attempt {i + 1}/5 failed: {ex.Message}");
+
+        if (i == 4)
+        {
+            Console.WriteLine("Failed to connect to RabbitMQ. Exiting - Docker will restart.");
+            Environment.Exit(1);
+        }
+
+        await Task.Delay(2000);
     }
 }
 
-bus.PubSub.Subscribe<string>("Notification", async msg =>
+try
 {
-    try
+    await bus.PubSub.SubscribeAsync<string>("Notification", async msg =>
     {
-        var rabbitMQNotification = JsonConvert.DeserializeObject<RabbitMQNotification>(msg);
-
-        if (rabbitMQNotification.EmailNotification != null)
+        try
         {
-            var emailNotification = rabbitMQNotification.EmailNotification;
+            var rabbitMQNotification = JsonConvert.DeserializeObject<RabbitMQNotification>(msg);
 
-            foreach (var recipient in emailNotification.Recipients)
+            if (rabbitMQNotification.EmailNotification != null)
             {
-                try
+                var emailNotification = rabbitMQNotification.EmailNotification;
+                foreach (var recipient in emailNotification.Recipients)
                 {
-                    await emailNotificationService.SendEmailNotificationAsync(emailNotification.Title, emailNotification.Html, emailNotification.AdditionalImage, recipient);
-                    await CustomLogger.LogInfo($"Succesfully sent email notification with title '{emailNotification.Title}' to: {recipient}");
+                    try
+                    {
+                        await emailNotificationService.SendEmailNotificationAsync(
+                            emailNotification.Title,
+                            emailNotification.Html,
+                            emailNotification.AdditionalImage,
+                            recipient);
+
+                        await CustomLogger.LogInfo($"Successfully sent email '{emailNotification.Title}' to: {recipient}");
+                    }
+                    catch (Exception ex)
+                    {
+                        await CustomLogger.LogError($"Email send failed '{emailNotification.Title}' to: {recipient} - {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
+            }
+
+            if (rabbitMQNotification.FirebaseNotification != null)
+            {
+                var firebaseNotification = rabbitMQNotification.FirebaseNotification;
+                foreach (var firebaseToken in firebaseNotification.FirebaseTokens)
                 {
-                    await CustomLogger.LogError($"Error while sending email notification with title '{emailNotification.Title}' to: {recipient} - {ex.Message}");
+                    try
+                    {
+                        await firebaseNotificationService.SendNotificationAsync(
+                            firebaseToken,
+                            firebaseNotification.Title,
+                            firebaseNotification.Text,
+                            firebaseNotification.Data);
+
+                        await CustomLogger.LogInfo($"Successfully sent Firebase '{firebaseNotification.Title}' to: {firebaseToken}");
+                    }
+                    catch (Exception ex)
+                    {
+                        await CustomLogger.LogError($"Firebase send failed '{firebaseNotification.Title}' to: {firebaseToken} - {ex.Message}");
+                    }
                 }
             }
         }
-
-        if (rabbitMQNotification.FirebaseNotification != null)
+        catch (Exception ex)
         {
-            var firebaseNotification = rabbitMQNotification.FirebaseNotification;
-
-            foreach (var firebaseToken in firebaseNotification.FirebaseTokens)
-            {
-                try
-                {
-                    await firebaseNotificationService.SendNotificationAsync(firebaseToken, firebaseNotification.Title, firebaseNotification.Text, firebaseNotification.Data);
-                    await CustomLogger.LogInfo($"Succesfully sent firebase notification with title '{firebaseNotification.Title}' to: {firebaseToken}");
-                }
-                catch (Exception ex)
-                {
-                    await CustomLogger.LogError($"Error while sending firebase notification with title '{firebaseNotification.Title}' to: {firebaseToken} - {ex.Message}");
-                }
-            }
+            await CustomLogger.LogError($"Message processing failed: {ex.Message}");
         }
-    }
-    catch (Exception ex)
-    {
-        await CustomLogger.LogError($"Error while sending notifications: {ex.Message}");
-    }
-});
+    });
 
-Console.ReadLine();
+    Console.WriteLine("Subscribed to RabbitMQ successfully. Service running...");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Subscription failed: {ex.Message}");
+    Console.WriteLine("Exiting - Docker will restart the container.");
+    Environment.Exit(1);
+}
+
+await Task.Delay(Timeout.Infinite);

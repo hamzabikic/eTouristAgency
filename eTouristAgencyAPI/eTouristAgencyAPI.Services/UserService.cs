@@ -246,7 +246,7 @@ namespace eTouristAgencyAPI.Services
         {
             if (_userId != dbModel.Id && !dbModel.Roles.Any(x => x.Id == AppConstants.FixedRoleAdminId)) throw new Exception("Only users with the Admin role can be updated.");
             if (updateModel.Password != updateModel.ConfirmPassword) throw new Exception("Entered passwords are not equal.");
-            if (_userId != dbModel.Id && (string.IsNullOrEmpty(updateModel.Password) || string.IsNullOrEmpty(updateModel.ConfirmPassword))) throw new Exception("You have to provide a new password.");
+            if (_userId == dbModel.Id && (string.IsNullOrEmpty(updateModel.Password) || string.IsNullOrEmpty(updateModel.ConfirmPassword))) throw new Exception("You have to provide a new password.");
             if (updateModel.Username != dbModel.Username && await UsernameExistsAsync(updateModel.Username)) throw new Exception("Entered username is already in usage.");
             if (updateModel.Email != dbModel.Email)
             {

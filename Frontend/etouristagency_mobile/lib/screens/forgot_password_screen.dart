@@ -156,6 +156,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void openVerificationDialog() {
+    verificationCodeEditingController.text = "";
+
     showDialog(
       context: context,
       builder: (context) {
