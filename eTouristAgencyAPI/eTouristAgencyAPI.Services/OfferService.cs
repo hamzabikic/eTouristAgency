@@ -95,7 +95,7 @@ namespace eTouristAgencyAPI.Services
 
             foreach (var recipient in recipients)
             {
-                userFirebaseTokens.AddRange(recipient.UserFirebaseTokens.Where(x => x.ModifiedOn <= DateTime.Now.AddYears(-1)).Select(x => x.FirebaseToken));
+                userFirebaseTokens.AddRange(recipient.UserFirebaseTokens.Where(x => x.ModifiedOn >= DateTime.Now.AddYears(-1)).Select(x => x.FirebaseToken));
             }
 
             var notificationTitle = "Napravili smo ponudu samo za Vas!";

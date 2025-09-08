@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => OfferListScreen()),
       );
     } on Exception catch (e) {
-      operationErrorMessage = e.toString();
+      operationErrorMessage = e.toString().replaceFirst("Exception: ", "");
 
       await authService.clearCredentials();
       setState(() {});

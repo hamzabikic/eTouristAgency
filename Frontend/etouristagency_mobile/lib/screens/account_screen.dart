@@ -392,6 +392,9 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future validateUsername() async {
+    if (updateUserFormBuilder.currentState!.fields["username"]!.value == null)
+      return;
+
     usernameIsValid = !(await checkEmailAndUsername(
       "",
       updateUserFormBuilder.currentState!.fields["username"]!.value ?? "",
@@ -400,6 +403,9 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future validateEmail() async {
+    if (updateUserFormBuilder.currentState!.fields["email"]!.value == null)
+      return;
+
     emailIsValid = !(await checkEmailAndUsername(
       updateUserFormBuilder.currentState!.fields["email"]!.value ?? "",
       "",
@@ -480,10 +486,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     SizedBox(height: 50.h),
                     Text(
                       "Verifikacijski kod je poslan na Vašu email adresu. Ovdje ga unesite.",
-                      style: TextStyle(
-                        color: Colors.blueGrey,
-                        fontSize: 14.sp,
-                      ),
+                      style: TextStyle(color: Colors.blueGrey, fontSize: 14.sp),
                       textAlign: TextAlign.center,
                     ),
                     TextField(

@@ -1023,6 +1023,8 @@ class _AddUpdateReservationScreenState
         return Colors.green;
       case AppConstants.reservationCancelledGuid:
         return AppColors.darkRed;
+      case AppConstants.reservationLatePaymentGuid:
+        return AppColors.darkRed;
       default:
         return AppColors.primary;
     }
@@ -1188,6 +1190,15 @@ class _AddUpdateReservationScreenState
       passengerDocuments[index] = PassengerDocument(fileName, bytes);
 
       setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Uspješno učitan dokument.",
+            style: TextStyle(fontSize: 14.sp),
+          ),
+        ),
+      );
     }
   }
 

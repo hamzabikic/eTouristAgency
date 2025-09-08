@@ -56,7 +56,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 autovalidateMode: AutovalidateMode.onUnfocus,
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadiusGeometry.all(Radius.circular(20.r)),
+                    borderRadius: BorderRadiusGeometry.all(
+                      Radius.circular(20.r),
+                    ),
                     color: AppColors.primaryTransparent,
                   ),
                   child: Padding(
@@ -259,7 +261,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
 
     _isProcessing = true;
-    setState((){});
+    setState(() {});
 
     formBuilderKey.currentState!.save();
     var inserModel = formBuilderKey.currentState!.value;
@@ -270,12 +272,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: Text("Uspješna registracija", style: TextStyle(fontSize: 18.sp)),
-          icon: Icon(
-            Icons.check_circle, 
-            color: AppColors.primary,
-            size: 48.w,
+          title: Text(
+            "Uspješna registracija",
+            style: TextStyle(fontSize: 18.sp),
           ),
+          icon: Icon(Icons.check_circle, color: AppColors.primary, size: 48.w),
           actions: [
             Center(
               child: ElevatedButton(
@@ -307,6 +308,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future validateUsername() async {
+    if (formBuilderKey.currentState!.fields["username"]!.value == null) return;
+
     usernameIsValid = !(await checkEmailAndUsername(
       "",
       formBuilderKey.currentState!.fields["username"]!.value ?? "",
@@ -315,6 +318,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future validateEmail() async {
+    if (formBuilderKey.currentState!.fields["email"]!.value == null) return;
+    
     emailIsValid = !(await checkEmailAndUsername(
       formBuilderKey.currentState!.fields["email"]!.value ?? "",
       "",
