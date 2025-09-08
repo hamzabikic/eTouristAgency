@@ -611,6 +611,8 @@ class _OfferListScreenState extends State<OfferListScreen> {
     queryStrings.remove("offerPriceTo");
 
     queryStrings["page"] = 1;
+
+    setState((){});
     await fetchData();
   }
 
