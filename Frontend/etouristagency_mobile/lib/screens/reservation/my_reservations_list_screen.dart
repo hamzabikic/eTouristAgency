@@ -256,6 +256,8 @@ class _MyReservationsListScreenState extends State<MyReservationsListScreen> {
         return Colors.green;
       case AppConstants.reservationCancelledGuid:
         return AppColors.darkRed;
+      case AppConstants.reservationLatePaymentGuid:
+        return AppColors.darkRed;
       default:
         return AppColors.primary;
     }

@@ -8,5 +8,5 @@ class AppConstants {
   static const String reservationPartiallyPaidGuid = 'B3EE8A83-4B17-48E4-B547-AD099F03717E';
   static const String reservationPaidGuid = '39F2FFFD-D1F6-4BEC-A4DD-0C99B4037928';
   static const String reservationCancelledGuid = '962A3C05-FA18-4183-B0FE-84A3E88FD4AA';
-  static const String reservationLatePaymentGuid = 'f6159bf6-5061-4583-8714-b40bd0a24476';
+  static const String reservationLatePaymentGuid = 'F6159BF6-5061-4583-8714-B40BD0A24476';
 }
